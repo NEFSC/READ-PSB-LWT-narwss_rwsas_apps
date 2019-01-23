@@ -339,6 +339,7 @@
       addPolygons(data = polyclust_sp, weight = 2, color = "blue") %>%
       addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
       addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
+    
     #####
     ##dma name
     
@@ -483,6 +484,10 @@
     
     enable("kml")
     print("dma button pressed")
+    
+    dmareportmap<-fitBounds(sasdma,min(egsas$LONGITUDE), min(egsas$LATITUDE), max(egsas$LONGITUDE), max(egsas$LATITUDE))
+    htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
+    webshot::webshot("temp.html", file = paste0(date1,"_dmamap.png"))#,cliprect = bounds)
     ##password and user name removed for sharing
     cnxn <- odbcConnect(server, uid=sasuid, pwd=saspswd,believeNRows=FALSE)
     
