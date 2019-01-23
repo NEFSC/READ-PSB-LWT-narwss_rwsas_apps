@@ -11,20 +11,20 @@ output: pdf_document
 ---
 \vspace*{-10mm}
 \begin{center}\LARGE`r params$dmanameselect`\end{center}
-\vspace*{-4mm}
-\begin{center}\LARGE Triggered `r params$date1`\end{center}
-\vspace*{-4mm}
+\vspace*{-8mm}
+\begin{center}\LARGE Triggered: `r params$date1`\end{center}
+
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
 knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/",params$date1,"_dmamap.png"))
 
 ```
-\vspace*{-8mm}
+\vspace*{-4mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
 knitr::kable(params$dmacoord, caption = "DMA Bounds")
 ```
-\small
+
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
 knitr::kable(params$egsastab, caption = "Right Whale Sighting(s)")
 ```
-\end
+
