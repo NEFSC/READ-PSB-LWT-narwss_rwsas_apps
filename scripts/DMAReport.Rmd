@@ -10,7 +10,7 @@ output: pdf_document
 
 ---
 \vspace*{-10mm}
-\begin{center}\LARGE`r params$SIGHTDATE_sql params$dmanameselect`\end{center}
+\begin{center}\LARGE`r paste(params$SIGHTDATE_sql, params$dmanameselect)`\end{center}
 \begin{center}\LARGE`r params$date1`\end{center}
 \vspace*{-4mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
