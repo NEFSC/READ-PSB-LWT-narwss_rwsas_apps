@@ -10,12 +10,12 @@ output: pdf_document
 
 ---
 \vspace*{-10mm}
-\begin{center}\LARGE`r paste(params$SIGHTDATE_sql, params$dmanameselect)`\end{center}
+\begin{center}\LARGE`r params$dmanameselect`\end{center}
 \begin{center}\LARGE`r params$date1`\end{center}
 \vspace*{-4mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
-knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/",params$date1,"_dmamap.png"))
+knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/",params$date1,"_dmamap.png"))
 
 ```
 \vspace*{-8mm}
