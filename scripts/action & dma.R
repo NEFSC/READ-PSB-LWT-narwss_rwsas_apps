@@ -586,7 +586,7 @@
         
         if (input$filepathway == 'Network'){
           print(tempdir())
-          tempReport<-file.path("//net/mmi/Fieldwrk/Aerials/2018/Flights/edit_data/Shiny 2018/DMAReport_2018.Rmd")
+          tempReport<-file.path("./scripts/DMAReport.Rmd")
         } else if (input$filepathway == 'Local'){
           tempReport<-file.path(paste0(inputpath,"/DMAReport_2018.Rmd"))
         }
