@@ -577,7 +577,7 @@
     }
     print("dma end")
     disable("dmaup")
-   
+    enable("dmareport")
     
     ##THIS IS WHERE YOU LEFT OFF ON 21DEC2018 BEFORE SHUTDOWN!!!!!!!!!!!! 
     output$dmareport<-downloadHandler(

@@ -4,6 +4,7 @@ disable("save")
 disable("report")
 disable("sas")
 disable("dmaup")
+disable("dmareport")
 #disable("kml")
 
 observeEvent(input$rawupload,{
