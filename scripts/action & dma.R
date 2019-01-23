@@ -485,7 +485,7 @@
     enable("kml")
     print("dma button pressed")
     
-    dmareportmap<-fitBounds(sasdma,min(egsas$LONGITUDE), min(egsas$LATITUDE), max(egsas$LONGITUDE), max(egsas$LATITUDE))
+    dmareportmap<-fitBounds(sasdma,min(final$LONGITUDE), min(final$LATITUDE), max(final$LONGITUDE), max(final$LATITUDE))
     htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
     webshot::webshot("temp.html", file = paste0(date1,"_dmamap.png"))#,cliprect = bounds)
     ##password and user name removed for sharing
