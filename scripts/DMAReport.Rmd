@@ -4,6 +4,8 @@ params:
   SIGHTDATE_sql: NA
   dmanameselect: NA
   date1: NA
+  egsastab: NA
+  dmacoord: NA
 output: pdf_document
 
 ---
@@ -13,21 +15,18 @@ output: pdf_document
 \vspace*{-4mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
-knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/",params$date1,"_map.png"))
+knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/",params$date1,"_dmamap.png"))
 
 ```
 \vspace*{-8mm}
-\begin{center}\normalsize `r params$rptnotes`\end{center}
+\begin{center}\normalsize Some text.\end{center}
 \vspace*{-6mm}
-\begin{center}\normalsize Active Dynamic Management Area(s): `r params$dmanamesexp`.\end{center}
-\vspace*{-6mm}
-\begin{center}\normalsize Only large whale sightings were recorded on this survey.\end{center}
+\begin{center}\normalsize Some more text.\end{center}
 \vspace*{-4mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
-knitr::kable(params$netable, caption = "Species Sighted")
+knitr::kable(params$dmacoord, caption = "DMA Bounds")
 ```
-
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
-knitr::kable(params$egreport, caption = "Right Whale Sighting(s) Details")
+knitr::kable(params$egsastab, caption = "Right Whale Sighting(s)")
 ```
 
