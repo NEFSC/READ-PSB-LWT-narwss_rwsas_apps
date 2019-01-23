@@ -592,7 +592,7 @@
         }
         
         file.copy("Report_2018.Rmd", tempReport, overwrite = TRUE)
-        params<-list(egsastab = egsastab, dmacoord = dmacoord, input$options = input$options )
+        params<-list(SIGHTDATE_sql = SIGHTDATE_sql, dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmacoord = dmacoord)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
