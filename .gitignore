@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 *.log
+*.png
+temp.html
+temp_files/
