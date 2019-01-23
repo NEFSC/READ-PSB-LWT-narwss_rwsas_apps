@@ -14,8 +14,8 @@ output: pdf_document
 \begin{center}\LARGE`r params$date1`\end{center}
 \vspace*{-4mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
-paste0("./",params$date1,"_map.png")
-knitr::include_graphics(paste0("./",params$date1,"_map.png"))
+
+knitr::include_graphics(source(paste0("./",params$date1,"_map.png")), local = TRUE)$value
 
 ```
 \vspace*{-8mm}
