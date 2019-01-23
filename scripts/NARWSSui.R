@@ -57,6 +57,7 @@ fluidPage(
                            uiOutput("dmaoptions"),     #1544
                            tableOutput("dmacoord"),    #1481
                            actionButton("dmaup","Upload DMA to database"),
+                           downloadButton("dmareport", "Download DMA Report")),
                            downloadButton("kml", "Download KML")
                            )
                            )

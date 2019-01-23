@@ -580,26 +580,26 @@
    
     
     ##THIS IS WHERE YOU LEFT OFF ON 21DEC2018 BEFORE SHUTDOWN!!!!!!!!!!!! 
-    #output$dmareport<-downloadHandler(
-     # filename = paste0(day1,month1,year1,"_PotentialDMA_Report.pdf"),
-      #content = function(file) {
+    output$dmareport<-downloadHandler(
+      filename = paste0(day1,month1,year1,"_PotentialDMA_Report.pdf"),
+      content = function(file) {
         
-       # if (input$filepathway == 'Network'){
-        #  print(tempdir())
-         # tempReport<-file.path("//net/mmi/Fieldwrk/Aerials/2018/Flights/edit_data/Shiny 2018/DMAReport_2018.Rmd")
-        #} else if (input$filepathway == 'Local'){
-         # tempReport<-file.path(paste0(inputpath,"/DMAReport_2018.Rmd"))
-        #}
+        if (input$filepathway == 'Network'){
+          print(tempdir())
+          tempReport<-file.path("//net/mmi/Fieldwrk/Aerials/2018/Flights/edit_data/Shiny 2018/DMAReport_2018.Rmd")
+        } else if (input$filepathway == 'Local'){
+          tempReport<-file.path(paste0(inputpath,"/DMAReport_2018.Rmd"))
+        }
         
+        file.copy("Report_2018.Rmd", tempReport, overwrite = TRUE)
+        params<-list(egsastab = egsastab, dmacoord = dmacoord, input$options = input$options )
         
-        #file.copy("Report_2018.Rmd", tempReport, overwrite = TRUE)
-        #params<-list(egsastab = egsastab, dmacoord = dmacoord, input$options = input$options )
-        
-        #rmarkdown::render(tempReport, output_file = file,
-         #                 params = params,
-          #                envir = new.env(parent = globalenv())
+        rmarkdown::render(tempReport, output_file = file,
+                          params = params,
+                          envir = new.env(parent = globalenv())
                           
-        #)})
+        )})
+    
   })
 
   
