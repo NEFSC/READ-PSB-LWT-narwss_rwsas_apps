@@ -25,6 +25,8 @@ knitr::kable(params$dmacoord, caption = "DMA Bounds")
 ```
 
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
-knitr::kable(params$egsastab, caption = "Right Whale Sighting(s)")
+library(kableExtra)
+knitr::kable(params$egsastab, "latex", caption = "Right Whale Sighting(s)")#%>%
+  #landscape()
 ```
 

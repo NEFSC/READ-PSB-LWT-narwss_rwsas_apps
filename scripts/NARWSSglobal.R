@@ -30,7 +30,7 @@ library(DBI)
 library(sqldf)
 library(tinytex)
 library(igraph)
-library(kableExtra)
+#library(kableExtra)
 
 #library(mapview)
 library(htmlwidgets)
