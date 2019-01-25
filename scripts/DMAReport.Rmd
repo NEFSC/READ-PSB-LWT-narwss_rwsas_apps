@@ -1,7 +1,5 @@
 ---
 title:  "Potential DMA Report"
-header-includes:
-  - \usepackage{lscape}
 params:
   SIGHTDATE_sql: NA
   dmanameselect: NA
@@ -27,9 +25,12 @@ knitr::kable(params$dmacoord, caption = "DMA Bounds")
 ```
 
 \newpage
-\begin{landscape}
-```{r echo = FALSE, warning = FALSE, results = 'asis'}
 
-knitr::kable(params$egsastab, caption = "Right Whale Sighting(s)")
+```{r echo = FALSE, warning = FALSE, results = 'asis'}
+egtab<-params$egsastab%>%
+  dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY, ACTION_NEW)%>%
+  dplyr::filter(ACTION_NEW == 4)
+knitr::kable(egtab, caption = "Right Whale Sighting(s)")
+
 ```
-\end{landscape}
+
