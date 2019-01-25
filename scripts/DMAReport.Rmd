@@ -1,5 +1,7 @@
 ---
 title:  "Potential DMA Report"
+header-includes:
+  - \usepackage{lscape}
 params:
   SIGHTDATE_sql: NA
   dmanameselect: NA
@@ -24,9 +26,10 @@ knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp
 knitr::kable(params$dmacoord, caption = "DMA Bounds")
 ```
 
+\newpage
+\begin{landscape}
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
-library(kableExtra)
-knitr::kable(params$egsastab, "latex", caption = "Right Whale Sighting(s)")#%>%
-  #landscape()
-```
 
+knitr::kable(params$egsastab, caption = "Right Whale Sighting(s)")
+```
+\end{landscape}
