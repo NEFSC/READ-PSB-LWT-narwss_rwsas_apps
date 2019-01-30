@@ -579,7 +579,6 @@
     disable("dmaup")
     enable("dmareport")
     
-    ##THIS IS WHERE YOU LEFT OFF ON 21DEC2018 BEFORE SHUTDOWN!!!!!!!!!!!! 
     output$dmareport<-downloadHandler(
       filename = paste0(day1,month1,year1,"_PotentialDMA_Report.pdf"),
       content = function(file) {
@@ -588,10 +587,10 @@
           print(tempdir())
           tempReport<-file.path("./scripts/DMAReport.Rmd")
         } else if (input$filepathway == 'Local'){
-          tempReport<-file.path(paste0(inputpath,"/DMAReport_2018.Rmd"))
+          tempReport<-file.path(paste0(inputpath,"/DMAReport.Rmd"))
         }
         
-        file.copy("Report_2018.Rmd", tempReport, overwrite = TRUE)
+        file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
         params<-list(SIGHTDATE_sql = SIGHTDATE_sql, dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmacoord = dmacoord)
         
         rmarkdown::render(tempReport, output_file = file,
