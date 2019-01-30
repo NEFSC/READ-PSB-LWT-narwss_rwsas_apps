@@ -12,7 +12,7 @@ output: pdf_document
 \vspace*{-10mm}
 \begin{center}\LARGE`r params$dmanameselect`\end{center}
 \vspace*{-8mm}
-\begin{center}\LARGE Triggered: `r params$date1`\end{center}
+\begin{center}\LARGE Trigger date: `r params$date1`\end{center}
 
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
@@ -24,11 +24,9 @@ knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp
 knitr::kable(params$dmacoord, caption = "DMA Bounds")
 ```
 
-\newpage
-
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
 egtab<-params$egsastab%>%
-  dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY, ACTION_NEW)%>%
+  dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
   dplyr::filter(ACTION_NEW == 4)
 knitr::kable(egtab, caption = "Right Whale Sighting(s)")
 
