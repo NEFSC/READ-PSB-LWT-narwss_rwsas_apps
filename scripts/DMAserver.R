@@ -23,6 +23,7 @@ observeEvent(input$eval,{
       ########
       smapath<-"//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/SMA ind shp"
       MODA<-unique(format(dmaevaldate, "%m-%d"))
+      MODAYR<-unique(dmaevaldate, "%m-%d")
       ##egtable & egsas kept seperate like this for now, need to investigate more about how these tables are used between dma and narwss apps 11/20/2018 lmc
       egtable<-dailyeg%>%
         dplyr::rename("DateTime" = "SIGHTDATE","LATITUDE" = "LAT", "LONGITUDE" = "LON", "GROUP_SIZE" = "GROUPSIZE", "ID_RELIABILITY" = "SPECIES_CERT")
@@ -32,8 +33,9 @@ observeEvent(input$eval,{
       print(egsas)
       egsas$DateTime<-strftime(egsas$DateTime,'%Y-%m-%d %H:%M:%S')
       
-      source('//net/mmi/Fieldwrk/Aerials/2018/Flights/edit_data/Shiny 2018/scripts/sma_2018.R', local = TRUE)$value
-      source('//net/mmi/Fieldwrk/Aerials/2018/Flights/edit_data/Shiny 2018/scripts/activedma_2018.R', local = TRUE)$value
+      source('./scripts/oracleaccess.R', local = TRUE)$value
+      source('./scripts/sma.R', local = TRUE)$value
+      source('./scripts/activedma.R', local = TRUE)$value
       
       if(nrow(egtable) == 0){
         ##if no Eg:
