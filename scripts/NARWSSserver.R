@@ -15,8 +15,10 @@ observeEvent(input$rawupload,{
     
     if (input$filepathway == 'Network'){
       path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
+      loc<-"Network"
     } else if (input$filepathway == 'Local'){
       path<-input$filepathinput
+      loc<-"Local"
     }
     
     mfyn<-input$multiflight
@@ -322,9 +324,9 @@ observeEvent(input$rawupload,{
       survey_date<-input$sd
       yr<-substr(survey_date,1,2)
       
-      if (input$filepathway == 'Network'){
+      if (loc == 'Network'){
         path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
-      } else if (input$filepathway == 'Local'){
+      } else if (loc == 'Local'){
         path<-input$filepathinput
       }
       
@@ -1025,10 +1027,10 @@ observeEvent(input$rawupload,{
       survey_date<-input$sd
       yr<-substr(survey_date,1,2)
       
-      if (input$filepathway == 'Network'){
+      if (loc == 'Network'){
         path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
         enable("sas")
-      } else if (input$filepathway == 'Local'){
+      } else if (loc == 'Local'){
         path<-input$filepathinput
       }
  
@@ -1208,9 +1210,9 @@ observeEvent(input$rawupload,{
       ##SMA evaluation
       ########
       
-      if (input$filepathway == 'Network'){
+      if (loc == 'Network'){
         smapath<-"//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/SMA ind shp"
-      } else if (input$filepathway == 'Local'){
+      } else if (loc == 'Local'){
         smapath<-paste0(input$filepathinput,"SMA ind shp")
       }
       print(smapath)
@@ -1372,10 +1374,10 @@ observeEvent(input$rawupload,{
           filename = paste0(day1,month1,year1,"_NOAA_NERW_Aerial_Report.pdf"),
           content = function(file) {
             
-            if (input$filepathway == 'Network'){
+            if (loc == 'Network'){
               print(tempdir())
               tempReport<-file.path("./scripts/Report.Rmd")
-            } else if (input$filepathway == 'Local'){
+            } else if (loc == 'Local'){
               tempReport<-file.path(paste0(inputpath,"/Report.Rmd"))
             }
             
