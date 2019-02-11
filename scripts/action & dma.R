@@ -38,7 +38,7 @@
     }
   
   Canada<-!is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons")))
-  SPM<-!is.na(sp::over(eg.tr, as(spm.eez, "SpatialPolygons")))
+  SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
   aDMA<-!is.na(sp::over(eg.tr, as(activedma.tr, "SpatialPolygons")))
   sightID<-1:nrow(egsas)
   ######
