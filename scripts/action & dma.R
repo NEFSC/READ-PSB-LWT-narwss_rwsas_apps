@@ -386,9 +386,13 @@
     #SAS=SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD
     egsastab<-egsas %>% 
       dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+    ################
+    #output$egsastab<-renderTable({egsastab}, striped = TRUE, digits = 5)
     
-    output$egsastab<-renderTable({egsastab}, striped = TRUE, digits = 5)
-    
+    egsashot<-rhandsontable(egsastab)%>%
+      hot_col("DateTime", width = 150)
+    output$egsashot = renderRHandsontable({egsashot})
+    ################
     
     ##########
     ##if DMA:
@@ -577,7 +581,7 @@
     print("dma end")
     disable("dmaup")
     enable("dmareport")
-    print(egsastab)
+
     output$dmareport<-downloadHandler(
       filename = paste0(day1,month1,year1,"_PotentialDMA_Report.pdf"),
       content = function(file) {
