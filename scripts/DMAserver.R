@@ -45,6 +45,9 @@ observeEvent(input$eval,{
       egtable<-egtable%>%
         filter(Select == TRUE)%>%
         dplyr::select(-Select)
+
+      egtable$LAT<-as.numeric(egtable$LAT)
+      egtable$LON<-as.numeric(egtable$LON)
       ###############
       ##SMA evaluation
       ########
