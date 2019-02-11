@@ -3,7 +3,7 @@ disable("dmaup")
 disable("dmareport")
 disable("kml")
 
-    
+loc<-"Network"
     ###########
     
 observeEvent(input$eval,{
