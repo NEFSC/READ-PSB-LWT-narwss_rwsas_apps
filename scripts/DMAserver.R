@@ -50,7 +50,7 @@ observeEvent(input$eval,{
         output$error1<-renderText({""})
       
      
-      source('//net/mmi/Fieldwrk/Aerials/2018/Flights/edit_data/Shiny 2018/scripts/action & dma_2018.R', local = TRUE)$value
+      source('./scripts/action & dma.R', local = TRUE)$value
       
       
       #############
