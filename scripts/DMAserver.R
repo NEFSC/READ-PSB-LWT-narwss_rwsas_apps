@@ -48,7 +48,11 @@ observeEvent(input$eval,{
         #####
       ##egtable for SAS
         output$error1<-renderText({""})
-      
+        
+        month1<-month.abb[month(as.character(egsas$DateTime[1]))]
+        day1<-day(egsas$DateTime[1])
+        year1<-year(egsas$DateTime[1])
+        date1<-paste0(day1,' ',month1,' ',year1)
      
       source('./scripts/action & dma.R', local = TRUE)$value
       
