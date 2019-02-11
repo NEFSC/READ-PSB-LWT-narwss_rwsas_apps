@@ -15,12 +15,10 @@ observeEvent(input$rawupload,{
     
     if (input$filepathway == 'Network'){
       path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
-      loc<-"Network"
     } else if (input$filepathway == 'Local'){
       path<-input$filepathinput
-      loc<-"Local"
     }
-    
+
     mfyn<-input$multiflight
     rawed<-input$rawedits
     vis = 0:35
@@ -324,10 +322,12 @@ observeEvent(input$rawupload,{
       survey_date<-input$sd
       yr<-substr(survey_date,1,2)
       
-      if (loc == 'Network'){
+      if (input$filepathway == 'Network'){
         path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
-      } else if (loc == 'Local'){
+        loc<-"Network"
+      } else if (input$filepathway == 'Local'){
         path<-input$filepathinput
+        loc<-"Local"
       }
       
       write.csv(eff_sig2, paste0(path,survey_date,'/','effsig_',survey_date,'.csv'), na = '', row.names = FALSE)
