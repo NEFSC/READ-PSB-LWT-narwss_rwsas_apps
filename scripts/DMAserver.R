@@ -6,20 +6,45 @@ disable("kml")
 loc<-"Network"
     ###########
     
-observeEvent(input$eval,{
+observeEvent(input$query,{
   
       dmaevaldate<-input$sasdate    
       print(dmaevaldate)
       
       fish <- odbcConnect("fish", uid="RIGHTWHALESIGHT", pwd="m1les0ch5+??",believeNRows=FALSE)
       
-      datesql<-paste0("select SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,DUPLICATE,CATEGORY,ACTION,OBSERVER_COMMENTS,OBSERVER_PEOPLE,EDITOR_COMMENTS,REPORTER_PEOPLE,OBSERVER_PLATFORM,REPORTER_PLATFORM,RID,REVIEWED,ID,OBSERVER_ORG,OOD,REPORTER_ORG,WHALEALERT
+      datesql<-paste0("select SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
                 from rightwhalesight.sas
-                where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD');")
+                where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD')
+                      and LAT > 36.5;") 
       
       dailyeg<-sqlQuery(fish,datesql)
-      print(dailyeg)
       
+      dailyeg$SIGHTDATE<-ymd_hms(dailyeg$SIGHTDATE, tz = "America/New_York")
+      dailyeg$LAT<-sprintf("%.5f",round(dailyeg$LAT, digits = 5))
+      dailyeg$LON<-sprintf("%.5f",round(dailyeg$LON, digits = 5))
+      
+      dailyeg[] <- lapply(dailyeg, as.character)
+      
+      dailyeg<-dailyeg%>%
+        mutate(Select = TRUE)%>%
+        dplyr::select(Select, everything())
+      
+      dailyeghot<-rhandsontable(dailyeg)%>%
+        hot_col("SIGHTDATE", width = 150)
+        
+      output$dailyeghot = renderRHandsontable({dailyeghot})
+})
+      
+observeEvent(input$eval,{
+      
+      dmaevaldate<-input$sasdate
+      
+      egtable = hot_to_r(input$dailyeghot)
+
+      egtable<-egtable%>%
+        filter(Select == TRUE)%>%
+        dplyr::select(-Select)
       ###############
       ##SMA evaluation
       ########
@@ -27,7 +52,7 @@ observeEvent(input$eval,{
       MODA<-unique(format(dmaevaldate, "%m-%d"))
       MODAYR<-unique(dmaevaldate, "%m-%d")
       ##egtable & egsas kept seperate like this for now, need to investigate more about how these tables are used between dma and narwss apps 11/20/2018 lmc
-      egtable<-dailyeg%>%
+      egtable<-egtable%>%
         dplyr::rename("DateTime" = "SIGHTDATE","LATITUDE" = "LAT", "LONGITUDE" = "LON", "GROUP_SIZE" = "GROUPSIZE", "ID_RELIABILITY" = "SPECIES_CERT")
       
       egsas<-egtable %>% 
@@ -43,7 +68,7 @@ observeEvent(input$eval,{
         ##if no Eg:
         output$error1<-renderText({"No right whales were reported for this day"})
         }
-      else {
+    else {
       
         #####
       ##egtable for SAS
@@ -60,7 +85,7 @@ observeEvent(input$eval,{
       #############
       
       }
-})  #7
-      
+})  #24
+    
 
   
