@@ -1,6 +1,8 @@
 
 disable("dmaup")
+disable("dmareport")
 disable("kml")
+
     
     ###########
     
