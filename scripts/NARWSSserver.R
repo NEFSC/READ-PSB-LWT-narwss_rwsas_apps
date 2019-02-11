@@ -919,35 +919,8 @@ observeEvent(input$rawupload,{
       rf$DateTime<-format(rf$DateTime, tz = "America/New_York")
       rf$LATITUDE<-sprintf("%.5f",round(rf$LATITUDE, digits = 5))
       rf$LONGITUDE<-sprintf("%.5f",round(rf$LONGITUDE, digits = 5))
-      rf$LATITUDE<-as.character(rf$LATITUDE)
-      rf$LONGITUDE<-as.character(rf$LONGITUDE)
-      rf$DateTime<-as.character.Date(rf$DateTime)
-      rf$ALTITUDE<-as.character(rf$ALTITUDE)
-      rf$VISIBILTY<-as.character(rf$VISIBILTY)
-      rf$BEAUFORT<-as.character(rf$BEAUFORT)
-      rf$CLOUD_CODE<-as.character(rf$CLOUD_CODE)
-      rf$GLARE_L<-as.character(rf$GLARE_L)
-      rf$GLARE_R<-as.character(rf$GLARE_R)
-      rf$EFFORT_COMMENTS<-as.character(rf$EFFORT_COMMENTS)
-      rf$SPCODE<-as.character(rf$SPCODE)
-      rf$SIGHTING_NUMBER<-as.character(rf$SIGHTING_NUMBER)
-      rf$GROUP_SIZE<-as.character(rf$GROUP_SIZE)
-      rf$CALVES<-as.character(rf$CALVES)
-      rf$ACTUAL_HEADING<-as.character(rf$ACTUAL_HEADING)
-      rf$OBSERVER<-as.character(rf$OBSERVER)
-      rf$OBS_POSITION<-as.character(rf$OBS_POSITION)
-      rf$ANGLE<-as.character(rf$ANGLE)
-      rf$CUE<-as.character(rf$CUE)
-      rf$B1_FINAL_CODE<-as.character(rf$B1_FINAL_CODE)
-      rf$B2_FINAL_CODE<-as.character(rf$B2_FINAL_CODE)
-      rf$B3_FINAL_CODE<-as.character(rf$B3_FINAL_CODE)
-      rf$B4_FINAL_CODE<-as.character(rf$B4_FINAL_CODE)
-      rf$B5_FINAL_CODE<-as.character(rf$B5_FINAL_CODE)
-      rf$PHOTOS<-as.character(rf$PHOTOS)
-      rf$SIGHTING_COMMENTS<-as.character(rf$SIGHTING_COMMENTS)
-      rf$EDIT1<-as.character(rf$EDIT1)
-      rf$EDIT2<-as.character(rf$EDIT2)
-      rf$EDIT3<-as.character(rf$EDIT3)
+      
+      rf[] <- lapply(rf, as.character)
       
       #####
       
@@ -1367,7 +1340,7 @@ observeEvent(input$rawupload,{
 
       
       htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
-      webshot::webshot("temp.html", file = paste0(date1,"_map.png"))#,cliprect = bounds)
+      webshot::webshot("temp.html", file = paste0(date1,"_map.png"))
      
         
         output$report<-downloadHandler(
