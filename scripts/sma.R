@@ -46,11 +46,9 @@ maso<-readOGR(smapath, layer = "MA_SMA_south_po")
 ##calving grounds 15 Nov - 15 April
 seshore<-readOGR(smapath, layer = "SE_SMA2shore2_po")
 ##canada
-eez<-readOGR(smapath, layer = "EEZ_IHO_union_v2")
-canada.eez<-subset(eez, eez$Country == "Canada")
-spm.eez<-subset(eez, eez$Country == "Saint Pierre and Miquelon")
-##the below subsets the canadian waters shapefile into only the part of the Atlantic we are concerned about
-ecanada<-subset(canada.eez,canada.eez$Latitude < 55 & canada.eez$Longitude < -46 & canada.eez$Longitude > -75)
+ecanada<-readOGR(smapath, layer = "ecanada")
+##france
+spm<-readOGR(smapath, layer = "spm")
 
 ##sma projected properly
 ccb.tr<-spTransform(ccb, CRS.new)
@@ -61,7 +59,7 @@ mano.tr<-spTransform(mano, CRS.new)
 maso.tr<-spTransform(maso, CRS.new)
 seshore.tr<-spTransform(seshore, CRS.new)
 ecanada<-spTransform(ecanada, CRS.new)
-spm.eez<-spTransform(spm.eez, CRS.new)
+spm<-spTransform(spm, CRS.new)
 
 ##no SEUS
 ##01Jan - 29Feb CCB, MANO, BI
