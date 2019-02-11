@@ -392,7 +392,6 @@
     
     ##########
     ##if DMA:
-    
     CRS.gearth <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
     
     dmabounds_kml<-dmabounds
@@ -485,7 +484,7 @@
     enable("kml")
     print("dma button pressed")
     
-    dmareportmap<-fitBounds(sasdma,min(final$LONGITUDE), min(final$LATITUDE), max(final$LONGITUDE), max(final$LATITUDE))
+    dmareportmap<-fitBounds(sasdma,min(dmacoord$`Lon (Decimal Degrees)`), min(dmacoord$`Lat (Decimal Degrees)`), max(dmacoord$`Lon (Decimal Degrees)`), max(dmacoord$`Lat (Decimal Degrees)`))
     htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
     webshot::webshot("temp.html", file = paste0(date1,"_dmamap.png"))#,cliprect = bounds)
     ##password and user name removed for sharing
@@ -527,7 +526,7 @@
     exp <- exp + days(16)
     ###
     
-    if (exists("ID", where = df)) {print("TRUE")}
+    #if (exists("ID", where = df)) {print("TRUE")}
     if (exists("OBSERVER_ORG", where = triggersig)){
       trigorg<-triggersig%>%
         dplyr::select(OBSERVER_ORG)
@@ -578,7 +577,7 @@
     print("dma end")
     disable("dmaup")
     enable("dmareport")
-    
+    print(egsastab)
     output$dmareport<-downloadHandler(
       filename = paste0(day1,month1,year1,"_PotentialDMA_Report.pdf"),
       content = function(file) {
@@ -588,8 +587,10 @@
           tempReport<-file.path("./scripts/DMAReport.Rmd")
         } else if (input$filepathway == 'Local'){
           tempReport<-file.path(paste0(inputpath,"/DMAReport.Rmd"))
+        } else {
+          tempReport<-file.path("./scripts/DMAReport.Rmd")
         }
-        
+        print(tempReport)
         file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
         params<-list(SIGHTDATE_sql = SIGHTDATE_sql, dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmacoord = dmacoord)
         
