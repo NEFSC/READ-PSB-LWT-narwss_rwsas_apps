@@ -3,10 +3,13 @@ fluidPage(
   titlePanel("DMA eval"),
   splitLayout(radioButtons("where", "Survey Area", choices = c("US", "Canada"), selected = "US", inline = FALSE),
               dateInput("sasdate", "Date:")),
-                           actionButton("eval","Evaluate"),
+                           actionButton("query","Query Database"),
                            textOutput("error1"),
                            textOutput("error3"),
-                           tableOutput("egsastab"), ##egsas or egsastab?
+                           #tableOutput("egsastab"), ##egsas or egsastab?
+                           rHandsontableOutput("dailyeghot"),
+                           actionButton("eval","Evaluate"),
+                           rHandsontableOutput("egsashot"),
                            leafletOutput("sasdma"),    
                            uiOutput("dmaoptions"),     
                            tableOutput("dmacoord"),    
