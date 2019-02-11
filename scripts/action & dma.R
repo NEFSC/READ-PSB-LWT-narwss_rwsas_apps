@@ -582,14 +582,13 @@
       filename = paste0(day1,month1,year1,"_PotentialDMA_Report.pdf"),
       content = function(file) {
         
-        if (input$filepathway == 'Network'){
+        if (loc == 'Network'){
           print(tempdir())
           tempReport<-file.path("./scripts/DMAReport.Rmd")
-        } else if (input$filepathway == 'Local'){
+        } else if (loc == 'Local'){
           tempReport<-file.path(paste0(inputpath,"/DMAReport.Rmd"))
-        } else {
-          tempReport<-file.path("./scripts/DMAReport.Rmd")
-        }
+        } 
+        
         print(tempReport)
         file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
         params<-list(SIGHTDATE_sql = SIGHTDATE_sql, dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmacoord = dmacoord)
