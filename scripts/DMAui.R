@@ -6,10 +6,9 @@ fluidPage(
                            actionButton("query","Query Database"),
                            textOutput("error1"),
                            textOutput("error3"),
-                           #tableOutput("egsastab"), ##egsas or egsastab?
                            rHandsontableOutput("dailyeghot"),
                            actionButton("eval","Evaluate"),
-                           rHandsontableOutput("egsashot"),
+                           tableOutput("egsastab"), ##egsas or egsastab?
                            leafletOutput("sasdma"),    
                            uiOutput("dmaoptions"),     
                            tableOutput("dmacoord"),    
