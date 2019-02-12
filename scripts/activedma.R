@@ -29,7 +29,7 @@ if (nrow(dmanamesquery) == 0){
   dmanamesquery$EXPDATE<-as.Date(dmanamesquery$EXPDATE)
   ##this is used for extension criteria
   ##will need to figure out how to evaluate over a list
-  expdate<-dmanamesquery$EXPDATE
+  expext<-dmanamesquery$EXPDATE
   ##this is used for report sentence
   dmanamesquery$EXPDATE<-format(dmanamesquery$EXPDATE, format = "%d %B %Y")
   
