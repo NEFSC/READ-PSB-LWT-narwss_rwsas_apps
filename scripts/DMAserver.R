@@ -30,8 +30,10 @@ observeEvent(input$query,{
         mutate(Select = TRUE)%>%
         dplyr::select(Select, everything())
       
-      dailyeghot<-rhandsontable(dailyeg)%>%
-        hot_col("SIGHTDATE", width = 150)
+      dailyeghot<-rhandsontable(dailyeg,readOnly = TRUE)%>%
+        hot_col("SIGHTDATE", width = 150)%>%
+        hot_col("Select", readOnly = FALSE)
+        
         
       output$dailyeghot = renderRHandsontable({dailyeghot})
 
