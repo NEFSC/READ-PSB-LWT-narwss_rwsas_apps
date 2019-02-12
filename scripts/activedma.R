@@ -4,7 +4,7 @@
 
 cnxn <- odbcConnect(server, uid=sasuid, pwd=saspswd,believeNRows=FALSE)
 
-dmanamessql<-paste0("select rightwhalesight.dmainfo.name, trunc(rightwhalesight.dmainfo.expdate) as expdate
+dmanamessql<-paste0("select rightwhalesight.dmainfo.name, trunc(rightwhalesight.dmainfo.expdate) as expdate, ID
                   from rightwhalesight.dmainfo
                   where to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') < EXPDATE
                     and to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') > STARTDATE;")
@@ -29,7 +29,7 @@ if (nrow(dmanamesquery) == 0){
   dmanamesquery$EXPDATE<-as.Date(dmanamesquery$EXPDATE)
   ##this is used for extension criteria
   ##will need to figure out how to evaluate over a list
-  expext<-dmanamesquery$EXPDATE
+  expext<-dmanamesquery
   ##this is used for report sentence
   dmanamesquery$EXPDATE<-format(dmanamesquery$EXPDATE, format = "%d %B %Y")
   
@@ -61,7 +61,6 @@ DMADF<-rbind(dmaquery, vector5)
 DMADF<-DMADF%>%
   arrange(ID, VERTEX)%>%
   dplyr::select(ID,LON,LAT,-VERTEX)
-  
 
 idDMA<-split(DMADF, DMADF$ID)
 idDMA<-lapply(idDMA, function(x) { x["ID"] <- NULL; x })
@@ -77,4 +76,3 @@ activedma.sp<-activedma
 proj4string(activedma.sp)<-CRS.latlon
 ##change projection
 activedma.tr<-spTransform(activedma.sp, CRS.new)
-
