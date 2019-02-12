@@ -1,8 +1,21 @@
+##########################################
+## App file for NARWSS & RWSAS DMA APPs ##
+## Leah Crowe 2019                      ##
+##########################################
+
+
+#############
+##  Global ##
+#############
 
 source('./scripts/global_libraries.R', local = TRUE)$value
 
+####################
+## User interface ##
+####################
+
 ui <- dashboardPage(
-  dashboardHeader(title = "Right Whale Shiny Dashboard"),
+  dashboardHeader(title = "NERW Shiny"),
   ## Sidebar content
   dashboardSidebar(
     sidebarMenu(
@@ -11,16 +24,17 @@ ui <- dashboardPage(
     )
   ),
   ## Body content
-  dashboardBody(
+  dashboardBody(tagList(img(src = 'noaanefsclogo.PNG'),br()),
+                tags$head(tags$link(rel = "icon", type = "image/png", href = "favicon.png")),
     tabItems(
       # First tab content
       tabItem(tabName = "NARWSS",
-              source('./scripts/NARWSSui.R', local = TRUE)$value
+              source('./scripts/NARWSSapp.R', local = TRUE)$value
       ),
       
       # Second tab content
-      tabItem(tabName = "Seabird",
-              source('./scripts/DMAui.R', local = TRUE)$value
+      tabItem(tabName = "RWSAS",
+              source('./scripts/DMAapp.R', local = TRUE)$value
       )
     )
   )
@@ -29,8 +43,8 @@ ui <- dashboardPage(
 server = function(input, output, session) {
   
 
-  source('./scripts/NARWSSserver.R', local = TRUE)$value
-  source('./scripts/DMAserver.R', local = TRUE)$value
+  #source('./scripts/NARWSSserver.R', local = TRUE)$value
+  #source('./scripts/DMAserver.R', local = TRUE)$value
 }
 
 shinyApp(ui, server)
