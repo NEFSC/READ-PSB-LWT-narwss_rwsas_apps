@@ -27,6 +27,10 @@ if (nrow(dmanamesquery) == 0){
   
   ##DMA names and expiration
   dmanamesquery$EXPDATE<-as.Date(dmanamesquery$EXPDATE)
+  ##this is used for extension criteria
+  ##will need to figure out how to evaluate over a list
+  expdate<-dmanamesquery$EXPDATE
+  ##this is used for report sentence
   dmanamesquery$EXPDATE<-format(dmanamesquery$EXPDATE, format = "%d %B %Y")
   
   dmanamesdistinct<-dmanamesquery%>%
@@ -34,7 +38,7 @@ if (nrow(dmanamesquery) == 0){
     arrange(EXPDATE)%>%
     top_n(n = 1, EXPDATE)%>%
     mutate(sentence = paste(NAME, "expires on", EXPDATE))
-  
+
   dmalist<-as.list(dmanamesdistinct$sentence)
   dmanamesexp<-do.call("paste", c(dmalist, sep = ", "))
 
@@ -47,8 +51,7 @@ dmasql<-paste0("select rightwhalesight.dmacoords.ID, vertex, lat, lon
 
 
 dmaquery<-sqlQuery(cnxn,dmasql)
-print(dmaquery)
-print(str(dmaquery))
+
 vector5<-dmaquery%>%
   filter(VERTEX == 1)%>%
   mutate(VERTEX=replace(VERTEX, VERTEX==1, 5))
