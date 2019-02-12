@@ -20,6 +20,13 @@ observeEvent(input$query,{
       
       dailyeg<-sqlQuery(fish,datesql)
       
+      if(nrow(dailyeg) == 0){
+        ##if no Eg:
+        output$error1<-renderText({"No right whales were reported for this day"})
+        disable("eval")
+      }
+      else {
+      enable("eval")
       dailyeg$SIGHTDATE<-ymd_hms(dailyeg$SIGHTDATE, tz = "America/New_York")
       dailyeg$LAT<-sprintf("%.5f",round(dailyeg$LAT, digits = 5))
       dailyeg$LON<-sprintf("%.5f",round(dailyeg$LON, digits = 5))
@@ -34,9 +41,8 @@ observeEvent(input$query,{
         hot_col("SIGHTDATE", width = 150)%>%
         hot_col("Select", readOnly = FALSE)
         
-        
       output$dailyeghot = renderRHandsontable({dailyeghot})
-
+}
 })
       
 observeEvent(input$eval,{
@@ -70,12 +76,6 @@ observeEvent(input$eval,{
       source('./scripts/sma.R', local = TRUE)$value
       source('./scripts/activedma.R', local = TRUE)$value
       
-      if(nrow(egtable) == 0){
-        ##if no Eg:
-        output$error1<-renderText({"No right whales were reported for this day"})
-        }
-    else {
-      
         #####
       ##egtable for SAS
         output$error1<-renderText({""})
@@ -90,7 +90,7 @@ observeEvent(input$eval,{
       
       #############
       
-      }
+      
 })  #24
     
 
