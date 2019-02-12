@@ -1224,15 +1224,8 @@ observeEvent(input$rawupload,{
           ##eg sightings for SAS ##
           #########################
         
-          ##the below is if we are using fin ests for SAS and DMA eval
-          #egsas<-egtable%>%
-           # filter(grepl('fin est', egtable$SIGHTING_COMMENTS))%>%
-            #dplyr::select(DateTime, GROUP_SIZE, CALVES, LATITUDE, LONGITUDE, ID_RELIABILITY, Behavior)
-          #print(egsas)
-          ##the below is if we are using the aps for SAS and DMA eval
           egsas<-egrep%>%
             dplyr::select(DateTime, GROUP_SIZE, CALVES, LATITUDE, LONGITUDE, ID_RELIABILITY, Behavior)
-          #print(egsas)
           
           MOMCALF<-NA
           FEEDING<-NA
