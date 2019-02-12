@@ -1184,7 +1184,7 @@ observeEvent(input$rawupload,{
       ########
       
       if (loc == 'Network'){
-        smapath<-"//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/SMA ind shp"
+        smapath<-"./SMA ind shp"
       } else if (loc == 'Local'){
         smapath<-paste0(input$filepathinput,"SMA ind shp")
       }
