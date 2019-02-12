@@ -1,33 +1,36 @@
-#######################################################
-## R Shiny Application for DMA evaluation            ##
-##   Written By: Leah Crowe 2018                     ##
-#######################################################
 
-#############
-##  Global ##
-#############
+source('./scripts/global_libraries.R', local = TRUE)$value
 
-	source('./scripts/DMAglobal.R', local = TRUE)$value1
+ui <- dashboardPage(
+  dashboardHeader(title = "Right Whale Shiny Dashboard"),
+  ## Sidebar content
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Aerial Survey Processing App", tabName = "NARWSS"),
+      menuItem("RWSAS DMA Evaluation", tabName = "RWSAS")
+    )
+  ),
+  ## Body content
+  dashboardBody(
+    tabItems(
+      # First tab content
+      tabItem(tabName = "NARWSS",
+              source('./scripts/NARWSSui.R', local = TRUE)$value
+      ),
+      
+      # Second tab content
+      tabItem(tabName = "Seabird",
+              source('./scripts/DMAui.R', local = TRUE)$value
+      )
+    )
+  )
+)
 
-####################
-## User interface ##
-####################
+server = function(input, output, session) {
+  
 
-ui = source('./scripts/DMAui.R', local = TRUE)$value
-############
-## Server ##
-############
+  source('./scripts/NARWSSserver.R', local = TRUE)$value
+  source('./scripts/DMAserver.R', local = TRUE)$value
+}
 
-	## Define server logic 
-	server = function(input, output, session) {
-	  
-	  ## rwData
-	  source('./scripts/DMAserver.R', local = TRUE)$value
-		
-	}
-
-#########################
-## Create Shiny object ##
-#########################
-
-	shinyApp(ui = ui, server = server)
+shinyApp(ui, server)
