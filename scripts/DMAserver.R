@@ -34,6 +34,7 @@ observeEvent(input$query,{
         hot_col("SIGHTDATE", width = 150)
         
       output$dailyeghot = renderRHandsontable({dailyeghot})
+
 })
       
 observeEvent(input$eval,{
@@ -51,7 +52,7 @@ observeEvent(input$eval,{
       ###############
       ##SMA evaluation
       ########
-      smapath<-"//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/SMA ind shp"
+      smapath<-"./SMA ind shp"
       MODA<-unique(format(dmaevaldate, "%m-%d"))
       MODAYR<-unique(dmaevaldate, "%m-%d")
       ##egtable & egsas kept seperate like this for now, need to investigate more about how these tables are used between dma and narwss apps 11/20/2018 lmc
