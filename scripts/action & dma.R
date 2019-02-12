@@ -39,16 +39,29 @@
   
   Canada<-!is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons")))
   SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
-  aDMA<-!is.na(sp::over(eg.tr, as(activedma.tr, "SpatialPolygons")))
+  aDMA<-over(eg.tr, activedma.tr)
+  aDMA_TF<-!is.na(over(eg.tr, as(activedma.tr, "SpatialPolygons")))
   sightID<-1:nrow(egsas)
   ######
-  egsas<-cbind(egsas,inoutsma,Canada,SPM,aDMA,sightID)
-  
+  egsas<-cbind(egsas,inoutsma,Canada,SPM,aDMA,aDMA_TF,sightID)
+  print(head(egsas))
+  ##extension date
+  expext<-expext%>%
+    arrange(ID)%>%
+    mutate(extdate = EXPDATE - days(8),
+           polyid = 1:n())
+  print(expext)
+  egsas<-left_join(egsas,expext,by=c("aDMA"="polyid"))
+  print(egsas)
   ACTION_NEW<-NULL
   ## In US database, Canada/SPM == 6.
+  ## need to figure out how to evaluate over a list of DMAs for extension
+  ## 12/31 is a good proxy day for this
   for (i in 1:nrow(egsas))
-    if(egsas$aDMA[i] == TRUE){
-      egsas$ACTION_NEW[i] = 2 
+    if(egsas$aDMA_TF[i] == TRUE & MODAYR > egsas$extdate[i]){
+      egsas$ACTION_NEW[i] = 5 
+    } else if(egsas$aDMA[i] == TRUE){
+        egsas$ACTION_NEW[i] = 2   
     } else if (egsas$inoutsma[i] == TRUE){
       egsas$ACTION_NEW[i] = 2
     } else if (egsas$Canada[i] == TRUE){
@@ -68,8 +81,8 @@
   #spatial analysis
   ## 1 nautical mile is 1852 meters
   m_nm<-1/1852
-  ## eg density is 4.16 whales/100nm^2 (Clapham & Pace 2001)
-  egden<-0.0416
+  ## eg density is 4 whales/100nm^2 (50 CFR Part 224)
+  egden<-0.04
   actionna<-egsas %>% filter(is.na(egsas$ACTION_NEW)) %>% dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID")
   ##distance between points matrix -- compares right whale sightings positions to each other
   combo<-reshape::expand.grid.df(actionna,actionna)
@@ -82,7 +95,7 @@
   setDT(combo)[ ,dist_nm:=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
                                                            matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
                                                            a=6378137, f=1/298.257222101)*m_nm]
-  #print(combo)
+  print(combo)
   #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
   #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
   #I don't remember why I named this dmacand -- maybe dma combo and... then some?
