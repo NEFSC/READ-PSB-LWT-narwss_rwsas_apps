@@ -17,5 +17,3 @@ fluidPage(
                            downloadButton("kml", "Download KML")
                            )
                            
-                  
-    
