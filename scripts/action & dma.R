@@ -387,14 +387,7 @@
     egsastab<-egsas %>% 
       dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
     ################
-    #output$egsastab<-renderTable({egsastab}, striped = TRUE, digits = 5)
-    
-    egsashot<-rhandsontable(egsastab)%>%
-      hot_col("DateTime", width = 150)
-    output$egsashot = renderRHandsontable({egsashot})
-    ################
-    
-    ##########
+
     ##if DMA:
     CRS.gearth <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
     
