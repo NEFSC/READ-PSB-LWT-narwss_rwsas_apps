@@ -82,7 +82,7 @@
   ## 1 nautical mile is 1852 meters
   m_nm<-1/1852
   ## eg density is 4 whales/100nm^2 (50 CFR Part 224)
-  egden<-0.04
+  egden<-0.0416
   actionna<-egsas %>% filter(is.na(egsas$ACTION_NEW)) %>% dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID")
   ##distance between points matrix -- compares right whale sightings positions to each other
   combo<-reshape::expand.grid.df(actionna,actionna)
