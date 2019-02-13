@@ -26,6 +26,7 @@ observeEvent(input$query,{
         disable("eval")
       }
       else {
+      output$error1<-renderText({""})  
       enable("eval")
       dailyeg$SIGHTDATE<-ymd_hms(dailyeg$SIGHTDATE, tz = "America/New_York")
       dailyeg$LAT<-sprintf("%.5f",round(dailyeg$LAT, digits = 5))
