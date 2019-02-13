@@ -1195,7 +1195,8 @@ observeEvent(input$rawupload,{
       ########
       
       ##month day for sma evaluation
-      MODAYR<-final[1]%>%dplyr::select(DateTime)
+      MODAYR<-final$DateTime[1]
+      MODAYR<-as.Date(MODAYR)
       print(MODAYR)
     
       MODA<-final%>%distinct(as.Date(DateTime))
