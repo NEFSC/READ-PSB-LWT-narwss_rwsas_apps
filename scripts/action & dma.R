@@ -54,13 +54,24 @@
   egsas<-left_join(egsas,expext,by=c("aDMA"="polyid"))
   print(egsas)
   ACTION_NEW<-NULL
+  
+  for (i in 1:nrow(egsas))
+    if (is.na(egsas$aDMA[i])){
+      egsas$extdate[i] = MODAYR
+      egsas$aDMA_TF[i] = FALSE
+    } else {
+      egsas$extdate[i] = egsas$extdate[i]
+    }
+  print(egsas)
+  print(str(egsas))
   ## In US database, Canada/SPM == 6.
   ## need to figure out how to evaluate over a list of DMAs for extension
   ## 12/31 is a good proxy day for this
+  
   for (i in 1:nrow(egsas))
-    if(egsas$aDMA_TF[i] == TRUE & MODAYR > egsas$extdate[i]){
+    if (egsas$aDMA_TF[i] == TRUE & MODAYR > egsas$extdate[i]){
       egsas$ACTION_NEW[i] = 5 
-    } else if(egsas$aDMA[i] == TRUE){
+    } else if(egsas$aDMA_TF[i] == TRUE){
         egsas$ACTION_NEW[i] = 2   
     } else if (egsas$inoutsma[i] == TRUE){
       egsas$ACTION_NEW[i] = 2
