@@ -44,16 +44,14 @@
   sightID<-1:nrow(egsas)
   ######
   egsas<-cbind(egsas,inoutsma,Canada,SPM,aDMA,aDMA_TF,sightID)
-  print(head(egsas))
   ##extension date
+  ##this code will put dmas in the correct order to assign them a polyid what matches with those that will be assigned in egsas
   expext<-expext%>%
     arrange(ID)%>%
     mutate(extdate = EXPDATE - days(8),
            polyid = 1:n())
-  print(expext)
+
   egsas<-left_join(egsas,expext,by=c("aDMA"="polyid"))
-  print(egsas)
-  ACTION_NEW<-NULL
   
   for (i in 1:nrow(egsas))
     if (is.na(egsas$aDMA[i])){
@@ -62,12 +60,10 @@
     } else {
       egsas$extdate[i] = egsas$extdate[i]
     }
-  print(egsas)
-  print(str(egsas))
+
   ## In US database, Canada/SPM == 6.
-  ## need to figure out how to evaluate over a list of DMAs for extension
-  ## 12/31 is a good proxy day for this
-  
+
+  ACTION_NEW<-NULL
   for (i in 1:nrow(egsas))
     if (egsas$aDMA_TF[i] == TRUE & MODAYR > egsas$extdate[i]){
       egsas$ACTION_NEW[i] = 5 
