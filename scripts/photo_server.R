@@ -218,7 +218,7 @@ output$contents <- renderTable({
   
   subed<-subraw%>%
     filter(subraw$Photographer != '')%>%
-    select(-date_tz,-BOF,-JL,-MB,-GSC,-GOM,-GMB,-RB,-ESS,-GB,-SNE,-CCB,-GSL)
+    dplyr::select(-date_tz,-BOF,-JL,-MB,-GSC,-GOM,-GMB,-RB,-ESS,-GB,-SNE,-CCB,-GSL)
   
   subed$Obs = 'NEFSC/T'
   subed$Platform = 'A'
