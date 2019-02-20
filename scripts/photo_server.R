@@ -1,7 +1,7 @@
 
 
 
-output$contents <- renderTable({
+output$finalmess <- renderText({
   # input$file1 will be NULL initially. After the user selects
   # and uploads a file, it will be a data frame with 'name',
   # 'size', 'type', and 'datapath' columns. The 'datapath'
@@ -13,11 +13,11 @@ output$contents <- renderTable({
 
   
   if (is.null(inFile)){
-    return(NULL)
-  
+    return("")
+   
   }else{
     
-  withProgress(message = 'Finding whale positions from timestamp...', value = 0.1, {
+  
     
   subraw<-read.csv(inFile$datapath, header = input$header, stringsAsFactors = FALSE)
   print(head (subraw))
@@ -28,7 +28,8 @@ output$contents <- renderTable({
                      subraw)
   
   subraw$date_tz<-dmy_hms(subraw$date_tz)
-  
+
+  withProgress(message = 'Finding whale positions from timestamp...', min = 0, max = nrow(subraw), {
     for(i in 1:nrow(subraw))
     if ( is.na(subraw$Latitude[i]) && subraw$Local.Time[i] != '' && !is.na(subraw$Year[i]) && subraw$Month[i] != 'NA' && subraw$Day[i] != 'NA' ){
     
@@ -56,7 +57,6 @@ output$contents <- renderTable({
           date_tz<- as.POSIXlt(date_time, tz = "America/New_York", format = "%Y-%m-%d %H:%M:%OS")
         }
     
-    
     print(date_tz)
     subraw$date_tz[i]<-date_tz
     
@@ -66,9 +66,10 @@ output$contents <- renderTable({
     setDT(row)[,  Longitude := setDT(gps)[row, Longitude, on = "date_tz", roll = "nearest"]]
     
     subraw[i,]<-row
-    incProgress(0.5)
+    incProgress(amount = 1)
+    
     }
-  
+  })
   CRS.latlon<-CRS("+init=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_defs +towgs84=0,0,0")
   CRS.new<-CRS("+proj=utm +zone=19 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
   
@@ -130,6 +131,8 @@ output$contents <- renderTable({
   ccbpoly<-Polygons(list(Polygon(ccb, hole=as.logical(NA))),ID =11)
   gslpoly<-Polygons(list(Polygon(gsl, hole=as.logical(NA))),ID =12)
   
+  
+  
   bofpoly<-SpatialPolygons(list(bofpoly))
   jlpoly<-SpatialPolygons(list(jlpoly))
   mbpoly<-SpatialPolygons(list(mbpoly))
@@ -142,6 +145,8 @@ output$contents <- renderTable({
   snepoly<-SpatialPolygons(list(snepoly))
   ccbpoly<-SpatialPolygons(list(ccbpoly))
   gslpoly<-SpatialPolygons(list(gslpoly))
+  
+  allpoly<-rbind(bofpoly,jlpoly,mbpoly,gscpoly,gompoly,gmbpoly,rbpoly,esspoly,gbpoly,snepoly,ccbpoly,gslpoly)
   
   proj4string(bofpoly)<-CRS.latlon
   proj4string(jlpoly)<-CRS.latlon
@@ -237,14 +242,28 @@ output$contents <- renderTable({
       subed$Notes[i] = paste0(subed$Notes[i],". Permit Number: ",pernum)
     }
   
+  subed$Latitude<-as.numeric(subed$Latitude)
+  subed$Longitude<-as.numeric(subed$Longitude)
   
   subed<-subed%>%
     dplyr::rename("Field EGNO" = Field.EGNO, "EG Letter" = EG.Letter, "Local Time" = Local.Time, "Image Type" = Image.Type, "Assoc. Type" = Assoc..Type, "First Edit" = First.Edit, "Second Edit" = Second.Edit, "Final Edit" = Final.Edit)
-
+  
   write.csv(subed, paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_.csv'), na = '', row.names = FALSE)
-  output$finalmess<-renderText({HTML(paste("The photo submission spreadsheet can be found in the same location as the csv uploaded.", '<br/>',"This final is called NEFSC Sighting Data Table_Twin Otter_.csv"
-    ))})
-  })#progress
+
+  output$finalmess<-renderText({"The photo submission spreadsheet can be found in the same location as the csv uploaded and is named 'NEFSC Sighting Data Table_Twin Otter_.csv'"})
+  
+  
+    finalleaf<-leaflet(data = subed, options = leafletOptions(zoomControl = TRUE)) %>% 
+      addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
+      addPolygons(data = allpoly, weight = 2, color = "blue") %>%
+      addCircleMarkers(lng = ~subed$Longitude, lat = ~subed$Latitude, color = "black", stroke = FALSE, fillOpacity = 2, radius = 5, popup = paste0(subed$Year,"-",subed$Month,"-",subed$Day,"-",subed$`EG Letter`)) %>%
+      #addLegend(colors = c("blue"), labels = c("regions"), opacity = 0.3)%>%
+      addWMSTiles(
+        "https://gis.ngdc.noaa.gov/arcgis/services/graticule/MapServer/WMSServer/",
+        layers = c("1-degree grid", "5-degree grid"),
+        options = WMSTileOptions(format = "image/png8", transparent = TRUE),
+        attribution = NULL)  
+    output$finalleaf = renderLeaflet({print(finalleaf)})
   }#else
 })
 
