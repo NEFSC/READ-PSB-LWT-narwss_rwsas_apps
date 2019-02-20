@@ -16,6 +16,9 @@ output$contents <- renderTable({
     return(NULL)
   
   }else{
+    
+  withProgress(message = 'Finding whale positions from timestamp...', value = 100, {
+    
   subraw<-read.csv(inFile$datapath, header = input$header, stringsAsFactors = FALSE)
   print(head (subraw))
   subraw$Month<-sprintf("%02d",subraw$Month)
@@ -26,7 +29,7 @@ output$contents <- renderTable({
   
   subraw$date_tz<-dmy_hms(subraw$date_tz)
   
-  for(i in 1:nrow(subraw))
+    for(i in 1:nrow(subraw))
     if ( is.na(subraw$Latitude[i]) && subraw$Local.Time[i] != '' && !is.na(subraw$Year[i]) && subraw$Month[i] != 'NA' && subraw$Day[i] != 'NA' ){
     
     yr<-substr(subraw$Year[i],3,4)
@@ -36,22 +39,22 @@ output$contents <- renderTable({
     names(gps)<-c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE','T1')
     gps$DateTime<-dmy_hms(gps$DateTime, tz = "GMT")
     
-    if (input$tzone == 'Atlantic Time'){
-    gps$date_tz<-with_tz(gps$DateTime, tzone = "America/New_York")
-    } else if (input$tzone == 'Eastern Time'){
-      gps$date_tz<-with_tz(gps$DateTime, tzone = "Canada/Atlantic")
-      }
+        if (input$tzone == 'Atlantic Time'){
+          gps$date_tz<-with_tz(gps$DateTime, tzone = "America/New_York")
+        } else if (input$tzone == 'Eastern Time'){
+          gps$date_tz<-with_tz(gps$DateTime, tzone = "Canada/Atlantic")
+        }
     
     gps$date_tz<-as.POSIXct(gps$date_tz, format = "%Y-%m-%d %H:%M:%OS")
 
     newdate<-paste0(subraw$Year[i],'-',subraw$Month[i],'-',subraw$Day[i])
     date_time <- (paste(newdate, subraw$Local.Time[i]))
     
-    if (input$tzone == 'Atlantic Time'){
-    date_tz<- as.POSIXlt(date_time, tz = "Canada/Atlantic", format = "%Y-%m-%d %H:%M:%OS")
-    } else if (input$tzone == 'Eastern Time'){
-      date_tz<- as.POSIXlt(date_time, tz = "America/New_York", format = "%Y-%m-%d %H:%M:%OS")
-    }
+        if (input$tzone == 'Atlantic Time'){
+          date_tz<- as.POSIXlt(date_time, tz = "Canada/Atlantic", format = "%Y-%m-%d %H:%M:%OS")
+        } else if (input$tzone == 'Eastern Time'){
+          date_tz<- as.POSIXlt(date_time, tz = "America/New_York", format = "%Y-%m-%d %H:%M:%OS")
+        }
     
     
     print(date_tz)
@@ -240,6 +243,7 @@ output$contents <- renderTable({
 
   write.csv(subed, paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_.csv'), na = '', row.names = FALSE)
 
-  }
+  })#progress
+  }#else
 })
 
