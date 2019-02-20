@@ -242,7 +242,8 @@ output$contents <- renderTable({
     dplyr::rename("Field EGNO" = Field.EGNO, "EG Letter" = EG.Letter, "Local Time" = Local.Time, "Image Type" = Image.Type, "Assoc. Type" = Assoc..Type, "First Edit" = First.Edit, "Second Edit" = Second.Edit, "Final Edit" = Final.Edit)
 
   write.csv(subed, paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_.csv'), na = '', row.names = FALSE)
-  output$finalmess<-renderText({"The photo submission spreadsheet can be found in the same location as the csv uploaded."})
+  output$finalmess<-renderText({HTML(paste("The photo submission spreadsheet can be found in the same location as the csv uploaded.", '<br/>',"This final is called NEFSC Sighting Data Table_Twin Otter_.csv"
+    ))})
   })#progress
   }#else
 })
