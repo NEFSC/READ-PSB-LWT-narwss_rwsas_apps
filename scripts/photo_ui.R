@@ -4,7 +4,7 @@ fluidPage(
   sidebarLayout(
     sidebarPanel(
       radioButtons("tzone", "Camera Time Zone", choices = c("Atlantic Time","Eastern Time"), selected = "Eastern Time", inline = FALSE),
-      textInput("permit", "Permit Number:", placeholder = "MMPA ##### and/or DFO-MAR-####"),
+      textInput("permit", "Permit Number:", placeholder = "MMPA #####"),
       fileInput("imagesub", "Choose CSV File",
                 accept = c(
                   "text/csv",
@@ -17,12 +17,18 @@ fluidPage(
     ),
     mainPanel(
       (HTML(paste('<br/>',
-                  "csv must include these columns:",'<br/>',
-                  "Field EGNO, EG Letter, Local Time, Day, Month, Year, Latitude, Longitude, Area, Obs, Platform, Image Type, Assoc. Type, Behaviors, Notes, Photgrapher, Frames, First Edit, Second Edit, Final Edit",
-                  '<br/>','Latitude, Longitude, Area, Obs, Platform, and Image Type <strong>can be blank</strong>.',
-                  '<br/>',"Local Time and EG Letter should <strong>not be blank</strong>."))),
+                  "CSV must include these columns:",'<br/>',
+                  '<br/>',
+                  "Field EGNO, EG Letter, Local Time, Day, Month, Year, Latitude, Longitude, Area, Obs, Platform, Image Type, Assoc. Type, Behaviors, Notes, Photographer, Frames, First Edit, Second Edit, Final Edit",
+                  '<br/>','<br/>',
+                  'Latitude, Longitude, Area, Obs, Platform, and Image Type <strong>can be blank</strong>.',
+                  '<br/>','<br/>',
+                  "Local Time and EG Letter should <strong>not be blank</strong>.",
+                  '<br/>','<br/>'))),
+      br(),
       textOutput("finalmess"),
-      tableOutput("contents")
+      br(),
+      leafletOutput("finalleaf")
     )
   )
 )
