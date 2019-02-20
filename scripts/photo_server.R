@@ -17,7 +17,7 @@ output$contents <- renderTable({
   
   }else{
     
-  withProgress(message = 'Finding whale positions from timestamp...', value = 100, {
+  withProgress(message = 'Finding whale positions from timestamp...', value = 0.1, {
     
   subraw<-read.csv(inFile$datapath, header = input$header, stringsAsFactors = FALSE)
   print(head (subraw))
@@ -66,7 +66,7 @@ output$contents <- renderTable({
     setDT(row)[,  Longitude := setDT(gps)[row, Longitude, on = "date_tz", roll = "nearest"]]
     
     subraw[i,]<-row
-
+    incProgress(0.5)
     }
   
   CRS.latlon<-CRS("+init=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_defs +towgs84=0,0,0")
@@ -242,7 +242,7 @@ output$contents <- renderTable({
     dplyr::rename("Field EGNO" = Field.EGNO, "EG Letter" = EG.Letter, "Local Time" = Local.Time, "Image Type" = Image.Type, "Assoc. Type" = Assoc..Type, "First Edit" = First.Edit, "Second Edit" = Second.Edit, "Final Edit" = Final.Edit)
 
   write.csv(subed, paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_.csv'), na = '', row.names = FALSE)
-
+  output$finalmess<-renderText({"The photo submission spreadsheet can be found in the same location as the csv uploaded."})
   })#progress
   }#else
 })
