@@ -20,7 +20,8 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Aerial Survey Processing App", tabName = "NARWSS"),
-      menuItem("RWSAS DMA Evaluation", tabName = "RWSAS")
+      menuItem("RWSAS DMA Evaluation", tabName = "RWSAS"),
+      menuItem("Photo Position Finder", tabName = "Photo")
     )
   ),
   ## Body content
@@ -35,6 +36,11 @@ ui <- dashboardPage(
       # Second tab content
       tabItem(tabName = "RWSAS",
               source('./scripts/DMAapp.R', local = TRUE)$value
+      ),
+      
+      # Third tab content
+      tabItem(tabName = "Photo",
+              source('./scripts/photo_app.R', local = TRUE)$value
       )
     )
   )
