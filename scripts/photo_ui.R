@@ -16,6 +16,7 @@ fluidPage(
       checkboxInput("header", "Header", TRUE)
     ),
     mainPanel(
+      textOutput("finalmess"),
       tableOutput("contents")
     )
   )
