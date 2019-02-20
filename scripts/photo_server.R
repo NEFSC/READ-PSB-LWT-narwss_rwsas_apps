@@ -226,7 +226,9 @@ output$contents <- renderTable({
  
   print(pernum)
   for (i in 1:nrow(subed))
-    if (nchar(subed$Notes[i]) == 0){
+    if (nchar(pernum) == 0){
+      subed$Notes[i] = subed$Notes[i]
+    } else if (nchar(subed$Notes[i]) == 0){
       subed$Notes[i] = paste("Permit Number:",pernum)
     } else {
       subed$Notes[i] = paste0(subed$Notes[i],". Permit Number: ",pernum)
