@@ -613,8 +613,25 @@
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
                           envir = new.env(parent = globalenv())
-                          
         )})
+    
+    output$dmareport <- downloadHandler(
+      
+      filename = function() {
+        paste0("DMA ",day1,month1,year1," ",dmanameselect)},
+      
+      content = function(file) {
+        
+        if (loc == 'Network'){
+          print(tempdir())
+          tempReport<-file.path("./scripts/DMALetter.Rmd")
+        } else if (loc == 'Local'){
+          tempReport<-file.path(paste0(inputpath,"/Letter.Rmd"))
+        }        
+        
+        write.csv(data, file)
+      }
+    )
     
   })
 
