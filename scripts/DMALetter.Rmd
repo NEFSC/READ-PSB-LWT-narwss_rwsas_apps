@@ -37,16 +37,16 @@ FROM:	\hspace*{101pt} Tim Cole\newline
 \newline
 SUBJECT: \hspace*{88pt}	Materials documenting `r params$date1` North Atlantic right whale sightings\newline 
 \newline
-On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right whales were sighted `r params$letterdirect` of *landmark* by *User defined, give suggestions*.  *Since no pretections are in place in this region at this time, we recommend a DMA be initiated / We therefore recommend extending the existing DMA* that is bounded by:
+On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right whales were sighted `r params$letterdirect` landmark by User defined, give suggestions.  Since no pretections are in place in this region at this time, we recommend a DMA be initiated / We therefore recommend extending the existing DMA* that is bounded by:
 
 \begin{enumerate}
-	\item \quad	*41 12 N -- north lat*
-	\item	\quad *40 28 N -- south lat*
-  \item	\quad *070 36 W -- west long*
-  \item	\quad *069 31 W -- east long*
+	\item \quad	41 12 N -- north lat
+	\item	\quad 40 28 N -- south lat
+  \item	\quad 070 36 W -- west long
+  \item	\quad 069 31 W -- east long
 \end{enumerate}
 
-Expiration – *00:00:01 ET March 17, 2019 exp date*\newline 
+Expiration – 00:00:01 ET March 17, 2019 exp date\newline 
 \newline 
 Please contact me with any questions about sightings or area calculations.
 \end{flushleft}
