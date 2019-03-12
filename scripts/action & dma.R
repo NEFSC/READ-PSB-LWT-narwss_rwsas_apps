@@ -538,9 +538,10 @@
     trigger<-triggersig%>%
       dplyr::select(DateTime)
     print(trigger)
-    triggerdateletter<-format(as.Date(trigger), '%B %d, %Y')
-    print(triggerdateletter)
+    
     exp<-lubridate::ymd_hms(trigger) 
+    triggerdateletter<-as.Date(exp)
+    print(triggerdateletter)
     
     hour(exp)<-0
     minute(exp)<-0
@@ -652,7 +653,7 @@
         text=gsub("^\ ", "", gsub("\ *$", "", gsub("\ ,",",",text)))
         #Clear any trailing " and"
         text=gsub(" and$","",text)
-        text=gsub("*y ","y-",text) ## I added this part - lmc
+        text=gsub("*y ","y-",text) ## I added this part - for latex - lmc
         #Clear any trailing comma
         gsub("\ *,$","",text)
       }  
@@ -693,7 +694,8 @@
     letterdate<-format(Sys.Date(), '%B %d, %Y')
     triggerword<-numbers2words(triggersize)
     letterdirect<-direction(dmanameselect)
-    
+    ##location perhaps need to search for the port
+    ##to do 12Mar19 LMC
     
     
     output$dmaletter <- downloadHandler(
