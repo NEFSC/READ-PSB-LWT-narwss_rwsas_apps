@@ -626,12 +626,13 @@
           print(tempdir())
           tempReport<-file.path("./scripts/DMALetter.Rmd")
         } else if (loc == 'Local'){
-          tempReport<-file.path(paste0(inputpath,"/Letter.Rmd"))
+          tempReport<-file.path(paste0(inputpath,"/DMALetter.Rmd"))
         }        
         
-        write.csv(data, file)
-      }
-    )
+        file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
+        rmarkdown::render(tempReport, output_file = file,
+                          envir = new.env(parent = globalenv())
+      )})
     
   })
 
