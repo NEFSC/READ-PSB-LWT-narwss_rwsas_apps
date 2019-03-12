@@ -367,10 +367,10 @@
     
     dmaname<-data.frame(port = c("Bay of Fundy Canada","Portland ME","Portsmouth NH","Boston MA",
                                  "Providence RI","New York NY","Atlantic City NJ", "Virginia Beach VA",
-                                 "Martha's Vineyard", "Nantucket", "Cape Cod"),
-                        lon = c(-66.9317,-70.2500,-70.7333,-71.0833,-71.4000,-73.9667,-74.4167,-75.9595,-70.6167,-70.0833,-69.9778),
-                        lat = c(44.7533,43.6667,43.0833,42.3500,41.8333,40.7833,39.3500,36.8469, 41.4000,41.2833,41.8830),
-                        priority = c(1,1,1,1,1,1,1,1,2,2,2),
+                                 "Martha's Vineyard", "Nantucket", "Cape Cod", "Cape Cod Bay"),
+                        lon = c(-66.9317,-70.2500,-70.7333,-71.0833,-71.4000,-73.9667,-74.4167,-75.9595,-70.6167,-70.0833,-69.9778,-70.27),
+                        lat = c(44.7533,43.6667,43.0833,42.3500,41.8333,40.7833,39.3500,36.8469, 41.4000,41.2833,41.8830,41.88),
+                        priority = c(1,1,1,1,1,1,1,1,2,2,2,1),
                         cardinal = NA)
     
     dmadist<-dmaname
@@ -392,21 +392,13 @@
     
     dmanamefil<-dmaname%>%
       group_by(priority)%>%
-      slice(which.min(disttocenter_nm))%>%
-      mutate(direct = case_when(
-        cardinal == "N" ~ "north",
-        cardinal == "NE" ~ "northeast",
-        cardinal == "E" ~ "east",
-        cardinal == "SE" ~ "southeast",
-        cardinal == "S" ~ "south",
-        cardinal == "SW" ~ "southwest",
-        cardinal == "W" ~ "west",
-        cardinal == "NW" ~ "northwest"
-            ),
-            dmatitle = paste0(round(disttocenter_nm,0),'nm ',cardinal,' ',port))  
+      slice(which.min(disttocenter_nm))
+    
+    dmatitle<-paste0(round(dmanamefil$disttocenter_nm,0),'nm ',dmanamefil$cardinal,' ',dmanamefil$port)
+    dmatitle[grepl('Cape Cod Bay',dmatitle)] <- 'Cape Cod Bay'
     
     output$dmaoptions<-renderUI({
-      options<-c(dmanamefil$dmatitle[1],dmanamefil$dmatitle[2])
+      options<-c(dmatitle[1],dmatitle[2])
       radioButtons("options","DMA Name Options", choices = options, selected = options[1])})
     
     output$sasdma = renderLeaflet({print(sasdma)})
@@ -683,9 +675,27 @@
       helper(x)
     }
     ##########
+    direction<-function(x){
+      dplyr::case_when(
+        grepl(' N ',x) ~ 'north of',
+        grepl(' NE ',x) ~ 'northeast of',
+        grepl(' E ',x) ~ 'east of',
+        grepl(' SE ',x) ~ 'southeast of',
+        grepl(' S ',x) ~ 'south of',
+        grepl(' SW ',x) ~ 'southwest of',
+        grepl(' W ',x) ~ 'west of',
+        grepl(' NW ',x) ~ 'northwest of',
+        grepl('Cape Cod Bay',x) ~ 'in'
+      )
+    }
+    ############
     
     letterdate<-format(Sys.Date(), '%B %d, %Y')
     triggerword<-numbers2words(triggersize)
+    letterdirect<-direction(dmanameselect)
+    
+    
+    
     output$dmaletter <- downloadHandler(
       
       filename = function() {
@@ -701,7 +711,7 @@
         }        
         
         file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
-        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, dmacoord = dmacoord)
+        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, letterdirect = letterdirect)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
