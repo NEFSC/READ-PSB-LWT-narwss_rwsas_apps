@@ -5,6 +5,7 @@ params:
   date1: NA
   triggerdateletter: NA
   triggerword: NA
+  letterdirect: NA
 output: pdf_document
 ---
 
