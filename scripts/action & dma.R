@@ -392,12 +392,21 @@
     
     dmanamefil<-dmaname%>%
       group_by(priority)%>%
-      slice(which.min(disttocenter_nm))
-    
-    dmatitle<-paste0(round(dmanamefil$disttocenter_nm,0),'nm ',dmanamefil$cardinal,' ',dmanamefil$port)
+      slice(which.min(disttocenter_nm))%>%
+      mutate(direct = case_when(
+        cardinal == "N" ~ "north",
+        cardinal == "NE" ~ "northeast",
+        cardinal == "E" ~ "east",
+        cardinal == "SE" ~ "southeast",
+        cardinal == "S" ~ "south",
+        cardinal == "SW" ~ "southwest",
+        cardinal == "W" ~ "west",
+        cardinal == "NW" ~ "northwest"
+            ),
+            dmatitle = paste0(round(disttocenter_nm,0),'nm ',cardinal,' ',port))  
     
     output$dmaoptions<-renderUI({
-      options<-c(dmatitle[1],dmatitle[2])
+      options<-c(dmanamefil$dmatitle[1],dmanamefil$dmatitle[2])
       radioButtons("options","DMA Name Options", choices = options, selected = options[1])})
     
     output$sasdma = renderLeaflet({print(sasdma)})
@@ -523,6 +532,9 @@
       filter(ACTION_NEW == 4) %>%
       summarise(total = sum(GROUP_SIZE)) %>%
       as.data.frame()
+    print(totaldmaeg$total[1])
+    print(max(totaldmaeg$total))
+    triggersize<-max(totaldmaeg$total)
     
     triggersig<-egsas%>%
       filter(ACTION_NEW == 4 & GROUP_SIZE == max(GROUP_SIZE))%>%
@@ -533,7 +545,9 @@
       
     trigger<-triggersig%>%
       dplyr::select(DateTime)
-
+    print(trigger)
+    triggerdateletter<-format(as.Date(trigger), '%B %d, %Y')
+    print(triggerdateletter)
     exp<-lubridate::ymd_hms(trigger) 
     
     hour(exp)<-0
@@ -562,7 +576,7 @@
                               INITOREXT = 'i',
                               TRIGGERORG = trigorg,
                               STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"),
-                              TRIGGERGROUPSIZE = totaldmaeg$total[1] 
+                              TRIGGERGROUPSIZE = triggersize
     )
     
 
@@ -615,10 +629,67 @@
                           envir = new.env(parent = globalenv())
         )})
     
-    output$dmareport <- downloadHandler(
+    #######
+    ##number to word function
+    numbers2words <- function(x){
+      ## Function by John Fox found here: 
+      ## http://tolstoy.newcastle.edu.au/R/help/05/04/2715.html
+      ## Tweaks by AJH to add commas and "and"
+      helper <- function(x){
+        
+        digits <- rev(strsplit(as.character(x), "")[[1]])
+        nDigits <- length(digits)
+        if (nDigits == 1) as.vector(ones[digits])
+        else if (nDigits == 2)
+          if (x <= 19) as.vector(teens[digits[1]])
+        else trim(paste(tens[digits[2]],
+                        Recall(as.numeric(digits[1]))))
+        else if (nDigits == 3) trim(paste(ones[digits[3]], "hundred and", 
+                                          Recall(makeNumber(digits[2:1]))))
+        else {
+          nSuffix <- ((nDigits + 2) %/% 3) - 1
+          if (nSuffix > length(suffixes)) stop(paste(x, "is too large!"))
+          trim(paste(Recall(makeNumber(digits[
+            nDigits:(3*nSuffix + 1)])),
+            suffixes[nSuffix],"," ,
+            Recall(makeNumber(digits[(3*nSuffix):1]))))
+        }
+      }
+      trim <- function(text){
+        #Tidy leading/trailing whitespace, space before comma
+        text=gsub("^\ ", "", gsub("\ *$", "", gsub("\ ,",",",text)))
+        #Clear any trailing " and"
+        text=gsub(" and$","",text)
+        text=gsub("*y ","y-",text) ## I added this part - lmc
+        #Clear any trailing comma
+        gsub("\ *,$","",text)
+      }  
+      makeNumber <- function(...) as.numeric(paste(..., collapse=""))     
+      #Disable scientific notation
+      opts <- options(scipen=100) 
+      on.exit(options(opts)) 
+      ones <- c("", "one", "two", "three", "four", "five", "six", "seven",
+                "eight", "nine") 
+      names(ones) <- 0:9 
+      teens <- c("ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+                 "sixteen", " seventeen", "eighteen", "nineteen")
+      names(teens) <- 0:9 
+      tens <- c("twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty",
+                "ninety") 
+      names(tens) <- 2:9 
+      x <- round(x)
+      suffixes <- c("thousand", "million", "billion", "trillion")     
+      if (length(x) > 1) return(trim(sapply(x, helper)))
+      helper(x)
+    }
+    ##########
+    
+    letterdate<-format(Sys.Date(), '%B %d, %Y')
+    triggerword<-numbers2words(triggersize)
+    output$dmaletter <- downloadHandler(
       
       filename = function() {
-        paste0("DMA ",day1,month1,year1," ",dmanameselect)},
+        paste0("DMA ",day1,month1,year1," ",dmanameselect,".pdf")},
       
       content = function(file) {
         
@@ -630,7 +701,10 @@
         }        
         
         file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
+        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, dmacoord = dmacoord)
+        
         rmarkdown::render(tempReport, output_file = file,
+                          params = params,
                           envir = new.env(parent = globalenv())
       )})
     
