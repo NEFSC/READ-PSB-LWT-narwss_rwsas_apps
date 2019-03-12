@@ -1,0 +1,52 @@
+---
+title: ""
+params:
+  letterdate: NA
+  date1: NA
+  triggerdateletter: NA
+  triggerword: NA
+output: pdf_document
+---
+
+```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '100%', fig.align="left"}
+
+knitr::include_graphics("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/scripts/dmaletter.png")
+
+```
+
+\begin{flushleft}
+\vspace*{-30mm}
+\hspace*{200pt}UNITED STATES DEPARTMENT OF COMMERCE\newline
+\hspace*{200pt}National Oceanic and Atmospheric Administration\newline
+\hspace*{200pt}National Marine Fisheries Service\newline
+\hspace*{200pt}Northeast Fisheries Science Center\newline
+\hspace*{200pt}Protected Species Branch\newline
+\hspace*{200pt}166 Water Street\newline
+\hspace*{200pt}Woods Hole, MA 02543\newline
+\newline
+\hspace*{200pt}(508) 495-2087 \hspace{75pt} FAX: (508) 495-2033\newline
+\newline
+\hspace*{200pt} `r params$letterdate` \hspace{74pt} F/NEC: S. Hayes\newline
+\newline
+\newline
+MEMORANDUM FOR:	\hspace*{28pt} Peter Kelliher\newline
+	              \hspace*{141pt}{\it Shipping Liaison, GARFO}\newline
+\newline
+FROM:	\hspace*{101pt} Tim Cole\newline
+      \hspace*{141pt}{\it Protected Species Branch, NEFSC}\newline
+\newline
+SUBJECT: \hspace*{88pt}	Materials documenting `r params$date1` North Atlantic right whale sightings\newline 
+\newline
+On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right whales were sighted `r params$letterdirect` of *landmark* by *User defined, give suggestions*.  *Since no pretections are in place in this region at this time, we recommend a DMA be initiated / We therefore recommend extending the existing DMA* that is bounded by:
+
+\begin{enumerate}
+	\item \quad	*41 12 N -- north lat*
+	\item	\quad *40 28 N -- south lat*
+  \item	\quad *070 36 W -- west long*
+  \item	\quad *069 31 W -- east long*
+\end{enumerate}
+
+Expiration – *00:00:01 ET March 17, 2019 exp date*\newline 
+\newline 
+Please contact me with any questions about sightings or area calculations.
+\end{flushleft}
