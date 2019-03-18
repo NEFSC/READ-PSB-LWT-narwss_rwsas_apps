@@ -390,9 +390,13 @@
     dmaname$cardinal[dmaname$bearing >= 247.5 & dmaname$bearing < 292.5] <- 'W'
     dmaname$cardinal[dmaname$bearing >= 292.5 & dmaname$bearing < 337.5] <- 'NW'
     
+    print(dmaname)
+    
     dmanamefil<-dmaname%>%
       group_by(priority)%>%
       slice(which.min(disttocenter_nm))
+    
+    print(dmanamefil)
     
     dmatitle<-paste0(round(dmanamefil$disttocenter_nm,0),'nm ',dmanamefil$cardinal,' ',dmanamefil$port)
     dmatitle[grepl('Cape Cod Bay',dmatitle)] <- 'Cape Cod Bay'
@@ -540,7 +544,7 @@
     print(trigger)
     
     exp<-lubridate::ymd_hms(trigger) 
-    triggerdateletter<-as.Date(exp)
+    triggerdateletter<-format(date(exp), "%B %d, %Y")
     print(triggerdateletter)
     
     hour(exp)<-0
