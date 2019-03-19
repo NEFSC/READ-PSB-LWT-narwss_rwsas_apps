@@ -11,7 +11,19 @@ dmanamessql<-paste0("select rightwhalesight.dmainfo.name, trunc(rightwhalesight.
 
 dmanamesquery<-sqlQuery(cnxn,dmanamessql)
 
-print(dmanamesquery)        
+print(dmanamesquery) 
+
+###########
+##extension
+
+dma_ext<-paste0("select rightwhalesight.dmainfo.name, trunc(rightwhalesight.dmainfo.expdate) as expdate, ID
+                  from rightwhalesight.dmainfo
+                  where to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') < EXPDATE
+                    and to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') > EXPDATE - 7;")
+
+dma_extquery<-sqlQuery(cnxn,dma_ext)
+
+print(dma_extquery)   
 
 if (nrow(dmanamesquery) == 0){
   fakedma<-data.frame(
