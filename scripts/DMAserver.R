@@ -1,7 +1,7 @@
 
-disable("dmaup")
-disable("dmareport")
-disable("kml")
+#disable("dmaup")
+#disable("dmareport")
+#disable("kml")
 
 loc<-"Network"
     ###########
@@ -84,7 +84,8 @@ observeEvent(input$eval,{
         output$error1<-renderText({""})
         
         month1<-month.abb[month(as.character(egsas$DateTime[1]))]
-        day1<-day(egsas$DateTime[1])
+        month2<-format.Date(egsas$DateTime[1], "%m")
+        day1<-format.Date(egsas$DateTime[1], "%d")
         year1<-year(egsas$DateTime[1])
         date1<-paste0(day1,' ',month1,' ',year1)
      
