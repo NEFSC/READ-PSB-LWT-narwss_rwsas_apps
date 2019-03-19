@@ -1281,7 +1281,8 @@ observeEvent(input$rawupload,{
       ############
       
       month1<-month.abb[month(as.character(final$DateTime[1]))]
-      day1<-day(final$DateTime[1])
+      month2<-format.Date(final$DateTime[1], "%m")
+      day1<-format.Date(final$DateTime[1], "%d")
       year1<-year(final$DateTime[1])
       date1<-paste0(day1,' ',month1,' ',year1)
 
