@@ -705,7 +705,7 @@
     output$dmaletter <- downloadHandler(
       
       filename = function() {
-        paste0("DMA ",day1,month1,year1," ",dmanameselect,".pdf")},
+        paste0("DMA ",year1,month2,day1," ",dmanameselect,".pdf")},
       
       content = function(file) {
         
