@@ -39,11 +39,11 @@
   
   Canada<-!is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons")))
   SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
-  aDMA<-over(eg.tr, activedma.tr)
-  aDMA_TF<-!is.na(over(eg.tr, as(activedma.tr, "SpatialPolygons")))
+  bDMA<-over(eg.tr, benigndma.tr)
+  bDMA_TF<-!is.na(over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
   sightID<-1:nrow(egsas)
   ######
-  egsas<-cbind(egsas,inoutsma,Canada,SPM,aDMA,aDMA_TF,sightID)
+  egsas<-cbind(egsas,inoutsma,Canada,SPM,bDMA,bDMA_TF,sightID)
   ##extension date
   ##this code will put dmas in the correct order to assign them a polyid that matches with those that will be assigned in egsas
   #expext<-expext%>%
@@ -356,7 +356,8 @@
     sasdma<-leaflet(data = egsas) %>% 
       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
       addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-      addPolygons(data = activedma, weight = 2, color = "yellow") %>%
+      addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+      addPolygons(data = extdma, weight = 2, color = "orange") %>%
       addPolygons(data = polyclust_sp, weight = 2, color = "blue") %>%
       addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
       addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
@@ -432,7 +433,8 @@
     sasdma<-leaflet(data = egsas) %>% 
       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
       addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-      addPolygons(data = activedma, weight = 2, color = "yellow") %>%
+      addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+      addPolygons(data = extdma, weight = 2, color = "orange") %>%
       addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
     
     output$sasdma = renderLeaflet({print(sasdma)})
