@@ -367,7 +367,7 @@
     
     dmaname<-data.frame(port = c("Bay of Fundy Canada","Portland ME","Portsmouth NH","Boston MA",
                                  "Providence RI","New York NY","Atlantic City NJ", "Virginia Beach VA",
-                                 "Martha's Vineyard", "Nantucket", "Cape Cod", "Cape Cod Bay"),
+                                 "Martha's Vineyard MA", "Nantucket MA", "Cape Cod MA", "Cape Cod Bay"),
                         lon = c(-66.9317,-70.2500,-70.7333,-71.0833,-71.4000,-73.9667,-74.4167,-75.9595,-70.6167,-70.0833,-69.9778,-70.27),
                         lat = c(44.7533,43.6667,43.0833,42.3500,41.8333,40.7833,39.3500,36.8469, 41.4000,41.2833,41.8830,41.88),
                         priority = c(1,1,1,1,1,1,1,1,2,2,2,1),
