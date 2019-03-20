@@ -45,29 +45,30 @@
   ######
   egsas<-cbind(egsas,inoutsma,Canada,SPM,aDMA,aDMA_TF,sightID)
   ##extension date
-  ##this code will put dmas in the correct order to assign them a polyid what matches with those that will be assigned in egsas
-  expext<-expext%>%
-    arrange(ID)%>%
-    mutate(extdate = EXPDATE - days(8),
-           polyid = 1:n())
+  ##this code will put dmas in the correct order to assign them a polyid that matches with those that will be assigned in egsas
+  #expext<-expext%>%
+   # arrange(ID)%>%
+    #mutate(extdate = EXPDATE - days(8),
+     #      polyid = 1:n())
 
-  egsas<-left_join(egsas,expext,by=c("aDMA"="polyid"))
+  #egsas<-left_join(egsas,expext,by=c("aDMA"="polyid"))
   
-  for (i in 1:nrow(egsas))
-    if (is.na(egsas$aDMA[i])){
-      egsas$extdate[i] = MODAYR
-      egsas$aDMA_TF[i] = FALSE
-    } else {
-      egsas$extdate[i] = egsas$extdate[i]
-    }
+  #for (i in 1:nrow(egsas))
+   # if (is.na(egsas$aDMA[i])){
+      #egsas$extdate[i] = MODAYR
+    #  egsas$aDMA_TF[i] = FALSE
+    #} else {
+     # egsas$extdate[i] = egsas$extdate[i]
+    #}
 
   ## In US database, Canada/SPM == 6.
 
   ACTION_NEW<-NULL
   for (i in 1:nrow(egsas))
-    if (egsas$aDMA_TF[i] == TRUE & MODAYR > egsas$extdate[i]){
-      egsas$ACTION_NEW[i] = 5 
-    } else if(egsas$aDMA_TF[i] == TRUE){
+    if #(egsas$aDMA_TF[i] == TRUE & MODAYR > egsas$extdate[i]){
+      #egsas$ACTION_NEW[i] = 5 
+    #} else if 
+      (egsas$aDMA_TF[i] == TRUE){
         egsas$ACTION_NEW[i] = 2   
     } else if (egsas$inoutsma[i] == TRUE){
       egsas$ACTION_NEW[i] = 2
