@@ -1,14 +1,14 @@
 ##########
 #extension dma
 #########
-library(rlist)
+
 ###########
 ##dmas up for extension
 
-dma_ext<-paste0("select rightwhalesight.dmainfo.name, trunc(rightwhalesight.dmainfo.expdate) as expdate, ID
+dma_ext<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID,  to_char((rightwhalesight.dmainfo.expdate - 8), 'YYYY-MM-DD') as ext
                 from rightwhalesight.dmainfo
-                where to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') < EXPDATE
-                and to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') > EXPDATE - 8;")
+                where to_date('",MODAYR,"', 'YYYY-MM-DD') < EXPDATE
+                  and to_date('",MODAYR,"', 'YYYY-MM-DD') >= to_date(to_char((rightwhalesight.dmainfo.expdate - 8), 'YYYY-MM-DD'), 'YYYY-MM-DD');")
 
 dma_extquery<-sqlQuery(cnxn,dma_ext)
 
@@ -24,28 +24,25 @@ print(dma_extdistinct)
 
 ##are there active DMAs that could be extended?
 if (nrow(dma_extdistinct) == 0){
-  EXT = FALSE
+  ext_list<-list()
+  ext_shapelist<-list()
+
 } else {
   
   ##dma bounds
   dma_extsql<-paste0("select rightwhalesight.dmacoords.ID, vertex, lat, lon
                   from rightwhalesight.dmacoords, rightwhalesight.dmainfo
-                  where to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') < EXPDATE and
-                        to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') > EXPDATE - 8 and
-                        rightwhalesight.dmacoords.ID = RIGHTWHALESIGHT.DMAINFO.ID;")
+                  where to_date('",MODAYR,"', 'YYYY-MM-DD') < EXPDATE
+                    and to_date('",MODAYR,"', 'YYYY-MM-DD') >= to_date(to_char((rightwhalesight.dmainfo.expdate - 8), 'YYYY-MM-DD'), 'YYYY-MM-DD') 
+                    and rightwhalesight.dmacoords.ID = RIGHTWHALESIGHT.DMAINFO.ID;")
   dma_extsql<-sqlQuery(cnxn,dma_extsql)
   
   print(dma_extsql)
-  
-  
-}
-
 
 extdf<-inner_join(dma_extdistinct,dma_extsql,by = "ID")
 
 IDlist<-as.list(unique(extdf$ID))
 names(IDlist)<-unique(extdf$ID)
-
 
 
 for (i in names(IDlist)){
@@ -71,4 +68,4 @@ for (i in names(IDlist)){
 
 names(ext_list)<-names(IDlist)
 names(ext_shapelist)<-names(IDlist)
-  
+}  
