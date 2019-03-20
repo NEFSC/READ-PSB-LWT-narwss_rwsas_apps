@@ -2,73 +2,17 @@
 ## ACTIVE DMAs ##
 #################
 
-cnxn <- odbcConnect(server, uid=sasuid, pwd=saspswd,believeNRows=FALSE)
+#################
+## declare function
+#################
 
-dmanamessql<-paste0("select rightwhalesight.dmainfo.name, trunc(rightwhalesight.dmainfo.expdate) as expdate, ID
-                  from rightwhalesight.dmainfo
-                  where to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') < EXPDATE
-                    and to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') > STARTDATE;")
+querytoshape<-function(x){ #dmaquery = x
 
-dmanamesquery<-sqlQuery(cnxn,dmanamessql)
-
-print(dmanamesquery) 
-
-###########
-##extension
-
-dma_ext<-paste0("select rightwhalesight.dmainfo.name, trunc(rightwhalesight.dmainfo.expdate) as expdate, ID
-                  from rightwhalesight.dmainfo
-                  where to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') < EXPDATE
-                    and to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') > EXPDATE - 7;")
-
-dma_extquery<-sqlQuery(cnxn,dma_ext)
-
-print(dma_extquery)   
-
-if (nrow(dmanamesquery) == 0){
-  fakedma<-data.frame(
-   long = c(-71,-71,-71,-71,-71),
-   lat = c(42,42,42,42,42))
-  
-  fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
-  
-  activedma<-SpatialPolygons(list(fakedma))
-  dmanamesexp<-"None"
-  
-} else {
-  
-  ##DMA names and expiration
-  dmanamesquery$EXPDATE<-as.Date(dmanamesquery$EXPDATE)
-  ##this is used for extension criteria
-  ##will need to figure out how to evaluate over a list
-  expext<-dmanamesquery
-  ##this is used for report sentence
-  dmanamesquery$EXPDATE<-format(dmanamesquery$EXPDATE, format = "%d %B %Y")
-  
-  dmanamesdistinct<-dmanamesquery%>%
-    group_by(NAME)%>%
-    arrange(EXPDATE)%>%
-    top_n(n = 1, EXPDATE)%>%
-    mutate(sentence = paste(NAME, "expires on", EXPDATE))
-
-  dmalist<-as.list(dmanamesdistinct$sentence)
-  dmanamesexp<-do.call("paste", c(dmalist, sep = ", "))
-
-  ##dma bounds
-dmasql<-paste0("select rightwhalesight.dmacoords.ID, vertex, lat, lon
-                  from rightwhalesight.dmacoords, rightwhalesight.dmainfo
-                  where to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') < EXPDATE and
-                        to_timestamp('",MODAYR,"', 'YYYY-MM-DD HH24:MI:SS') > STARTDATE and
-                        rightwhalesight.dmacoords.ID = RIGHTWHALESIGHT.DMAINFO.ID;")
-
-
-dmaquery<-sqlQuery(cnxn,dmasql)
-
-vector5<-dmaquery%>%
+vector5<-x%>%
   filter(VERTEX == 1)%>%
   mutate(VERTEX=replace(VERTEX, VERTEX==1, 5))
 
-DMADF<-rbind(dmaquery, vector5)
+DMADF<-rbind(x, vector5)
 
 DMADF<-DMADF%>%
   arrange(ID, VERTEX)%>%
@@ -79,12 +23,149 @@ idDMA<-lapply(idDMA, function(x) { x["ID"] <- NULL; x })
 
 DMAcoord<-lapply(idDMA, Polygon)
 DMAcoord_<-lapply(seq_along(DMAcoord), function(i) Polygons(list(Polygon(DMAcoord[[i]], hole=as.logical(NA))), ID = names(idDMA)[i]))
-activedma<-SpatialPolygons(DMAcoord_)}
+SpatialPolygons(DMAcoord_)
+}
 
-##change projection
-activedma.sp<-activedma
+#################
 
-##declare what kind of projection thy are in
-proj4string(activedma.sp)<-CRS.latlon
-##change projection
-activedma.tr<-spTransform(activedma.sp, CRS.new)
+#query all relevant DMAs
+
+activedmasql<-paste0("select select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 8), 'YYYY-MM-DD') as ext
+                  from rightwhalesight.dmainfo
+                  where to_date('",MODAYR,"', 'YYYY-MM-DD') < EXPDATE
+                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > STARTDATE;")
+
+actdma<-sqlQuery(cnxn,activedmasql)
+
+actdma<-activedma%>%
+  group_by(NAME)%>%
+  arrange(EXPDATE)%>%
+  top_n(n = 1, EXPDATE)%>% #selects for later dma if there are two technically active because of an extension
+  ungroup()
+
+print(actdma)
+
+
+##############
+## FAKE DMA ##
+##############
+
+fakedma<-data.frame(
+  long = c(-71,-71,-71,-71,-71),
+  lat = c(42,42,42,42,42))
+
+fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
+
+##do we have ANY dmas?
+if (nrow(actdma) == 0){
+  
+  benigndma<-SpatialPolygons(list(fakedma))
+  extdma<-SpatialPolygons(list(fakedma))
+  dmanamesexp<-"None"
+  
+} else {
+  
+  ############
+  ## report ##
+  ############
+  report<-actdma%>%  
+    mutate(sentence = paste(NAME, "expires on", EXPDATE))
+  
+  report$EXPDATE<-format(report$EXPDATE, format = "%d %B %Y")
+  
+  dmalist<-as.list(report$sentence)
+  dmanamesexp<-do.call("paste", c(dmalist, sep = ", "))
+  
+####################
+## Extend or not? ##
+####################
+  
+  ##dma bounds
+  actdma_boundssql<-paste0("select rightwhalesight.dmacoords.ID, vertex, lat, lon
+                  from rightwhalesight.dmacoords, rightwhalesight.dmainfo
+                  where to_date('",MODAYR,"', 'YYYY-MM-DD') < EXPDATE
+                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > STARTDATE
+                    and rightwhalesight.dmacoords.ID = RIGHTWHALESIGHT.DMAINFO.ID;")
+  
+  
+  actdma_bounds<-sqlQuery(cnxn,actdma_bounds)
+  print(actdma_bounds)
+  
+  actdmadf<-inner_join(actdma,actdma_bounds,by = "ID")
+  print(actdmadf)
+    
+## dmas not up for extension
+##nothing happens = noth
+
+dmanoth<-actdmadf%>%
+  filter(EXT > MODAYR)%>%
+  dplyr::select(ID,VERTEX,LAT,LON)
+print(dmanoth)
+
+###########
+##dmas up for extension
+
+dmaext<-actdmadf%>%
+  filter(EXT < MODAYR)%>%
+  dplyr::select(ID,VERTEX,LAT,LON)
+print(dmaext)
+
+############
+#evaluate benign DMAs
+    if (nrow(dmanoth) == 0){
+      
+      benigndma<-SpatialPolygons(list(fakedma))
+      
+    } else {
+      
+      activedma<-querytoshape(dmanoth)
+      ##change projection
+      activedma.sp<-activedma
+      ##declare what kind of projection thy are in
+      proj4string(activedma.sp)<-CRS.latlon
+      ##change projection
+      activedma.tr<-spTransform(activedma.sp, CRS.new)  
+      
+    }
+
+############
+#evaluate extension triggers DMAs
+if (nrow(dmanoth) == 0){
+  extdma<-SpatialPolygons(list(fakedma))
+} else {
+
+  IDlist<-as.list(unique(extdf$ID))
+  names(IDlist)<-unique(extdf$ID)
+  
+  
+  for (i in names(IDlist)){
+    a<-extdf%>%
+      filter(ID == i)
+    print(a)
+    
+    b<-a%>%
+      dplyr::select(-NAME, -EXPDATE)
+    
+    c<-querytoshape(b)
+    print(c) 
+    
+    if(exists("ext_list") == FALSE & exists("ext_shapelist") == FALSE){
+      ext_list<-list(a)
+      ext_shapelist<-list(c)
+      
+    } else if (length(ext_list) > 0 & length(ext_shapelist) > 0){
+      ext_list<-list.append(ext_list,a)
+      ext_shapelist<-list.append(ext_shapelist,c) #rlist::list.append
+    }
+  }
+  
+  names(ext_list)<-names(IDlist)
+  names(ext_shapelist)<-names(IDlist)
+  
+}
+
+}
+
+
+
+
