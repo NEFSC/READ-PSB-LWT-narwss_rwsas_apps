@@ -4,8 +4,10 @@
   ########
   ##ACTION
   ########
-  ##Shapefiles
   
+  #numeric for summary total for extensions
+  egsas$GROUP_SIZE<-as.numeric(egsas$GROUP_SIZE)
+
   ##copy for spatializing
   eg<-egsas
   ##declare which columns are coordinates
@@ -41,12 +43,10 @@
   SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
   bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
   eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
-  print(bDMA)
+
   sightID<-1:nrow(egsas)
   ######
   egsas<-cbind(egsas,inoutsma,Canada,SPM,bDMA,eDMA,sightID)
-  print("egsas")
-  print(egsas)
   
   ACTION_NEW<-NULL
   for (i in 1:nrow(egsas))
@@ -81,72 +81,101 @@
   #########################################
   
   if (55 %in% egsas$ACTION_NEW) {
-    
+    ##animals that are in a DMA up for extension
     actionext<-egsas %>% 
       filter(egsas$ACTION_NEW == 55) %>% 
       dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID")
-    
-  for (i in names(extdma.tr)){
-    indDMA<-sp::over(eg.tr, as(extdma.tr[[i]], "SpatialPolygons"))
-    indDMA[indDMA == 1] <- i
-    actionext_ind<-cbind(actionext,indDMA)
-    
-    if(exists("actionext_list") == FALSE){
-      actionext_list<-list(actionext_ind)
-    } else if (length(actionext_list) > 0){
-      actionext_list<-list.append(actionext_list,actionext_ind)#rlist::list.append
+    ##assess which DMA they are in
+    for (i in names(extdma.tr)){
+      indDMA<-sp::over(eg.tr, as(extdma.tr[[i]], "SpatialPolygons"))
+      indDMA[indDMA == 1] <- i
+      actionext_ind<-cbind(actionext,indDMA)
+      ## list the dfs of 55 sightings and they comparison to each DMA
+      if(exists("actionext_list") == FALSE){
+        actionext_list<-list(actionext_ind)
+      } else if (length(actionext_list) > 0){
+        actionext_list<-list.append(actionext_list,actionext_ind)#rlist::list.append
+      }
     }
-  }
-
+  #smush the df list together to make one df
   fullextlist<-rbindlist(actionext_list)
+  #filter out the sightings that aren't in any of these DMAs up for extension
   fullextlist<-fullextlist %>% filter(!is.na(indDMA))
+  #which dmas have sightings in them
   uniqueext<-unique(fullextlist$indDMA)
   
+  #test if the sightings in each DMA will trigger an extension (are there enough within the right distance to eachother)
   for (i in uniqueext){
     print(i)
     
     actionfil<-fullextlist%>%
       filter(indDMA == i)%>%
       dplyr::select(-indDMA)
-  #########
-  ##distance between points matrix -- compares right whale sightings positions to each other
-  comboext<-reshape::expand.grid.df(actionfil,actionfil)
-  names(comboext)[6:10]<-c("DateTime2","LATITUDE2","LONGITUDE2","GROUP_SIZE2","sightID2")
-  comboext$GROUP_SIZE<-as.character(comboext$GROUP_SIZE)
-  comboext$GROUP_SIZE<-as.numeric(comboext$GROUP_SIZE)
-  ##calculates core area
-  setDT(comboext)[ ,corer:=round(sqrt(GROUP_SIZE/(pi*egden)),2)] 
-  ##calculates distance between points in nautical miles
-  setDT(comboext)[ ,dist_nm:=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
-                                                              matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
-                                                              a=6378137, f=1/298.257222101)*m_nm]
-  print(comboext)
-  #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
-  #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
-  #I don't remember why I named this dmacand -- maybe dma combo and... then some?
-  dmacandext<-comboext %>%
-    dplyr::filter((comboext$dist_nm != 0 & comboext$dist_nm <= comboext$corer) | (comboext$GROUP_SIZE > 2 & comboext$dist_nm == 0))
-  print(dmacandext)
-  ##filters for distinct sightings that should be considered for DMA calculation
-  dmaextsightID<-data.frame(sightID = c(dmacandext$sightID,dmacandext$sightID2)) %>%
-    distinct()
-  print(dmaextsightID)
-  
-  for (i in 1:nrow(egsas))
-    if (egsas$sightID[i] %in% dmaextsightID$sightID) {
-      egsas$ACTION_NEW[i] = 5
-    } else if (egsas$ACTION_NEW[i] == 55){
-      egsas$ACTION_NEW[i] = 1
-    } else {
-      egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
-    }
+    #########
+    ##distance between points matrix -- compares right whale sightings positions to each other
+    comboext<-reshape::expand.grid.df(actionfil,actionfil)
+    names(comboext)[6:10]<-c("DateTime2","LATITUDE2","LONGITUDE2","GROUP_SIZE2","sightID2")
+    comboext$GROUP_SIZE<-as.character(comboext$GROUP_SIZE)
+    comboext$GROUP_SIZE<-as.numeric(comboext$GROUP_SIZE)
+    ##calculates core area
+    setDT(comboext)[ ,corer:=round(sqrt(GROUP_SIZE/(pi*egden)),2)] 
+    ##calculates distance between points in nautical miles
+    setDT(comboext)[ ,dist_nm:=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
+                                                                matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
+                                                                a=6378137, f=1/298.257222101)*m_nm]
+    print(comboext)
+    #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
+    #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
+    #I don't remember why I named this dmacand -- maybe dma combo and... then some?
+    dmacandext<-comboext %>%
+      dplyr::filter((comboext$dist_nm != 0 & comboext$dist_nm <= comboext$corer) | (comboext$GROUP_SIZE > 2 & comboext$dist_nm == 0))
+    print(dmacandext)
+    ##filters for distinct sightings that should be considered for DMA calculation
+    dmaextsightID<-data.frame(sightID = c(dmacandext$sightID,dmacandext$sightID2)) %>%
+      distinct()
+    print(dmaextsightID)
+    
+    exttot<-left_join(dmaextsightID,egsas, by = "sightID")%>%
+      dplyr::select(sightID,DateTime,LATITUDE,LONGITUDE,GROUP_SIZE)%>%
+      distinct()%>%
+      arrange(sightID)%>%
+      summarise(total = sum(GROUP_SIZE))
+    ##this will pass into the next for loop
+    x <- i
+    #blank df for the dmas to enter
+    extdf<-data.frame(extDMAs = NA,
+                      total = NA)
+
+    for (i in 1:nrow(egsas))
+      if (egsas$sightID[i] %in% dmaextsightID$sightID) {
+        egsas$ACTION_NEW[i] = 5
+        df<-data.frame(extDMAs = x,
+                       total = exttot)
+        extdf<-rbind(extdf,df)
+      } else if (egsas$ACTION_NEW[i] == 55){
+        egsas$ACTION_NEW[i] = 1
+      } else {
+        egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
+      }
+    
+    print("list of DMAs needing extension")
+    extdf<-extdf%>%
+      filter(!is.na(extDMAs))%>%
+      distinct()
+    print(extdf)
   
   }
 
   }
+  
+  extdf$extDMAs<-as.integer(extdf$extDMAs)
+  extdfbound<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))
+
   ###################################
   ## animals potential for new DMA ##
   ###################################
+  
+  ##only taking ACTION_NEW = na
   actionna<-egsas %>% filter(is.na(egsas$ACTION_NEW)) %>% dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID")
   ##distance between points matrix -- compares right whale sightings positions to each other
   combo<-reshape::expand.grid.df(actionna,actionna)
@@ -159,7 +188,7 @@
   setDT(combo)[ ,dist_nm:=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
                                                            matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
                                                            a=6378137, f=1/298.257222101)*m_nm]
-  print(combo)
+  #print(combo)
   #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
   #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
   #I don't remember why I named this dmacand -- maybe dma combo and... then some?
@@ -188,6 +217,7 @@
   ##FINAL PRODUCT IS EGSAS WITH ACTIONS   
   
   egsas$ACTION_NEW<-sprintf("%.0f",round(egsas$ACTION_NEW, digits = 0))
+  egsas$GROUP_SIZE<-sprintf("%.0f",round(egsas$GROUP_SIZE, digits = 0))
   
   ######
   ##Create DMA
@@ -578,9 +608,10 @@
     
     maxid<-sqlQuery(cnxn,maxidsql)
     maxid<-as.integer(maxid)
-    egsas$GROUP_SIZE<-as.numeric(egsas$GROUP_SIZE)
 
     ##made this ACTION_NEW == 4 instead of ACTION to work with the survey app
+    
+    ##trigger group size
     totaldmaeg<-egsas %>%
       filter(ACTION_NEW == 4) %>%
       summarise(total = sum(GROUP_SIZE)) %>%
@@ -589,6 +620,7 @@
     print(max(totaldmaeg$total))
     triggersize<-max(totaldmaeg$total)
     
+    #trigger date -- we really don't need this since we know what date it is, but whatever
     triggersig<-egsas%>%
       filter(ACTION_NEW == 4 & GROUP_SIZE == max(GROUP_SIZE))%>%
       group_by(GROUP_SIZE)%>%
@@ -600,21 +632,23 @@
       dplyr::select(DateTime)
     print(trigger)
     
+    ##expiration date
     exp<-lubridate::ymd_hms(trigger) 
-    triggerdateletter<-format(date(exp), "%B %d, %Y")
-    print(triggerdateletter)
-    
     hour(exp)<-0
     minute(exp)<-0
     second(exp)<-01
-    
     exp <- exp + days(16)
+    
+    #expiration date for DMA letter
+    triggerdateletter<-format(date(exp), "%B %d, %Y")
+    print(triggerdateletter)
     ###
     
-    #if (exists("ID", where = df)) {print("TRUE")}
-    if (exists("OBSERVER_ORG", where = triggersig)){
+    #choose group that saw the most to be the trigger org
+    if (exists("OBSERVER_ORG", where = triggersig)){ 
       trigorg<-triggersig%>%
         dplyr::select(OBSERVER_ORG)
+      print(trigorg)
     }else{
         trigorg<-1
       }
@@ -631,6 +665,9 @@
                               TRIGGERORG = trigorg,
                               STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"),
                               TRIGGERGROUPSIZE = triggersize
+                              
+    ##need to create a loop for multiple DMAs/extensions                          
+                              
     )
     
 
