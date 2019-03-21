@@ -43,9 +43,6 @@ actdma<-actdma%>%
   top_n(n = 1, EXPDATE)%>% #selects for later dma if there are two technically active because of an extension
   ungroup()
 
-print(actdma)
-
-
 ##############
 ## FAKE DMA ##
 ##############
@@ -89,10 +86,8 @@ if (nrow(actdma) == 0){
   
   
   actdma_bounds<-sqlQuery(cnxn,actdma_boundssql)
-  print(actdma_bounds)
   
   actdmadf<-inner_join(actdma,actdma_bounds,by = "ID")
-  print(actdmadf)
     
 ## dmas not up for extension
 ##nothing happens = noth
@@ -102,7 +97,6 @@ actdmadf$EXT<-ymd(actdmadf$EXT)
 dmanoth<-actdmadf%>%
   filter(EXT > MODAYR)%>%
   dplyr::select(ID,VERTEX,LAT,LON)
-print(dmanoth)
 
 ###########
 ##dmas up for extension
@@ -110,7 +104,6 @@ print(dmanoth)
 dmaext<-actdmadf%>%
   filter(EXT < MODAYR)%>%
   dplyr::select(ID,VERTEX,LAT,LON)
-print(dmaext)
 
 ############
 #evaluate benign DMAs
@@ -153,10 +146,8 @@ if (nrow(dmaext) == 0){
   for (i in names(IDlist)){
     a<-dmaext%>%
       filter(ID == i)
-    print(a)
     
     b<-querytoshape(a)
-    print(b) 
     
     if(exists("extdma_name") == FALSE & exists("extdma_list") == FALSE){
       extdma_name<-list(a)
@@ -173,13 +164,14 @@ if (nrow(dmaext) == 0){
   
   ## declare projection
   extdma.sp<-extdma_list
+  print(extdma.sp)
   #made this a loop because I could not figure out how to apply it over a list 3/21
   for (i in names(IDlist)){
     proj4string(extdma.sp[[i]])<-CRS.latlon
   }
   
   ##change projection
-  extdma.tr<-lapply(extdma.sp, function (x) {spTransform(x, CRS.new)}) 
+  extdma.tr<-lapply(extdma.sp, function (x) {spTransform(x, CRS.new)})
   
 }
 
