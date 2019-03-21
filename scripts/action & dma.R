@@ -358,7 +358,7 @@
       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
       addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-      addPolygons(data = extdma, weight = 2, color = "orange") %>%
+      addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
       addPolygons(data = polyclust_sp, weight = 2, color = "blue") %>%
       addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
       addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
@@ -436,7 +436,7 @@
       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
       addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-      addPolygons(data = extdma, weight = 2, color = "orange") %>%
+      addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
       addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
     
     output$sasdma = renderLeaflet({print(sasdma)})
