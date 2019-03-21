@@ -39,43 +39,22 @@
   
   Canada<-!is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons")))
   SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
-  bDMA<-over(eg.tr, benigndma.tr)
-  print(bDMA)
-  bDMA_TF<-!is.na(over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
+  bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
+  eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
   print(bDMA)
   sightID<-1:nrow(egsas)
   ######
-  egsas<-cbind(egsas,inoutsma,Canada,SPM,bDMA,bDMA_TF,sightID)
+  egsas<-cbind(egsas,inoutsma,Canada,SPM,bDMA,eDMA,sightID)
   print("egsas")
   print(egsas)
-  ##extension date
-  ##this code will put dmas in the correct order to assign them a polyid that matches with those that will be assigned in egsas
-  #expext<-expext%>%
-   # arrange(ID)%>%
-    #mutate(extdate = EXPDATE - days(8),
-     #      polyid = 1:n())
-
-  #egsas<-left_join(egsas,expext,by=c("aDMA"="polyid"))
   
-  # for (i in 1:nrow(egsas))
-  #   if (is.na(egsas$aDMA[i])){
-  #     egsas$extdate[i] = MODAYR
-  #     egsas$aDMA_TF[i] = FALSE
-  #   } else {
-  #     egsas$extdate[i] = egsas$extdate[i]
-  #   }
-
-  ## In US database, Canada/SPM == 6.
-
   ACTION_NEW<-NULL
   for (i in 1:nrow(egsas))
-    if #(egsas$aDMA_TF[i] == TRUE & MODAYR > egsas$extdate[i]){
-      #egsas$ACTION_NEW[i] = 5 
-    #} else if 
-      #(egsas$aDMA_TF[i] == TRUE){
-       # egsas$ACTION_NEW[i] = 2   
-    #} else if 
-      (egsas$inoutsma[i] == TRUE){
+    if (egsas$eDMA[i] == TRUE){ #extension dma?
+      egsas$ACTION_NEW[i] = 55   
+    } else if (egsas$bDMA[i] == TRUE){ #benign dma
+      egsas$ACTION_NEW[i] = 2   
+    } else if (egsas$inoutsma[i] == TRUE){
       egsas$ACTION_NEW[i] = 2
     } else if (egsas$Canada[i] == TRUE){
       egsas$ACTION_NEW[i] = 6
@@ -96,6 +75,78 @@
   m_nm<-1/1852
   ## eg density is 4 whales/100nm^2 (50 CFR Part 224)
   egden<-0.0416
+  
+  #########################################
+  ## animals potential for DMA extension ##
+  #########################################
+  
+  if (55 %in% egsas$ACTION_NEW) {
+    
+    actionext<-egsas %>% 
+      filter(egsas$ACTION_NEW == 55) %>% 
+      dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID")
+    
+  for (i in names(extdma.tr)){
+    indDMA<-sp::over(eg.tr, as(extdma.tr[[i]], "SpatialPolygons"))
+    indDMA[indDMA == 1] <- i
+    actionext_ind<-cbind(actionext,indDMA)
+    
+    if(exists("actionext_list") == FALSE){
+      actionext_list<-list(actionext_ind)
+    } else if (length(actionext_list) > 0){
+      actionext_list<-list.append(actionext_list,actionext_ind)#rlist::list.append
+    }
+  }
+
+  fullextlist<-rbindlist(actionext_list)
+  fullextlist<-fullextlist %>% filter(!is.na(indDMA))
+  uniqueext<-unique(fullextlist$indDMA)
+  
+  for (i in uniqueext){
+    print(i)
+    
+    actionfil<-fullextlist%>%
+      filter(indDMA == i)%>%
+      dplyr::select(-indDMA)
+  #########
+  ##distance between points matrix -- compares right whale sightings positions to each other
+  comboext<-reshape::expand.grid.df(actionfil,actionfil)
+  names(comboext)[6:10]<-c("DateTime2","LATITUDE2","LONGITUDE2","GROUP_SIZE2","sightID2")
+  comboext$GROUP_SIZE<-as.character(comboext$GROUP_SIZE)
+  comboext$GROUP_SIZE<-as.numeric(comboext$GROUP_SIZE)
+  ##calculates core area
+  setDT(comboext)[ ,corer:=round(sqrt(GROUP_SIZE/(pi*egden)),2)] 
+  ##calculates distance between points in nautical miles
+  setDT(comboext)[ ,dist_nm:=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
+                                                              matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
+                                                              a=6378137, f=1/298.257222101)*m_nm]
+  print(comboext)
+  #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
+  #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
+  #I don't remember why I named this dmacand -- maybe dma combo and... then some?
+  dmacandext<-comboext %>%
+    dplyr::filter((comboext$dist_nm != 0 & comboext$dist_nm <= comboext$corer) | (comboext$GROUP_SIZE > 2 & comboext$dist_nm == 0))
+  print(dmacandext)
+  ##filters for distinct sightings that should be considered for DMA calculation
+  dmaextsightID<-data.frame(sightID = c(dmacandext$sightID,dmacandext$sightID2)) %>%
+    distinct()
+  print(dmaextsightID)
+  
+  for (i in 1:nrow(egsas))
+    if (egsas$sightID[i] %in% dmaextsightID$sightID) {
+      egsas$ACTION_NEW[i] = 5
+    } else if (egsas$ACTION_NEW[i] == 55){
+      egsas$ACTION_NEW[i] = 1
+    } else {
+      egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
+    }
+  
+  }
+
+  }
+  ###################################
+  ## animals potential for new DMA ##
+  ###################################
   actionna<-egsas %>% filter(is.na(egsas$ACTION_NEW)) %>% dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID")
   ##distance between points matrix -- compares right whale sightings positions to each other
   combo<-reshape::expand.grid.df(actionna,actionna)
@@ -119,6 +170,8 @@
   dmasightID<-data.frame(sightID = c(dmacand$sightID,dmacand$sightID2)) %>%
     distinct()
   #print(dmasightID)
+  ##############
+  
   ##if not a dma animal, action == 1
   ##if a dma animal, action == 4
   ##if a dma animal that's in an ending dma and extending the dma, action == 5
@@ -137,7 +190,7 @@
   egsas$ACTION_NEW<-sprintf("%.0f",round(egsas$ACTION_NEW, digits = 0))
   
   ######
-  ##Evaluate for DMA
+  ##Create DMA
   ######
   #only sightings with an action of 4 will be evaluated here for DMA
   if (4 %in% egsas$ACTION_NEW){
