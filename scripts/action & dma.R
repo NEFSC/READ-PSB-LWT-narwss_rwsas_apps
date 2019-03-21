@@ -53,13 +53,13 @@
 
   #egsas<-left_join(egsas,expext,by=c("aDMA"="polyid"))
   
-  #for (i in 1:nrow(egsas))
-   # if (is.na(egsas$aDMA[i])){
-      #egsas$extdate[i] = MODAYR
-    #  egsas$aDMA_TF[i] = FALSE
-    #} else {
-     # egsas$extdate[i] = egsas$extdate[i]
-    #}
+  # for (i in 1:nrow(egsas))
+  #   if (is.na(egsas$aDMA[i])){
+  #     egsas$extdate[i] = MODAYR
+  #     egsas$aDMA_TF[i] = FALSE
+  #   } else {
+  #     egsas$extdate[i] = egsas$extdate[i]
+  #   }
 
   ## In US database, Canada/SPM == 6.
 
@@ -68,9 +68,10 @@
     if #(egsas$aDMA_TF[i] == TRUE & MODAYR > egsas$extdate[i]){
       #egsas$ACTION_NEW[i] = 5 
     #} else if 
-      (egsas$aDMA_TF[i] == TRUE){
-        egsas$ACTION_NEW[i] = 2   
-    } else if (egsas$inoutsma[i] == TRUE){
+      #(egsas$aDMA_TF[i] == TRUE){
+       # egsas$ACTION_NEW[i] = 2   
+    #} else if 
+      (egsas$inoutsma[i] == TRUE){
       egsas$ACTION_NEW[i] = 2
     } else if (egsas$Canada[i] == TRUE){
       egsas$ACTION_NEW[i] = 6
@@ -394,7 +395,8 @@
     print(dmaname)
     
     dmanamefil<-dmaname%>%
-      top_n(-2,disttocenter_nm)
+      top_n(-2,disttocenter_nm)%>%
+      arrange(disttocenter_nm)
     
     print(dmanamefil)
     
@@ -510,8 +512,6 @@
     dmareportmap<-fitBounds(sasdma,min(dmacoord$`Lon (Decimal Degrees)`), min(dmacoord$`Lat (Decimal Degrees)`), max(dmacoord$`Lon (Decimal Degrees)`), max(dmacoord$`Lat (Decimal Degrees)`))
     htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
     webshot::webshot("temp.html", file = paste0(date1,"_dmamap.png"))#,cliprect = bounds)
-    ##password and user name removed for sharing
-    cnxn <- odbcConnect(server, uid=sasuid, pwd=saspswd,believeNRows=FALSE)
     
     ###################  
     ##dma info upload##
