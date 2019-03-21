@@ -30,14 +30,14 @@ SpatialPolygons(DMAcoord_)
 
 #query all relevant DMAs
 
-activedmasql<-paste0("select select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 8), 'YYYY-MM-DD') as ext
+activedmasql<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 8), 'YYYY-MM-DD') as ext
                   from rightwhalesight.dmainfo
-                  where to_date('",MODAYR,"', 'YYYY-MM-DD') < EXPDATE
-                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > STARTDATE;")
+                  where to_date('",MODAYR,"', 'YYYY-MM-DD') < to_date(to_char(EXPDATE, 'YYYY-MM-DD'), 'YYYY-MM-DD')
+                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(STARTDATE, 'YYYY-MM-DD'), 'YYYY-MM-DD');")
 
 actdma<-sqlQuery(cnxn,activedmasql)
 
-actdma<-activedma%>%
+actdma<-actdma%>%
   group_by(NAME)%>%
   arrange(EXPDATE)%>%
   top_n(n = 1, EXPDATE)%>% #selects for later dma if there are two technically active because of an extension
