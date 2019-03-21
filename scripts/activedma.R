@@ -88,7 +88,7 @@ if (nrow(actdma) == 0){
                     and rightwhalesight.dmacoords.ID = RIGHTWHALESIGHT.DMAINFO.ID;")
   
   
-  actdma_bounds<-sqlQuery(cnxn,actdma_bounds)
+  actdma_bounds<-sqlQuery(cnxn,actdma_boundssql)
   print(actdma_bounds)
   
   actdmadf<-inner_join(actdma,actdma_bounds,by = "ID")
@@ -118,20 +118,32 @@ print(dmaext)
       
     } else {
       
-      activedma<-querytoshape(dmanoth)
-      ##change projection
-      activedma.sp<-activedma
-      ##declare what kind of projection thy are in
-      proj4string(activedma.sp)<-CRS.latlon
-      ##change projection
-      activedma.tr<-spTransform(activedma.sp, CRS.new)  
+      benigndma<-querytoshape(dmanoth)
       
     }
+
+##change projection
+benigndma.sp<-benigndma
+##declare what kind of projection thy are in
+proj4string(benigndma.sp)<-CRS.latlon
+##change projection
+benigndma.tr<-spTransform(benigndma.sp, CRS.new)  
+
+
 
 ############
 #evaluate extension triggers DMAs
 if (nrow(dmanoth) == 0){
+  
   extdma<-SpatialPolygons(list(fakedma))
+  
+  ##change projection
+  extdma.sp<-extdma
+  ##declare what kind of projection thy are in
+  proj4string(extdma.sp)<-CRS.latlon
+  ##change projection
+  extdma.tr<-spTransform(extdma.sp, CRS.new) 
+  
 } else {
 
   IDlist<-as.list(unique(extdf$ID))
