@@ -32,8 +32,8 @@ SpatialPolygons(DMAcoord_)
 
 activedmasql<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 8), 'YYYY-MM-DD') as ext
                   from rightwhalesight.dmainfo
-                  where to_date('",MODAYR,"', 'YYYY-MM-DD') < to_date(to_char(EXPDATE, 'YYYY-MM-DD'), 'YYYY-MM-DD')
-                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(STARTDATE, 'YYYY-MM-DD'), 'YYYY-MM-DD');")
+                  where to_date('",MODAYR,"', 'YYYY-MM-DD') < EXPDATE
+                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > STARTDATE;")
 
 actdma<-sqlQuery(cnxn,activedmasql)
 
@@ -135,9 +135,16 @@ if (nrow(dmaext) == 0){
 } else {
 
   ##all polys together
-  ## don't need projection changes because this is ONLY for mapping
   extensiondma<-querytoshape(dmaext)
+  ##change projection
+  extensiondma.sp<-extensiondma
+  ##declare what kind of projection thy are in
+  proj4string(extensiondma.sp)<-CRS.latlon
+  ##change projection
+  extensiondma.tr<-spTransform(extensiondma.sp, CRS.new)  
    
+  ######################
+  
   ##distinct polys for extension
   IDlist<-as.list(unique(dmaext$ID))
   names(IDlist)<-unique(dmaext$ID)
