@@ -102,7 +102,7 @@ dmanoth<-actdmadf%>%
 ##dmas up for extension
 
 dmaext<-actdmadf%>%
-  filter(EXT < MODAYR)%>%
+  filter(EXT <= MODAYR)%>%
   dplyr::select(ID,VERTEX,LAT,LON)
 
 ############
@@ -171,6 +171,7 @@ if (nrow(dmaext) == 0){
   
   ## declare projection
   extdma.sp<-extdma_list
+  print("ext dma")
   print(extdma.sp)
   #made this a loop because I could not figure out how to apply it over a list 3/21
   for (i in names(IDlist)){
