@@ -40,10 +40,14 @@
   Canada<-!is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons")))
   SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
   bDMA<-over(eg.tr, benigndma.tr)
+  print(bDMA)
   bDMA_TF<-!is.na(over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
+  print(bDMA)
   sightID<-1:nrow(egsas)
   ######
   egsas<-cbind(egsas,inoutsma,Canada,SPM,bDMA,bDMA_TF,sightID)
+  print("egsas")
+  print(egsas)
   ##extension date
   ##this code will put dmas in the correct order to assign them a polyid that matches with those that will be assigned in egsas
   #expext<-expext%>%
@@ -465,7 +469,6 @@
     ## upload to Oracle ##
     ######################  
     print("SAS button pressed")
-    cnxn <- odbcConnect(server, uid=sasuid, pwd=saspswd,believeNRows=FALSE)
     
     ################
     ##egsas upload##
