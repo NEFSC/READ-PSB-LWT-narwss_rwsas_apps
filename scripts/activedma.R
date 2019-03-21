@@ -96,7 +96,9 @@ if (nrow(actdma) == 0){
     
 ## dmas not up for extension
 ##nothing happens = noth
-
+actdmadf$EXPDATE<-ymd(actdmadf$EXPDATE)
+actdmadf$EXT<-ymd(actdmadf$EXT)
+  
 dmanoth<-actdmadf%>%
   filter(EXT > MODAYR)%>%
   dplyr::select(ID,VERTEX,LAT,LON)
