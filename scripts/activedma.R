@@ -131,50 +131,55 @@ proj4string(benigndma.sp)<-CRS.latlon
 ##change projection
 benigndma.tr<-spTransform(benigndma.sp, CRS.new)  
 
-
-
+print("benign dma")
+print(benigndma)
 ############
 #evaluate extension triggers DMAs
-if (nrow(dmanoth) == 0){
+if (nrow(dmaext) == 0){
   
-  extdma<-SpatialPolygons(list(fakedma))
-  
-  ##change projection
-  extdma.sp<-extdma
-  ##declare what kind of projection thy are in
-  proj4string(extdma.sp)<-CRS.latlon
-  ##change projection
-  extdma.tr<-spTransform(extdma.sp, CRS.new) 
+  extensiondma<-SpatialPolygons(list(fakedma))
   
 } else {
 
-  IDlist<-as.list(unique(extdf$ID))
-  names(IDlist)<-unique(extdf$ID)
+  ##all polys together
+  ## don't need projection changes because this is ONLY for mapping
+  extensiondma<-querytoshape(dmaext)
+   
+  ##distinct polys for extension
+  IDlist<-as.list(unique(dmaext$ID))
+  names(IDlist)<-unique(dmaext$ID)
   
   
   for (i in names(IDlist)){
-    a<-extdf%>%
+    a<-dmaext%>%
       filter(ID == i)
     print(a)
     
-    b<-a%>%
-      dplyr::select(-NAME, -EXPDATE)
+    b<-querytoshape(a)
+    print(b) 
     
-    c<-querytoshape(b)
-    print(c) 
-    
-    if(exists("ext_list") == FALSE & exists("ext_shapelist") == FALSE){
-      ext_list<-list(a)
-      ext_shapelist<-list(c)
+    if(exists("extdma_name") == FALSE & exists("extdma_list") == FALSE){
+      extdma_name<-list(a)
+      extdma_list<-list(b)
       
-    } else if (length(ext_list) > 0 & length(ext_shapelist) > 0){
-      ext_list<-list.append(ext_list,a)
-      ext_shapelist<-list.append(ext_shapelist,c) #rlist::list.append
+    } else if (length(extdma_name) > 0 & length(extdma_list) > 0){
+      extdma_name<-list.append(extdma_name,a)
+      extdma_list<-list.append(extdma_list,b) #rlist::list.append
     }
   }
   
-  names(ext_list)<-names(IDlist)
-  names(ext_shapelist)<-names(IDlist)
+  names(extdma_name)<-names(IDlist)
+  names(extdma_list)<-names(IDlist)
+  
+  ## declare projection
+  extdma.sp<-extdma_list
+  #made this a loop because I could not figure out how to apply it over a list 3/21
+  for (i in names(IDlist)){
+    proj4string(extdma.sp[[i]])<-CRS.latlon
+  }
+  
+  ##change projection
+  extdma.tr<-lapply(extdma.sp, function (x) {spTransform(x, CRS.new)}) 
   
 }
 
