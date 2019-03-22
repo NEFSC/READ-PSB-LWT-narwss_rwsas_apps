@@ -57,11 +57,11 @@ fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
 if (nrow(actdma) == 0){
   
   benigndma<-SpatialPolygons(list(fakedma))
-  extdma<-SpatialPolygons(list(fakedma))
+  extensiondma<-SpatialPolygons(list(fakedma))
   dmanamesexp<-"None"
-  
+
 } else {
-  
+
   ############
   ## report ##
   ############
@@ -117,31 +117,17 @@ dmaext<-actdmadf%>%
       
     }
 
-##change projection
-benigndma.sp<-benigndma
-##declare what kind of projection thy are in
-proj4string(benigndma.sp)<-CRS.latlon
-##change projection
-benigndma.tr<-spTransform(benigndma.sp, CRS.new)  
 
-print("benign dma")
-print(benigndma)
 ############
 #evaluate extension triggers DMAs
-if (nrow(dmaext) == 0){
+    if (nrow(dmaext) == 0){
   
-  extensiondma<-SpatialPolygons(list(fakedma))
+      extensiondma<-SpatialPolygons(list(fakedma))
   
-} else {
+    } else {
 
-  ##all polys together
-  extensiondma<-querytoshape(dmaext)
-  ##change projection
-  extensiondma.sp<-extensiondma
-  ##declare what kind of projection thy are in
-  proj4string(extensiondma.sp)<-CRS.latlon
-  ##change projection
-  extensiondma.tr<-spTransform(extensiondma.sp, CRS.new)  
+      ##all polys together
+      extensiondma<-querytoshape(dmaext)
    
   ######################
   
@@ -184,6 +170,27 @@ if (nrow(dmaext) == 0){
 }
 
 }
+
+
+##change projection
+extensiondma.sp<-extensiondma
+##declare what kind of projection thy are in
+proj4string(extensiondma.sp)<-CRS.latlon
+##change projection
+extensiondma.tr<-spTransform(extensiondma.sp, CRS.new)
+
+print("ext dma")
+print(extensiondma)
+
+##change projection
+benigndma.sp<-benigndma
+##declare what kind of projection thy are in
+proj4string(benigndma.sp)<-CRS.latlon
+##change projection
+benigndma.tr<-spTransform(benigndma.sp, CRS.new)  
+
+print("benign dma")
+print(benigndma)
 
 
 
