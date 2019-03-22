@@ -54,7 +54,7 @@ fluidPage(
                            actionButton("sas","Upload sightings to SAS"),
                            br(),
                            leafletOutput("sasdma"), 
-                           tableOutput("dmanames"),  
+                           tableOutput("dmanamedf"),  
                            tableOutput("dmacoord"),   
                            actionButton("dmaup","Upload DMA to database"),
                            downloadButton("dmareport", "Download DMA Report"),

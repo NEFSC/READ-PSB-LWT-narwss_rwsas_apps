@@ -10,7 +10,7 @@ fluidPage(
                            actionButton("eval","Evaluate"),
                            tableOutput("egsastab"), ##egsas or egsastab?
                            leafletOutput("sasdma"),    
-                           tableOutput("dmanames"), 
+                           tableOutput("dmanamedf"), 
                            tableOutput("dmacoord"),    
                            actionButton("dmaup","Upload DMA to database"),
                            downloadButton("dmareport", "Download DMA Report"),
