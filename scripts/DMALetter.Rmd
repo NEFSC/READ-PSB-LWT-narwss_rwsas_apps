@@ -6,6 +6,8 @@ params:
   triggerdateletter: NA
   triggerword: NA
   letterdirect: NA
+  landmark: NA
+  expletter: NA
 output: pdf_document
 ---
 
@@ -36,9 +38,9 @@ MEMORANDUM FOR:	\hspace*{28pt} Peter Kelliher\newline
 FROM:	\hspace*{101pt} Tim Cole\newline
       \hspace*{141pt}{\it Protected Species Branch, NEFSC}\newline
 \newline
-SUBJECT: \hspace*{88pt}	Materials documenting `r params$date1` North Atlantic right whale sightings\newline 
+SUBJECT: \hspace*{87pt}	Materials documenting `r params$date1` North Atlantic right whale sightings\newline 
 \newline
-On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right whales were sighted `r params$letterdirect` landmark by User defined, give suggestions.  Since no pretections are in place in this region at this time, we recommend a DMA be initiated / We therefore recommend extending the existing DMA* that is bounded by:
+On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right whales were sighted `r params$letterdirect` `r params$landmark` by User defined, give suggestions.  Since no pretections are in place in this region at this time, we recommend a DMA be initiated / We therefore recommend extending the existing DMA* that is bounded by:
 
 \begin{enumerate}
 	\item \quad	41 12 N -- north lat
@@ -47,7 +49,7 @@ On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right wha
   \item	\quad 069 31 W -- east long
 \end{enumerate}
 
-Expiration – 00:00:01 ET March 17, 2019 exp date\newline 
+Expiration – `r params$expletter`\newline 
 \newline 
 Please contact me with any questions about sightings or area calculations.
 \end{flushleft}
