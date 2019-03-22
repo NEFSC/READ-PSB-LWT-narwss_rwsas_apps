@@ -166,7 +166,7 @@
     
     extdf$extDMAs<-as.integer(extdf$extDMAs)
     extdfbound<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))
-  
+    print(extdfbound)
   }
 
   }
@@ -350,16 +350,11 @@
       }
 
     #########
-    
     clustdf$PolyID<-as.numeric(clustdf$PolyID)
-    
     clustdf<-full_join(clustdf,totpolyassign,by=c("PolyID"="upoly"))
-    print(clustdf)
     polycoorddf$id<-as.numeric(polycoorddf$id)
-    
     corepoly<-left_join(polycoorddf, clustdf, by=c('id'='PolyID')) 
     corepoly<-corepoly %>% dplyr::select("long","lat","id","DateTime","GROUP_SIZE","corer","corer_m", "LONGITUDE","LATITUDE","cluster")
-
     #######
     
     trigsize<-corepoly %>% 
@@ -367,7 +362,6 @@
       distinct%>%
       group_by(cluster)%>%
       summarise(TRIGGER_GROUPSIZE = n())
-    print(trigsize)
     
     ##gets to the core for the cluster
     polymaxmin<-corepoly %>%
@@ -437,12 +431,12 @@
     dmabounds<-polyclust_sp %>% 
       fortify() %>% 
       dplyr::select("long","lat","id","order") %>%
-      mutate(lonround = round(long, 2), latround = round(lat, 2), 
-             "Lon (Degree Minutes)" = paste(trunc(long),round((long %% 1)*60,0),"W",sep = " "),
-             "Lat (Degree Minutes)" = paste(trunc(lat),round((lat %% 1)*60,0),"N",sep = " "))
+      mutate(latround = round(lat, 2), lonround = round(long, 2), 
+             "Lat (Degree Minutes)" = paste( trunc(lat), formatC(round((lat %% 1)*60,0), width = 2,flag = 0), "N", sep = " "),
+             "Lon (Degree Minutes)" = paste( formatC(abs(trunc(long)), width = 3,flag = 0), formatC(round((long %% 1)*60,0), width = 2,flag = 0), "W", sep = " "))
     ##for database (excludes the 5th point to close the polygon)
     dmacoord<-dmabounds%>%
-      dplyr::rename(ID = id, Vertex = order, "Lon (Decimal Degrees)" = lonround, "Lat (Decimal Degrees)" = latround)%>%
+      dplyr::rename(ID = id, Vertex = order, "Lat (Decimal Degrees)" = latround, "Lon (Decimal Degrees)" = lonround)%>%
       dplyr::select(-long, -lat)%>%
       filter(Vertex != 5)
     
@@ -478,14 +472,13 @@
       x<-list(polyclust_[[i]])
 
       x_sp<-SpatialPolygons(x, proj4string = CRS.latlon)
-    center<-rgeos::gCentroid(x_sp)
-    print(center)
+      center<-rgeos::gCentroid(x_sp)
     
-    dmaname<-dmaname%>%
-      mutate(ID = i,
+      dmaname<-dmaname%>%
+        mutate(ID = i,
              disttocenter_nm = (geosphere::distVincentyEllipsoid(dmadist, center, a=6378137, f=1/298.257222101)*m_nm),
              bearing = bearingRhumb(dmadist, center))%>%
-      dplyr::select(ID, everything())
+        dplyr::select(ID, everything())
     
     dmaname$cardinal[dmaname$bearing >= 337.5 | dmaname$bearing < 22.5] <- 'N'
     dmaname$cardinal[dmaname$bearing >= 22.5 & dmaname$bearing < 67.5] <- 'NE'
@@ -511,6 +504,9 @@
     
     ##combine list of multiple dma names
     dmanamedf<-rbindlist(dmanamedf)
+    landmark_ls<-list(unique(dmanamedf$port))
+    landmark<-do.call("paste", c(landmark_ls, sep = ", "))
+    print(landmark)
     ## paste together the title
     dmanamedf<-dmanamedf%>%
       mutate(NAME = paste0(round(dmanamedf$disttocenter_nm,0),'nm ',dmanamedf$cardinal,' ',dmanamedf$port))%>%
@@ -658,6 +654,7 @@
       dplyr::select(DateTime)
     print(trigger)
     trig<-lubridate::ymd_hms(trigger)
+    trig<-force_tz(trig, tzone = "America/New_York")
     print(trig)
     triggerdateletter<-format(date(trig), "%B %d, %Y")
     print(triggerdateletter)
@@ -668,7 +665,9 @@
     minute(exp)<-0
     second(exp)<-01
     exp <- exp + days(16)
-    
+    print(exp)
+    expletter<-format(exp, "%H:%M:%S %Z %B %d, %Y")
+    print(expletter)
     ###
     
     #choose group that saw the most to be the trigger org
@@ -734,7 +733,6 @@
       content = function(file) {
         
         if (loc == 'Network'){
-          print(tempdir())
           tempReport<-file.path("./scripts/DMAReport.Rmd")
         } else if (loc == 'Local'){
           tempReport<-file.path(paste0(inputpath,"/DMAReport.Rmd"))
@@ -833,14 +831,13 @@
       content = function(file) {
         
         if (loc == 'Network'){
-          print(tempdir())
           tempReport<-file.path("./scripts/DMALetter.Rmd")
         } else if (loc == 'Local'){
           tempReport<-file.path(paste0(inputpath,"/DMALetter.Rmd"))
         }        
         
         file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
-        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, letterdirect = letterdirect, exp = exp)
+        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, letterdirect = letterdirect, landmark = landmark, expletter = expletter)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
