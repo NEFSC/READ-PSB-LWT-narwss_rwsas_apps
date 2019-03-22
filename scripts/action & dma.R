@@ -163,13 +163,13 @@
       filter(!is.na(extDMAs))%>%
       distinct()
     print(extdf)
+    
+    extdf$extDMAs<-as.integer(extdf$extDMAs)
+    extdfbound<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))
   
   }
 
   }
-  
-  extdf$extDMAs<-as.integer(extdf$extDMAs)
-  extdfbound<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))
 
   ###################################
   ## animals potential for new DMA ##
@@ -418,23 +418,26 @@
       dplyr::select(cluster, lon, lat)
 
     IDclust<-split(dma15, dma15$cluster)
-
+    
     IDclust<-lapply(IDclust, function(x) { x["cluster"] <- NULL; x })
 
     polyclust<-lapply(IDclust, Polygon)
-    polyclust_<-lapply(seq_along(polyclust), function(i) Polygons(list(polyclust[[i]]), 
-                                                                  ID = names(IDclust)[i]  ))
+
+    polyclust_<-lapply(seq_along(polyclust), function(i) Polygons(list(polyclust[[i]]), ID = names(IDclust)[i]))
+    names(polyclust_)<-names(IDclust)
+    
     polyclust_sp<-SpatialPolygons(polyclust_, proj4string = CRS.latlon)
 
-    polyclust_sp_df<-SpatialPolygonsDataFrame(polyclust_sp, data.frame(id = unique(dma15$cluster),
-                                                                       row.names = unique(dma15$cluster)))
+    polyclust_sp_df<-SpatialPolygonsDataFrame(polyclust_sp, data.frame(id = unique(dma15$cluster), row.names = unique(dma15$cluster)))
+    
+    ##############
     ##for KML
     dmabounds<-polyclust_sp %>% 
       fortify() %>% 
       dplyr::select("long","lat","id","order") %>%
       mutate(lonround = round(long, 2), latround = round(lat, 2), 
-             "Lon (Degree Minutes)" = measurements::conv_unit(long, from = 'dec_deg', to = 'deg_dec_min'),
-             "Lat (Degree Minutes)" = measurements::conv_unit(lat, from = 'dec_deg', to = 'deg_dec_min'))
+             "Lon (Degree Minutes)" = paste(trunc(long),round((long %% 1)*60,0),"W",sep = " "),
+             "Lat (Degree Minutes)" = paste(trunc(lat),round((lat %% 1)*60,0),"N",sep = " "))
     ##for database (excludes the 5th point to close the polygon)
     dmacoord<-dmabounds%>%
       dplyr::rename(ID = id, Vertex = order, "Lon (Decimal Degrees)" = lonround, "Lat (Decimal Degrees)" = latround)%>%
@@ -450,11 +453,11 @@
       addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
       addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
     
-    #####
-    ##dma name
+    #############
+    ## dma name #
+    #############
     
-    center<-gCentroid(polyclust_sp)
-    
+    ##port/landmark reference
     dmaname<-data.frame(port = c("Bay of Fundy Canada","Portland ME","Portsmouth NH","Boston MA",
                                  "Providence RI","New York NY","Atlantic City NJ", "Virginia Beach VA",
                                  "Martha's Vineyard MA", "Nantucket MA", "Cape Cod MA", "Cape Cod Bay"),
@@ -465,10 +468,21 @@
     dmadist<-dmaname
     coordinates(dmadist)<-~lon+lat
     proj4string(dmadist)<-CRS.latlon
+    ##########
     
-    disttocenter_nm<-(geosphere::distVincentyEllipsoid(dmadist, center, a=6378137, f=1/298.257222101)*m_nm)
-    bearing<-bearingRhumb(dmadist, center)
-    dmaname<-cbind(dmaname, disttocenter_nm, bearing)
+    for (i in names(polyclust_)){
+
+      x<-list(polyclust_[[i]])
+
+      x_sp<-SpatialPolygons(x, proj4string = CRS.latlon)
+    center<-rgeos::gCentroid(x_sp)
+    print(center)
+    
+    dmaname<-dmaname%>%
+      mutate(ID = i,
+             disttocenter_nm = (geosphere::distVincentyEllipsoid(dmadist, center, a=6378137, f=1/298.257222101)*m_nm),
+             bearing = bearingRhumb(dmadist, center))%>%
+      dplyr::select(ID, everything())
     
     dmaname$cardinal[dmaname$bearing >= 337.5 | dmaname$bearing < 22.5] <- 'N'
     dmaname$cardinal[dmaname$bearing >= 22.5 & dmaname$bearing < 67.5] <- 'NE'
@@ -479,20 +493,29 @@
     dmaname$cardinal[dmaname$bearing >= 247.5 & dmaname$bearing < 292.5] <- 'W'
     dmaname$cardinal[dmaname$bearing >= 292.5 & dmaname$bearing < 337.5] <- 'NW'
     
-    print(dmaname)
-    
-    dmanamefil<-dmaname%>%
-      top_n(-2,disttocenter_nm)%>%
+    dmanametop<-dmaname%>%
+      top_n(-1,disttocenter_nm)%>%
       arrange(disttocenter_nm)
     
-    print(dmanamefil)
+    #rbind the list of options
+    if(exists("dmanamedf") == FALSE){
+      dmanamedf<-list(dmanametop)
+    } else if (length(dmanamedf) > 0){
+      dmanamedf<-list.append(dmanamedf,dmanametop)#rlist::list.append
+    }
     
-    dmatitle<-paste0(round(dmanamefil$disttocenter_nm,0),'nm ',dmanamefil$cardinal,' ',dmanamefil$port)
-    dmatitle[grepl('Cape Cod Bay',dmatitle)] <- 'Cape Cod Bay'
+    }
     
-    output$dmaoptions<-renderUI({
-      options<-c(dmatitle[1],dmatitle[2])
-      radioButtons("options","DMA Name Options", choices = options, selected = options[1])})
+    ##combine list of multiple dma names
+    dmanamedf<-rbindlist(dmanamedf)
+    ## paste together the title
+    dmanamedf<-dmanamedf%>%
+      mutate(DMA_NAME = paste0(round(dmanamedf$disttocenter_nm,0),'nm ',dmanamedf$cardinal,' ',dmanamedf$port))%>%
+      dplyr::select(ID,DMA_NAME)
+    ## rename so that CCB does not have bearing or distance
+    dmanamedf$DMA_NAME[grepl('Cape Cod Bay',dmanamedf$DMA_NAME)] <- 'Cape Cod Bay'
+    
+    output$dmanamedf<-renderTable({dmanamedf})
     
     output$sasdma = renderLeaflet({print(sasdma)})
     
@@ -533,7 +556,6 @@
   
   
   ##KML making
-  ##still in progress
   output$kml <- downloadHandler(
     filename = function() {
       paste0(dma_date,".kml")
@@ -655,20 +677,20 @@
 
     SIGHTDATE_sql<-paste0("to_timestamp('",trigger,"', 'YYYY-MM-DD HH24:MI:SS')")
     
-    dmanameselect<-input$options
+    #dmanameselect<-input$options
     
     dmainfoinsert<-data.frame(ID = maxid+1,
-                              NAME = dmanameselect,
+                              NAME = NA,
                               EXPDATE = paste0("to_timestamp('",exp,"', 'YYYY-MM-DD HH24:MI:SS')"),
                               TRIGGERDATE = SIGHTDATE_sql,
                               INITOREXT = 'i',
                               TRIGGERORG = trigorg,
                               STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"),
-                              TRIGGERGROUPSIZE = triggersize
+                              TRIGGERGROUPSIZE = triggersize)
                               
     ##need to create a loop for multiple DMAs/extensions                          
                               
-    )
+    
     
 
     dmainfovalues <- paste0(apply(dmainfoinsert, 1, function(x) paste0("'", paste0(x, collapse = "', '"), "'")), collapse = ", ")
@@ -713,7 +735,8 @@
         
         print(tempReport)
         file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
-        params<-list(SIGHTDATE_sql = SIGHTDATE_sql, dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmacoord = dmacoord)
+        params<-list(SIGHTDATE_sql = SIGHTDATE_sql, #dmanameselect = dmanameselect, this needs to be a list
+                     date1 = date1, egsastab = egsastab, dmacoord = dmacoord)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
@@ -799,7 +822,8 @@
     output$dmaletter <- downloadHandler(
       
       filename = function() {
-        paste0("DMA ",year1,month2,day1," ",dmanameselect,".pdf")},
+        paste0("DMA ",year1,month2,day1," ",#dmanameselect, # this needs to be a list
+               ".pdf")},
       
       content = function(file) {
         
