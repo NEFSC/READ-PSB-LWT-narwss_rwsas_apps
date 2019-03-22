@@ -4,9 +4,6 @@
   ########
   ##ACTION
   ########
-  
-  #numeric for summary total for extensions
-  egsas$GROUP_SIZE<-as.numeric(egsas$GROUP_SIZE)
 
   ##copy for spatializing
   eg<-egsas
@@ -140,6 +137,8 @@
       distinct()%>%
       arrange(sightID)%>%
       summarise(total = sum(GROUP_SIZE))
+    
+    print(extot)
     ##this will pass into the next for loop
     x <- i
     #blank df for the dmas to enter
@@ -158,6 +157,7 @@
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
     
+    print(df)
     print("list of DMAs needing extension")
     extdf<-extdf%>%
       filter(!is.na(extDMAs))%>%
@@ -214,11 +214,7 @@
       egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
     }
   
-  ##FINAL PRODUCT IS EGSAS WITH ACTIONS   
-  
-  egsas$ACTION_NEW<-sprintf("%.0f",round(egsas$ACTION_NEW, digits = 0))
-  egsas$GROUP_SIZE<-sprintf("%.0f",round(egsas$GROUP_SIZE, digits = 0))
-  
+  egsas$GROUP_SIZE<-as.numeric(egsas$GROUP_SIZE)
   ######
   ##Create DMA
   ######
@@ -352,19 +348,26 @@
         totpolyassign$cluster[i]<-clustmin+1
       } else {                
       }
-    
+
     #########
     
     clustdf$PolyID<-as.numeric(clustdf$PolyID)
     
     clustdf<-full_join(clustdf,totpolyassign,by=c("PolyID"="upoly"))
-    
+    print(clustdf)
     polycoorddf$id<-as.numeric(polycoorddf$id)
     
     corepoly<-left_join(polycoorddf, clustdf, by=c('id'='PolyID')) 
     corepoly<-corepoly %>% dplyr::select("long","lat","id","DateTime","GROUP_SIZE","corer","corer_m", "LONGITUDE","LATITUDE","cluster")
-    
+
     #######
+    
+    trigsize<-corepoly %>% 
+      dplyr::select(-long,-lat)%>%
+      distinct%>%
+      group_by(cluster)%>%
+      summarise(TRIGGER_GROUPSIZE = n())
+    print(trigsize)
     
     ##gets to the core for the cluster
     polymaxmin<-corepoly %>%
@@ -469,6 +472,7 @@
     proj4string(dmadist)<-CRS.latlon
     ##########
     names(polyclust_)<-names(IDclust)
+    
     for (i in names(polyclust_)){
 
       x<-list(polyclust_[[i]])
@@ -509,21 +513,22 @@
     dmanamedf<-rbindlist(dmanamedf)
     ## paste together the title
     dmanamedf<-dmanamedf%>%
-      mutate(DMA_NAME = paste0(round(dmanamedf$disttocenter_nm,0),'nm ',dmanamedf$cardinal,' ',dmanamedf$port))%>%
-      dplyr::select(ID,DMA_NAME)
+      mutate(NAME = paste0(round(dmanamedf$disttocenter_nm,0),'nm ',dmanamedf$cardinal,' ',dmanamedf$port))%>%
+      dplyr::select(ID,NAME)
     ## rename so that CCB does not have bearing or distance
-    dmanamedf$DMA_NAME[grepl('Cape Cod Bay',dmanamedf$DMA_NAME)] <- 'Cape Cod Bay'
+    dmanamedf$NAME[grepl('Cape Cod Bay',dmanamedf$NAME)] <- 'Cape Cod Bay'
+    
+    ##join on columns with same data type
+    trigsize$cluster<-as.character(trigsize$cluster)
+    dmanamedf<-left_join(dmanamedf,trigsize, by = c("ID" = "cluster"))
     
     output$dmanamedf<-renderTable({dmanamedf})
-    
-    output$sasdma = renderLeaflet({print(sasdma)})
     
     output$dmacoord<-renderTable({dmacoord}, digits = 2)
     #SAS=SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD
     egsastab<-egsas %>% 
       dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
     ################
-
     ##if DMA:
     CRS.gearth <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
     
@@ -548,11 +553,13 @@
       addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
       addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
     
-    output$sasdma = renderLeaflet({print(sasdma)})
-    output$egsastab<-renderTable({egsastab},  striped = TRUE)
-    
   }
   
+  egsastab$ACTION_NEW<-sprintf("%.0f",round(egsastab$ACTION_NEW, digits = 0))
+  egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
+  
+  output$sasdma = renderLeaflet({print(sasdma)})
+  output$egsastab<-renderTable({egsastab},  striped = TRUE)
   
   ##KML making
   output$kml <- downloadHandler(
@@ -650,47 +657,47 @@
     trigger<-triggersig%>%
       dplyr::select(DateTime)
     print(trigger)
+    trig<-lubridate::ymd_hms(trigger)
+    print(trig)
+    triggerdateletter<-format(date(trig), "%B %d, %Y")
+    print(triggerdateletter)
     
     ##expiration date
-    exp<-lubridate::ymd_hms(trigger) 
+    exp<-trig
     hour(exp)<-0
     minute(exp)<-0
     second(exp)<-01
     exp <- exp + days(16)
     
-    #expiration date for DMA letter
-    triggerdateletter<-format(date(exp), "%B %d, %Y")
-    print(triggerdateletter)
     ###
     
     #choose group that saw the most to be the trigger org
     if (exists("OBSERVER_ORG", where = triggersig)){ 
-      trigorg<-triggersig%>%
-        dplyr::select(OBSERVER_ORG)
+      trigorg<-triggersig$OBSERVER_ORG
       print(trigorg)
     }else{
         trigorg<-1
       }
 
     SIGHTDATE_sql<-paste0("to_timestamp('",trigger,"', 'YYYY-MM-DD HH24:MI:SS')")
+    dmanamedf$ID<-as.numeric(dmanamedf$ID) #a number to add to
     
-    dmanamedf$ID<-as.numeric(dmanamedf$ID)
     dmainfoinsert<-dmanamedf%>%
       mutate(ID = ID + maxid,
              EXPDATE = paste0("to_timestamp('",exp,"', 'YYYY-MM-DD HH24:MI:SS')"),
              TRIGGERDATE = SIGHTDATE_sql,
              INITOREXT = 'i',
              TRIGGERORG = trigorg,
-             STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"),
-             TRIGGERGROUPSIZE = triggersize)%>%
-      dplyr::rename("NAME" = "DMA_NAME")%>%
-      dplyr::select(ID,NAME,everything())
+             STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"))%>%
+      dplyr::select(ID,NAME,EXPDATE,TRIGGERDATE,INITOREXT,TRIGGERORG,STARTDATE,TRIGGER_GROUPSIZE)
+    print(dmainfoinsert)
     
-                              
+    newdmalist<-as.list(dmainfoinsert$NAME)
+    dmanameselect<-do.call("paste", c(newdmalist, sep = ", "))
     
     for (i in 1:nrow(dmainfoinsert)){
 
-    dmainfovalues <- paste0(apply(dmainfoinsert, 1, function(x) paste0("'", paste0(x, collapse = "', '"), "'")), collapse = ", ")
+    dmainfovalues <- paste0(apply(dmainfoinsert[i,], 1, function(x) paste0("'", paste0(x, collapse = "', '"), "'")), collapse = ", ")
     dmainfovalues <- gsub("')'", "')", dmainfovalues)
     dmainfovalues <- gsub("'to_", "to_", dmainfovalues)
     dmainfovalues <- gsub("Martha's", "Martha''s", dmainfovalues)
@@ -699,6 +706,8 @@
     
     sqlQuery(cnxn, paste0("INSERT INTO DMAINFO(ID, NAME, EXPDATE, TRIGGERDATE, INITOREXT, TRIGGERORG, STARTDATE, TRIGGERGROUPSIZE)
                                     VALUES(", dmainfovalues,");"))
+    }
+    
     ####################
     ##dma coord upload##
     ####################
@@ -708,7 +717,7 @@
                                LAT = dmacoord$"Lat (Decimal Degrees)",
                                LON = dmacoord$"Lon (Decimal Degrees)",
                                ROWNUMBER = 999999)
-    }
+    
     
     for (i in 1:nrow(dmacoordinsert)){
       
@@ -733,8 +742,7 @@
         
         print(tempReport)
         file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
-        params<-list(SIGHTDATE_sql = SIGHTDATE_sql, #dmanameselect = dmanameselect, this needs to be a list
-                     date1 = date1, egsastab = egsastab, dmacoord = dmacoord)
+        params<-list(SIGHTDATE_sql = SIGHTDATE_sql, dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmanamedf = dmanamedf, dmacoord = dmacoord)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
@@ -820,8 +828,7 @@
     output$dmaletter <- downloadHandler(
       
       filename = function() {
-        paste0("DMA ",year1,month2,day1," ",#dmanameselect, # this needs to be a list
-               ".pdf")},
+        paste0("DMA ",year1,month2,day1," ",dmanameselect,".pdf")},
       
       content = function(file) {
         
@@ -833,7 +840,7 @@
         }        
         
         file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
-        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, letterdirect = letterdirect)
+        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, letterdirect = letterdirect, exp = exp)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
