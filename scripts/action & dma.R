@@ -652,12 +652,10 @@
       
     trigger<-triggersig%>%
       dplyr::select(DateTime)
-    print(trigger)
     trig<-lubridate::ymd_hms(trigger)
     trig<-force_tz(trig, tzone = "America/New_York")
-    print(trig)
+
     triggerdateletter<-format(date(trig), "%B %d, %Y")
-    print(triggerdateletter)
     
     ##expiration date
     exp<-trig
@@ -665,9 +663,8 @@
     minute(exp)<-0
     second(exp)<-01
     exp <- exp + days(16)
-    print(exp)
+
     expletter<-format(exp, "%H:%M:%S %Z %B %d, %Y")
-    print(expletter)
     ###
     
     #choose group that saw the most to be the trigger org
@@ -819,9 +816,11 @@
     letterdate<-format(Sys.Date(), '%B %d, %Y')
     triggerword<-numbers2words(triggersize)
     letterdirect<-direction(dmanameselect)
-    ##location perhaps need to search for the port
-    ##to do 12Mar19 LMC
-    
+
+    letterbounds<-left_join(dmanamdf,dmabounds, by = "ID")
+    title1<-letterbounds%>%filter(ID == 1)%>%dplyr::select(NAME)
+    NLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)
+    ###keep adding these bounds
     
     output$dmaletter <- downloadHandler(
       
@@ -837,7 +836,8 @@
         }        
         
         file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
-        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, letterdirect = letterdirect, landmark = landmark, expletter = expletter)
+        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, letterdirect = letterdirect, 
+                     landmark = landmark, title1 = title1, NLat1 = NLat1, SLat1 = SLat1, WLon1 = WLon1, ELon1 = ELon1, expletter = expletter)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
