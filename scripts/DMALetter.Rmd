@@ -50,10 +50,10 @@ On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right wha
 `r #if(show.text){"la la la"}`
 `r params$title1`
 \begin{enumerate}
-	\item \quad	`r params$NLat`
-	\item	\quad `r params$SLat`
-  \item	\quad `r params$wLon`
-  \item	\quad `r params$ELon`
+	\item \quad	`r params$NLat1`
+	\item	\quad `r params$SLat1`
+  \item	\quad `r params$wLon1`
+  \item	\quad `r params$ELon1`
 \end{enumerate}
 
 Expiration – `r params$expletter`\newline 
