@@ -424,7 +424,6 @@
     polyclust<-lapply(IDclust, Polygon)
 
     polyclust_<-lapply(seq_along(polyclust), function(i) Polygons(list(polyclust[[i]]), ID = names(IDclust)[i]))
-    names(polyclust_)<-names(IDclust)
     
     polyclust_sp<-SpatialPolygons(polyclust_, proj4string = CRS.latlon)
 
@@ -469,7 +468,7 @@
     coordinates(dmadist)<-~lon+lat
     proj4string(dmadist)<-CRS.latlon
     ##########
-    
+    names(polyclust_)<-names(IDclust)
     for (i in names(polyclust_)){
 
       x<-list(polyclust_[[i]])
@@ -593,8 +592,6 @@
     OOD = 929 #929 means it came through this Shiny App
     
     egsastab<-cbind(egsastab,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD)
-    
-    SIGHTDATE_sql<-paste0("to_timestamp('",egsas$SIGHTDATE[1],"', 'YYYY-MM-DD HH24:MI:SS')")
       
       #print(egsastab)
       for (i in 1:nrow(egsastab)){
@@ -677,21 +674,21 @@
 
     SIGHTDATE_sql<-paste0("to_timestamp('",trigger,"', 'YYYY-MM-DD HH24:MI:SS')")
     
-    #dmanameselect<-input$options
+    dmanamedf$ID<-as.numeric(dmanamedf$ID)
+    dmainfoinsert<-dmanamedf%>%
+      mutate(ID = ID + maxid,
+             EXPDATE = paste0("to_timestamp('",exp,"', 'YYYY-MM-DD HH24:MI:SS')"),
+             TRIGGERDATE = SIGHTDATE_sql,
+             INITOREXT = 'i',
+             TRIGGERORG = trigorg,
+             STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"),
+             TRIGGERGROUPSIZE = triggersize)%>%
+      dplyr::rename("NAME" = "DMA_NAME")%>%
+      dplyr::select(ID,NAME,everything())
     
-    dmainfoinsert<-data.frame(ID = maxid+1,
-                              NAME = NA,
-                              EXPDATE = paste0("to_timestamp('",exp,"', 'YYYY-MM-DD HH24:MI:SS')"),
-                              TRIGGERDATE = SIGHTDATE_sql,
-                              INITOREXT = 'i',
-                              TRIGGERORG = trigorg,
-                              STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"),
-                              TRIGGERGROUPSIZE = triggersize)
                               
-    ##need to create a loop for multiple DMAs/extensions                          
-                              
     
-    
+    for (i in 1:nrow(dmainfoinsert)){
 
     dmainfovalues <- paste0(apply(dmainfoinsert, 1, function(x) paste0("'", paste0(x, collapse = "', '"), "'")), collapse = ", ")
     dmainfovalues <- gsub("')'", "')", dmainfovalues)
@@ -711,6 +708,7 @@
                                LAT = dmacoord$"Lat (Decimal Degrees)",
                                LON = dmacoord$"Lon (Decimal Degrees)",
                                ROWNUMBER = 999999)
+    }
     
     for (i in 1:nrow(dmacoordinsert)){
       
