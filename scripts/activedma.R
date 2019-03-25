@@ -43,6 +43,7 @@ actdma<-actdma%>%
   top_n(n = 1, EXPDATE)%>% #selects for later dma if there are two technically active because of an extension
   ungroup()
 
+print(actdma)
 ##############
 ## FAKE DMA ##
 ##############
@@ -59,6 +60,7 @@ if (nrow(actdma) == 0){
   benigndma<-SpatialPolygons(list(fakedma))
   extensiondma<-SpatialPolygons(list(fakedma))
   dmanamesexp<-"None"
+  
 
 } else {
 
@@ -66,12 +68,12 @@ if (nrow(actdma) == 0){
   ## report ##
   ############
   
-  report$EXPDATE<-format(report$EXPDATE, format = "%d %B %Y")
-  
-  report<-actdma%>%  
+  actdma$EXPDATE<-format(actdma$EXPDATE, format = "%d %B %Y")
+  print(actdma)
+  repdma<-actdma%>%  
     mutate(sentence = paste(NAME, "expires on", EXPDATE))
-  
-  dmalist<-as.list(report$sentence)
+  print(repdma)
+  dmalist<-as.list(repdma$sentence)
   dmanamesexp<-do.call("paste", c(dmalist, sep = ", "))
   
 ####################
