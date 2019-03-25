@@ -8,6 +8,7 @@ params:
   letterdirect: NA
   landmark: NA
   observer: NA
+  neworextlet: NA
   title1: NA
   NLat1: NA
   SLat1: NA
@@ -46,7 +47,7 @@ FROM:	\hspace*{101pt} Tim Cole\newline
 \newline
 SUBJECT: \hspace*{87pt}	Materials documenting `r params$date1` North Atlantic right whale sightings\newline 
 \newline
-On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right whales were sighted `r params$letterdirect` `r params$landmark` by the `r params$observer`.  Since no pretections are in place in this region at this time, we recommend a DMA be initiated / We therefore recommend extending the existing DMA* that is bounded by:
+On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right whales were sighted `r params$letterdirect` `r params$landmark` by the `r params$observer`.  `r params$neworextlet`
 
 `r #if(show.text){"la la la"}`
 `r params$title1`
