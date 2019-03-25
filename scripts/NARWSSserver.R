@@ -1338,7 +1338,7 @@ observeEvent(input$rawupload,{
       
       htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
       webshot::webshot("temp.html", file = paste0(date1,"_map.png"))
-     
+      print("webshot")
         
         output$report<-downloadHandler(
           filename = paste0(day1,month1,year1,"_NOAA_NERW_Aerial_Report.pdf"),
