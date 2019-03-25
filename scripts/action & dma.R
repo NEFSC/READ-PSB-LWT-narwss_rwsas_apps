@@ -693,7 +693,7 @@
         trigorg<-1
       }
 
-    SIGHTDATE_sql<-paste0("to_timestamp('",trigger,"', 'YYYY-MM-DD HH24:MI:SS')")
+    
     dmanamedf$ID<-as.numeric(dmanamedf$ID) #a number to add to
     
     #### this is where new dmas and extensions need to be together in dmanamedf
@@ -701,8 +701,7 @@
       mutate(OLDID = ID,
              ID = ID + maxid,
              EXPDATE = paste0("to_timestamp('",exp,"', 'YYYY-MM-DD HH24:MI:SS')"),
-             TRIGGERDATE = SIGHTDATE_sql,
-             #INITOREXT = 'i',
+             TRIGGERDATE = paste0("to_timestamp('",TRIGGERDATE,"', 'YYYY-MM-DD HH24:MI:SS')"),
              TRIGGERORG = trigorg,
              STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"))%>%
       dplyr::select(OLDID,ID,NAME,EXPDATE,TRIGGERDATE,INITOREXT,TRIGGERORG,STARTDATE,TRIGGER_GROUPSIZE)
@@ -760,7 +759,7 @@
         
         print(tempReport)
         file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
-        params<-list(SIGHTDATE_sql = SIGHTDATE_sql, dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmanamedf = dmanamedf, dmacoord = dmacoord)
+        params<-list(dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmanamedf = dmanamedf, dmacoord = dmacoord)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
@@ -842,11 +841,11 @@
 
     letterbounds<-left_join(dmanamedf,dmacoord, by = "ID")
     print(letterbounds)
-    title1<-letterbounds%>%filter(ID == 1)%>%dplyr::select(NAME)
+    title1<-letterbounds%>%filter(ID == 1)%>%dplyr::select(NAME)%>%distinct()
     NLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
-    SLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
+    SLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == min(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
     WLon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == max(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)%>%distinct()
-    ELon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == max(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)%>%distinct()
+    ELon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == min(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)%>%distinct()
     print(title1)
     print(ELon1)
     ###keep adding these bounds
