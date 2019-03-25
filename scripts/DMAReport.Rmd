@@ -1,7 +1,6 @@
 ---
 title:  "Potential DMA Report"
 params:
-  SIGHTDATE_sql: NA
   dmanameselect: NA
   date1: NA
   egsastab: NA
