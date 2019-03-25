@@ -854,6 +854,19 @@
       observer<-"NOAA North Atlantic Right Whale Sighting Survey"
     }
     
+    neworextlet<-NULL
+    #get df of new and extended dmas
+    #get a list of the initext and see if
+    for (i in 1:nrow(x))
+      if (exists("i" & "e")){
+        neworextlet<-"Since whales were sighted both in a region where there are no protections in place, as well as within a region where the protections are due to expire in a week or less,
+        we recommend a DMA be initiated/extended at the following bounds:"
+      } else if (exists("i")){
+        neworextlet<-"Since no protections are in place in this region at this time, we recommend a DMA be initiated that is bounded by the following:"
+      } else if (exists("e")){
+        neworextlet<-"Since the current protections in this region are due to expire in a week or less, we recommend an extension of the DMA that is bounded by the following:"
+      }  
+    
     letterbounds<-left_join(dmanamedf,dmacoord, by = "ID")
     print(letterbounds)
     title1<-letterbounds%>%filter(ID == 1)%>%dplyr::select(NAME)%>%distinct()
@@ -886,7 +899,8 @@
         
         file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
         params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, letterdirect = letterdirect, 
-                     landmark = landmark, observer = observer, title1 = title1, NLat1 = NLat1, SLat1 = SLat1, WLon1 = WLon1, ELon1 = ELon1, expletter = expletter)
+                     landmark = landmark, observer = observer, neworextlet = neworextlet, title1 = title1, 
+                     NLat1 = NLat1, SLat1 = SLat1, WLon1 = WLon1, ELon1 = ELon1, expletter = expletter)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
