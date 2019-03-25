@@ -1296,7 +1296,8 @@ observeEvent(input$rawupload,{
           addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
           addPolylines(lng=~maplon, lat = ~maplat, weight = 2, color = "black") %>%
           addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-          addPolygons(data = activedma, weight = 2, color = "yellow") %>%
+          addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+          addPolygons(data = extensiondma, weight = 2, color = "yellow") %>%
           addCircleMarkers(lng = ~LONGITUDE, lat = ~LATITUDE, color = ~leafpal(SPCODE), stroke = FALSE, fillOpacity = 2, radius = 5) %>%
           addLegend(colors = c("yellow","red"), labels = c("Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)%>%
           addLegend(pal = leafpal, values = spectab$SPCODE, opacity = 1)%>%
@@ -1312,7 +1313,8 @@ observeEvent(input$rawupload,{
           addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
           addPolylines(lng=~maplon, lat = ~maplat, weight = 2, color = "black") %>%
           addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-          addPolygons(data = activedma, weight = 2, color = "yellow") %>%
+          addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+          addPolygons(data = extensiondma, weight = 2, color = "yellow") %>%
           addCircleMarkers(lng = ~LONGITUDE, lat = ~LATITUDE, color = ~leafpal(SPCODE), stroke = FALSE, fillOpacity = 2, radius = 5) %>%
           addLegend(colors = c("yellow","red"), position = "topleft", labels = c("Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)%>%
           addLegend(pal = leafpal, position = "topleft", values = spectab$SPCODE, opacity = 0.9)%>%
