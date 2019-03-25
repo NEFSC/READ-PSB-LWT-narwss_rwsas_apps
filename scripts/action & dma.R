@@ -489,8 +489,8 @@
         dplyr::select(ID, everything())
     
     dmaname$cardinal[dmaname$bearing >= 337.5 | dmaname$bearing < 22.5] <- 'N'
-    dmaname$cardinal[dmaname$bearing >= 22.5 & dmaname$bearing < 67.5] <- 'NE'
-    dmaname$cardinal[dmaname$bearing >= 67.5 & dmaname$bearing < 112.5] <- 'E'
+    dmaname$cardinal[dmaname$bearing >=  22.5 & dmaname$bearing < 67.5] <- 'NE'
+    dmaname$cardinal[dmaname$bearing >=  67.5 & dmaname$bearing < 112.5] <- 'E'
     dmaname$cardinal[dmaname$bearing >= 112.5 & dmaname$bearing < 157.5] <- 'SE'
     dmaname$cardinal[dmaname$bearing >= 157.5 & dmaname$bearing < 202.5] <- 'S'
     dmaname$cardinal[dmaname$bearing >= 202.5 & dmaname$bearing < 247.5] <- 'SW'
@@ -512,9 +512,9 @@
     
     ##combine list of multiple dma names
     dmanamedf<-rbindlist(dmanamedf)
-    landmark_ls<-list(unique(dmanamedf$port))
+    landmark_ls<-as.list(unique(dmanamedf$port))
     landmark<-do.call("paste", c(landmark_ls, sep = ", "))
-
+    landmark<-sub(",([^,]*)$", " and\\1", landmark)  
     ## paste together the title
     dmanamedf<-dmanamedf%>%
       mutate(NAME = paste0(round(dmanamedf$disttocenter_nm,0),'nm ',dmanamedf$cardinal,' ',dmanamedf$port),
@@ -651,15 +651,15 @@
 
     ##made this ACTION_NEW == 4 instead of ACTION to work with the survey app
     
-    ##trigger group size
-    totaldmaeg<-egsas %>%
-      filter(ACTION_NEW == 4) %>%
-      summarise(total = sum(GROUP_SIZE)) %>%
-      as.data.frame()
-    print(totaldmaeg$total[1])
-    print(max(totaldmaeg$total))
-    triggersize<-max(totaldmaeg$total)
-    
+    # ##trigger group size
+    # totaldmaeg<-egsas %>%
+    #   filter(ACTION_NEW == 4) %>%
+    #   summarise(total = sum(GROUP_SIZE)) %>%
+    #   as.data.frame()
+    # print(totaldmaeg$total[1])
+    # print(max(totaldmaeg$total))
+    # triggersize<-max(totaldmaeg$total)
+    # 
     #trigger date -- we really don't need this since we know what date it is, but whatever
     triggersig<-egsas%>%
       filter(ACTION_NEW == 4 & GROUP_SIZE == max(GROUP_SIZE))%>%
@@ -714,6 +714,7 @@
     
     newdmalist<-as.list(dmainfoinsert$NAME)
     dmanameselect<-do.call("paste", c(newdmalist, sep = ", "))
+    dmanameselect<-sub(",([^,]*)$", " and\\1", dmanameselect)  
     
     for (i in 1:nrow(dmainfoinsert)){
 
@@ -837,11 +838,26 @@
     
     letterdate<-format(Sys.Date(), '%B %d, %Y')
     triggerword<-numbers2words(triggersize)
+    numberword<-dmanamedf%>%
+      mutate(triggerword = numbers2words(dmanamedf$TRIGGER_GROUPSIZE))
+    triggerword<-as.list(numberword$triggerword)
+    triggerword<-do.call("paste", c(triggerword, sep = ", "))
+    triggerword<-sub(",([^,]*)$", " and\\1", triggerword)  
+    
     letterdirect<-direction(dmanameselect)
-
+    
+    observer<-input$triggrp
+    #choose group that saw the most to be the trigger org
+    if (exists("observer")){ 
+      print(observer)
+    }else{
+      observer<-"NOAA North Atlantic Right Whale Sighting Survey"
+    }
+    
     letterbounds<-left_join(dmanamedf,dmacoord, by = "ID")
     print(letterbounds)
     title1<-letterbounds%>%filter(ID == 1)%>%dplyr::select(NAME)%>%distinct()
+    title1<-title1$NAME[1]
     NLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
     NLat1<-NLat1$`Lat (Degree Minutes)`[1]
     SLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == min(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
@@ -850,9 +866,9 @@
     WLon1<-WLon1$`Lon (Degree Minutes)`[1]
     ELon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == min(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)%>%distinct()
     ELon1<-ELon1$`Lon (Degree Minutes)`[1]
-    print(title1)
-    print(title1$NAME[1])
-    print(ELon1)
+
+    print(paste(title1,NLat1,SLat1,WLon1,ELon1))
+
     ###keep adding these bounds
     
     output$dmaletter <- downloadHandler(
@@ -870,7 +886,7 @@
         
         file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
         params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, letterdirect = letterdirect, 
-                     landmark = landmark, title1 = title1, NLat1 = NLat1, SLat1 = SLat1, WLon1 = WLon1, ELon1 = ELon1, expletter = expletter)
+                     landmark = landmark, observer = observer, title1 = title1, NLat1 = NLat1, SLat1 = SLat1, WLon1 = WLon1, ELon1 = ELon1, expletter = expletter)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
