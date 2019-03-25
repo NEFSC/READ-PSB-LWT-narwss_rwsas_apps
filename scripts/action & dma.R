@@ -441,7 +441,7 @@
       dplyr::select("long","lat","id","order") %>%
       mutate(latround = round(lat, 2), lonround = round(long, 2), 
              "Lat (Degree Minutes)" = paste( trunc(lat), formatC(round((lat %% 1)*60,0), width = 2,flag = 0), "N", sep = " "),
-             "Lon (Degree Minutes)" = paste( formatC(abs(trunc(long)), width = 3,flag = 0), formatC(round((long %% 1)*60,0), width = 2,flag = 0), "W", sep = " "))
+             "Lon (Degree Minutes)" = paste( formatC(abs(trunc(long)), width = 3,flag = 0), formatC(round((abs(long) %% 1)*60,0), width = 2,flag = 0), "W", sep = " "))
     ##for database (excludes the 5th point to close the polygon)
     dmacoord<-dmabounds%>%
       dplyr::rename(ID = id, Vertex = order, "Lat (Decimal Degrees)" = latround, "Lon (Decimal Degrees)" = lonround)%>%
@@ -843,10 +843,15 @@
     print(letterbounds)
     title1<-letterbounds%>%filter(ID == 1)%>%dplyr::select(NAME)%>%distinct()
     NLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
+    NLat1<-NLat1$`Lat (Degree Minutes)`[1]
     SLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == min(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
+    SLat1<-SLat1$`Lat (Degree Minutes)`[1]
     WLon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == max(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)%>%distinct()
+    WLon1<-WLon1$`Lon (Degree Minutes)`[1]
     ELon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == min(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)%>%distinct()
+    ELon1<-ELon1$`Lon (Degree Minutes)`[1]
     print(title1)
+    print(title1$NAME[1])
     print(ELon1)
     ###keep adding these bounds
     
