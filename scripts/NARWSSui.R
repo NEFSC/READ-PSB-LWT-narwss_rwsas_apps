@@ -1,15 +1,11 @@
 fluidPage(
   useShinyjs(),
   titlePanel("NEFSC Right Whale Data Processing"),
-  sidebarLayout(
-    sidebarPanel(
-                 #radioButtons("where", "Survey Area", choices = c("US", "Canada"), selected = "US", inline = FALSE),
-                 radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE), 
-                 conditionalPanel(
-                   condition = "input$filepathway == Local",
-                   textInput("filepathinput", (HTML(paste("Local pathway", '<br/>', "Example: C:/2018/Flights/edit_data/"))))),
-                   width = 3),
-    mainPanel(
+      splitLayout(radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE), 
+              conditionalPanel(
+                condition = "input$filepathway == Local",
+                textInput("filepathinput", (HTML(paste("Local pathway", '<br/>', "Example: C:/2018/Flights/edit_data/"))))),
+              width = 3),
       tabsetPanel(type = "tabs",
                   tabPanel("Aerial Survey",
                            (HTML(paste('<br/>',
@@ -62,5 +58,5 @@ fluidPage(
                            downloadButton("kml", "Download KML")
                            )
                            )
-                  )))
+                  )
     
