@@ -514,7 +514,7 @@
     dmanamedf<-rbindlist(dmanamedf)
     landmark_ls<-list(unique(dmanamedf$port))
     landmark<-do.call("paste", c(landmark_ls, sep = ", "))
-    print(landmark)
+
     ## paste together the title
     dmanamedf<-dmanamedf%>%
       mutate(NAME = paste0(round(dmanamedf$disttocenter_nm,0),'nm ',dmanamedf$cardinal,' ',dmanamedf$port),
@@ -522,11 +522,18 @@
       dplyr::select(ID,NAME,INITOREXT)
     ## rename so that CCB does not have bearing or distance
     dmanamedf$NAME[grepl('Cape Cod Bay',dmanamedf$NAME)] <- 'Cape Cod Bay'
-    print(dmanamedf)
+    
     ##join on columns with same data type
     trigsize$cluster<-as.character(trigsize$cluster)
-    dmanameout<-left_join(dmanamedf,trigsize, by = c("ID" = "cluster"))%>%
-      select(-INITOREXT)
+    dmanamedf<-left_join(dmanamedf,trigsize, by = c("ID" = "cluster"))
+    print(dmanamedf)
+    ##############
+    ##join dmanamedf with ext dmas
+    ##ext IDs should be 1 + max(ID) of new dmas
+    
+    
+    dmanameout<-dmanamedf%>%
+      dplyr::select(-INITOREXT)
     dmanameout$TRIGGERDATE<-as.character(dmanameout$TRIGGERDATE)
     print(dmanameout)
     output$dmanameout<-renderTable({dmanameout})
@@ -833,15 +840,13 @@
     triggerword<-numbers2words(triggersize)
     letterdirect<-direction(dmanameselect)
 
-    print(dmanamedf)
-    print(dmacoord)
-
     letterbounds<-left_join(dmanamedf,dmacoord, by = "ID")
+    print(letterbounds)
     title1<-letterbounds%>%filter(ID == 1)%>%dplyr::select(NAME)
-    NLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)
-    SLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)
-    WLon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == max(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)
-    ELon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == max(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)
+    NLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
+    SLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
+    WLon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == max(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)%>%distinct()
+    ELon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == max(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)%>%distinct()
     print(title1)
     print(ELon1)
     ###keep adding these bounds
