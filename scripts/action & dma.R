@@ -5,6 +5,8 @@
   ##ACTION
   ########
 
+  egsas$GROUP_SIZE<-as.numeric(egsas$GROUP_SIZE)
+  
   ##copy for spatializing
   eg<-egsas
   ##declare which columns are coordinates
@@ -120,17 +122,17 @@
     setDT(comboext)[ ,dist_nm:=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
                                                                 matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
                                                                 a=6378137, f=1/298.257222101)*m_nm]
-    print(comboext)
+    #print(comboext)
     #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
     #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
     #I don't remember why I named this dmacand -- maybe dma combo and... then some?
     dmacandext<-comboext %>%
       dplyr::filter((comboext$dist_nm != 0 & comboext$dist_nm <= comboext$corer) | (comboext$GROUP_SIZE > 2 & comboext$dist_nm == 0))
-    print(dmacandext)
+    #print(dmacandext)
     ##filters for distinct sightings that should be considered for DMA calculation
     dmaextsightID<-data.frame(sightID = c(dmacandext$sightID,dmacandext$sightID2)) %>%
       distinct()
-    print(dmaextsightID)
+    #print(dmaextsightID)
     
     exttot<-left_join(dmaextsightID,egsas, by = "sightID")%>%
       dplyr::select(sightID,DateTime,LATITUDE,LONGITUDE,GROUP_SIZE)%>%
@@ -138,7 +140,7 @@
       arrange(sightID)%>%
       summarise(total = sum(GROUP_SIZE))
     
-    print(extot)
+    print(exttot)
     ##this will pass into the next for loop
     x <- i
     #blank df for the dmas to enter
@@ -169,7 +171,7 @@
     print(extdfbound)
   }
 
-  }
+  } #end 55 in action_new
 
   ###################################
   ## animals potential for new DMA ##
@@ -214,7 +216,6 @@
       egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
     }
   
-  egsas$GROUP_SIZE<-as.numeric(egsas$GROUP_SIZE)
   ######
   ##Create DMA
   ######
@@ -353,15 +354,22 @@
     clustdf$PolyID<-as.numeric(clustdf$PolyID)
     clustdf<-full_join(clustdf,totpolyassign,by=c("PolyID"="upoly"))
     polycoorddf$id<-as.numeric(polycoorddf$id)
-    corepoly<-left_join(polycoorddf, clustdf, by=c('id'='PolyID')) 
-    corepoly<-corepoly %>% dplyr::select("long","lat","id","DateTime","GROUP_SIZE","corer","corer_m", "LONGITUDE","LATITUDE","cluster")
-    #######
+    corepoly<-left_join(polycoorddf, clustdf, by=c('id'='PolyID'))%>%
+              dplyr::select("long","lat","id","DateTime","GROUP_SIZE","corer","corer_m", "LONGITUDE","LATITUDE","cluster")
     
-    trigsize<-corepoly %>% 
-      dplyr::select(-long,-lat)%>%
-      distinct%>%
+    #################
+    ## for DMA insert
+    clustid<-clustdf%>%
+      dplyr::select(PolyID,cluster)
+    sigs<-clustdf%>%
+      dplyr::select(DateTime, GROUP_SIZE, sightID)
+    clustersigs<-left_join(sigs,clustid, by = c("sightID" = "PolyID"))
+
+    clustersigs$DateTime<-ymd_hms(clustersigs$DateTime)
+    trigsize<-clustersigs %>% 
       group_by(cluster)%>%
-      summarise(TRIGGER_GROUPSIZE = n())
+      summarise(TRIGGER_GROUPSIZE = n(), TRIGGERDATE = min(DateTime))
+    #################
     
     ##gets to the core for the cluster
     polymaxmin<-corepoly %>%
@@ -509,18 +517,21 @@
     print(landmark)
     ## paste together the title
     dmanamedf<-dmanamedf%>%
-      mutate(NAME = paste0(round(dmanamedf$disttocenter_nm,0),'nm ',dmanamedf$cardinal,' ',dmanamedf$port))%>%
-      dplyr::select(ID,NAME)
+      mutate(NAME = paste0(round(dmanamedf$disttocenter_nm,0),'nm ',dmanamedf$cardinal,' ',dmanamedf$port),
+             INITOREXT = 'i')%>%
+      dplyr::select(ID,NAME,INITOREXT)
     ## rename so that CCB does not have bearing or distance
     dmanamedf$NAME[grepl('Cape Cod Bay',dmanamedf$NAME)] <- 'Cape Cod Bay'
-    
+    print(dmanamedf)
     ##join on columns with same data type
     trigsize$cluster<-as.character(trigsize$cluster)
-    dmanamedf<-left_join(dmanamedf,trigsize, by = c("ID" = "cluster"))
+    dmanameout<-left_join(dmanamedf,trigsize, by = c("ID" = "cluster"))%>%
+      select(-INITOREXT)
+    dmanameout$TRIGGERDATE<-as.character(dmanameout$TRIGGERDATE)
+    print(dmanameout)
+    output$dmanameout<-renderTable({dmanameout})
     
-    output$dmanamedf<-renderTable({dmanamedf})
-    
-    output$dmacoord<-renderTable({dmacoord}, digits = 2)
+    output$dmacoord<-renderTable({dmacoord})
     #SAS=SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD
     egsastab<-egsas %>% 
       dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
@@ -537,7 +548,7 @@
     
     enable("dmaup")
     enable("kml")
-  } else {
+  } else { ##4 in egsas$action_new
     
     egsastab<-egsas %>% 
       dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
@@ -678,14 +689,21 @@
     SIGHTDATE_sql<-paste0("to_timestamp('",trigger,"', 'YYYY-MM-DD HH24:MI:SS')")
     dmanamedf$ID<-as.numeric(dmanamedf$ID) #a number to add to
     
-    dmainfoinsert<-dmanamedf%>%
-      mutate(ID = ID + maxid,
+    #### this is where new dmas and extensions need to be together in dmanamedf
+    dmainfo<-dmanamedf%>%
+      mutate(OLDID = ID,
+             ID = ID + maxid,
              EXPDATE = paste0("to_timestamp('",exp,"', 'YYYY-MM-DD HH24:MI:SS')"),
              TRIGGERDATE = SIGHTDATE_sql,
-             INITOREXT = 'i',
+             #INITOREXT = 'i',
              TRIGGERORG = trigorg,
              STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"))%>%
-      dplyr::select(ID,NAME,EXPDATE,TRIGGERDATE,INITOREXT,TRIGGERORG,STARTDATE,TRIGGER_GROUPSIZE)
+      dplyr::select(OLDID,ID,NAME,EXPDATE,TRIGGERDATE,INITOREXT,TRIGGERORG,STARTDATE,TRIGGER_GROUPSIZE)
+    print(dmainfo)
+    
+    dmainfoinsert<-dmainfo%>%
+      dplyr::select(-OLDID)
+    
     print(dmainfoinsert)
     
     newdmalist<-as.list(dmainfoinsert$NAME)
@@ -707,14 +725,12 @@
     ####################
     ##dma coord upload##
     ####################
-    
-    dmacoordinsert<-data.frame(ID = dmainfoinsert$ID,
-                               VERTEX = dmacoord$Vertex,
-                               LAT = dmacoord$"Lat (Decimal Degrees)",
-                               LON = dmacoord$"Lon (Decimal Degrees)",
-                               ROWNUMBER = 999999)
-    
-    
+    dmacoord$ID<-as.numeric(dmacoord$ID)
+    dmacoordinsert<-left_join(dmainfo,dmacoord, by = c("OLDID" = "ID"))%>%
+      dplyr::select(ID,Vertex,`Lat (Decimal Degrees)`,`Lon (Decimal Degrees)`)%>%
+      dplyr::rename("VERTEX" = "Vertex","LAT" = "Lat (Decimal Degrees)","LON" = "Lon (Decimal Degrees)")%>%
+      mutate(ROWNUMBER = 999999)
+      
     for (i in 1:nrow(dmacoordinsert)){
       
       dmacoordvalues <- paste0(apply(dmacoordinsert[i,], 1, function(x) paste0("'", paste0(x, collapse = "', '"), "'")), collapse = ", ")
@@ -817,9 +833,17 @@
     triggerword<-numbers2words(triggersize)
     letterdirect<-direction(dmanameselect)
 
-    letterbounds<-left_join(dmanamdf,dmabounds, by = "ID")
+    print(dmanamedf)
+    print(dmacoord)
+
+    letterbounds<-left_join(dmanamedf,dmacoord, by = "ID")
     title1<-letterbounds%>%filter(ID == 1)%>%dplyr::select(NAME)
     NLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)
+    SLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)
+    WLon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == max(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)
+    ELon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == max(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)
+    print(title1)
+    print(ELon1)
     ###keep adding these bounds
     
     output$dmaletter <- downloadHandler(
