@@ -65,10 +65,11 @@ if (nrow(actdma) == 0){
   ############
   ## report ##
   ############
-  report<-actdma%>%  
-    mutate(sentence = paste(NAME, "expires on", EXPDATE))
   
   report$EXPDATE<-format(report$EXPDATE, format = "%d %B %Y")
+  
+  report<-actdma%>%  
+    mutate(sentence = paste(NAME, "expires on", EXPDATE))
   
   dmalist<-as.list(report$sentence)
   dmanamesexp<-do.call("paste", c(dmalist, sep = ", "))
