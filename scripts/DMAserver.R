@@ -64,15 +64,14 @@ observeEvent(input$eval,{
       smapath<-"./SMA ind shp"
       MODA<-unique(format(dmaevaldate, "%m-%d"))
       MODAYR<-unique(dmaevaldate, "%m-%d")
-      print(MODA)
-      print(MODAYR)
+      
       ##egtable & egsas kept seperate like this for now, need to investigate more about how these tables are used between dma and narwss apps 11/20/2018 lmc
       egtable<-egtable%>%
         dplyr::rename("DateTime" = "SIGHTDATE","LATITUDE" = "LAT", "LONGITUDE" = "LON", "GROUP_SIZE" = "GROUPSIZE", "ID_RELIABILITY" = "SPECIES_CERT")
       
       egsas<-egtable %>% 
         dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_COMMENTS,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG)
-      print(egsas)
+
       egsas$DateTime<-strftime(egsas$DateTime,'%Y-%m-%d %H:%M:%S')
       
       source('./scripts/oracleaccess.R', local = TRUE)$value
@@ -89,6 +88,9 @@ observeEvent(input$eval,{
         year1<-year(egsas$DateTime[1])
         date1<-paste0(day1,' ',month1,' ',year1)
      
+        #this is for the user input for the observer in the dma letter
+        triggrptrue<-TRUE
+        
       source('./scripts/action & dma.R', local = TRUE)$value
       
       
