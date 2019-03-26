@@ -6,7 +6,6 @@
   ########
 
   egsas$GROUP_SIZE<-as.numeric(egsas$GROUP_SIZE)
-  
   ##copy for spatializing
   eg<-egsas
   ##declare which columns are coordinates
@@ -15,7 +14,7 @@
   proj4string(eg)<-CRS.latlon
   ##change projection
   eg.tr<-spTransform(eg, CRS.new)
-  
+
   #####
   ##in or out of the sma? TRUE = in
   inoutsma<-NULL
@@ -80,36 +79,37 @@
   #########################################
   
   if (55 %in% egsas$ACTION_NEW) {
-    ##animals that are in a DMA up for extension
-    actionext<-egsas %>% 
-      filter(egsas$ACTION_NEW == 55) %>% 
-      dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID")
+    print("beg 55")
+
     ##assess which DMA they are in
     for (i in names(extdma.tr)){
       indDMA<-sp::over(eg.tr, as(extdma.tr[[i]], "SpatialPolygons"))
-      indDMA[indDMA == 1] <- i
-      actionext_ind<-cbind(actionext,indDMA)
-      ## list the dfs of 55 sightings and they comparison to each DMA
-      if(exists("actionext_list") == FALSE){
-        actionext_list<-list(actionext_ind)
-      } else if (length(actionext_list) > 0){
-        actionext_list<-list.append(actionext_list,actionext_ind)#rlist::list.append
-      }
-    }
-  #smush the df list together to make one df
-  fullextlist<-rbindlist(actionext_list)
-  #filter out the sightings that aren't in any of these DMAs up for extension
-  fullextlist<-fullextlist %>% filter(!is.na(indDMA))
+      indDMA[indDMA == 1] <- i}
+      
+      actionext<-cbind(egsas,indDMA)
+
+      actionext_ind<-actionext %>% 
+        filter(ACTION_NEW == 55) %>% 
+        dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID","indDMA")
+
+      ##animals that are in a DMA up for extension
+      ##factor to numeric -- maybe not be necessary
+      actionext_ind$indDMA<-as.character(actionext_ind$indDMA)
+      actionext_ind$indDMA<-as.numeric(actionext_ind$indDMA)
+  
+      #filter out the sightings that aren't in any of these DMAs up for extension
+  fullextlist<-actionext_ind %>% filter(!is.na(indDMA))
+
   #which dmas have sightings in them
   uniqueext<-unique(fullextlist$indDMA)
-  
+
   #test if the sightings in each DMA will trigger an extension (are there enough within the right distance to eachother)
   for (i in uniqueext){
-    print(i)
-    
+
     actionfil<-fullextlist%>%
       filter(indDMA == i)%>%
       dplyr::select(-indDMA)
+    
     #########
     ##distance between points matrix -- compares right whale sightings positions to each other
     comboext<-reshape::expand.grid.df(actionfil,actionfil)
@@ -126,57 +126,62 @@
     #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
     #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
     #I don't remember why I named this dmacand -- maybe dma combo and... then some?
+
     dmacandext<-comboext %>%
       dplyr::filter((comboext$dist_nm != 0 & comboext$dist_nm <= comboext$corer) | (comboext$GROUP_SIZE > 2 & comboext$dist_nm == 0))
     #print(dmacandext)
+
     ##filters for distinct sightings that should be considered for DMA calculation
     dmaextsightID<-data.frame(sightID = c(dmacandext$sightID,dmacandext$sightID2)) %>%
       distinct()
-    #print(dmaextsightID)
     
     exttot<-left_join(dmaextsightID,egsas, by = "sightID")%>%
       dplyr::select(sightID,DateTime,LATITUDE,LONGITUDE,GROUP_SIZE)%>%
       distinct()%>%
       arrange(sightID)%>%
-      summarise(total = sum(GROUP_SIZE))
-    
-    print(exttot)
+      summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime))
+
     ##this will pass into the next for loop
     x <- i
     #blank df for the dmas to enter
     extdf<-data.frame(extDMAs = NA,
-                      total = NA)
-
+                      TRIGGER_GROUPSIZE = NA,
+                      TRIGGERDATE = NA)
+    
     for (i in 1:nrow(egsas))
       if (egsas$sightID[i] %in% dmaextsightID$sightID) {
         egsas$ACTION_NEW[i] = 5
         df<-data.frame(extDMAs = x,
-                       total = exttot)
+                       TRIGGER_GROUPSIZE = exttot$total,
+                       TRIGGERDATE = exttot$TRIGGERDATE)
         extdf<-rbind(extdf,df)
       } else if (egsas$ACTION_NEW[i] == 55){
-        egsas$ACTION_NEW[i] = 1
+        egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
       } else {
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
     
-    print(df)
-    print("list of DMAs needing extension")
+  }
+  
     extdf<-extdf%>%
       filter(!is.na(extDMAs))%>%
       distinct()
-    print(extdf)
     
+    print("extdfbound")
     extdf$extDMAs<-as.integer(extdf$extDMAs)
-    extdfbound<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))
+    extdfbound<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
+      mutate(INITOREXT = "e")%>%
+      dplyr::select(extDMAs,NAME,INITOREXT,TRIGGER_GROUPSIZE,TRIGGERDATE)%>%
+      dplyr::rename("ID" = "extDMAs")
     print(extdfbound)
-  }
 
+    print("end 55")
   } #end 55 in action_new
-
+  
   ###################################
   ## animals potential for new DMA ##
   ###################################
-  
+  if (NA %in% egsas$ACTION_NEW) {
   ##only taking ACTION_NEW = na
   actionna<-egsas %>% filter(is.na(egsas$ACTION_NEW)) %>% dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID")
   ##distance between points matrix -- compares right whale sightings positions to each other
@@ -215,7 +220,7 @@
     } else {
       egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
     }
-  
+  } #end na
   ######
   ##Create DMA
   ######
@@ -274,8 +279,6 @@
     polycoorddf<-as.data.frame(polycoord.tr)
 
     #############           
-    ##this part may not be necessary as things in here have changed quite a bit and I haven't had time to dissect this part
-    ##things have changed a lot, but a spatialpolygon dataframe product is necessary to feed into the overlap analysis
     ## the circular core areas are the polygons in the below section
     idpoly<-split(polycoorddf, polycoorddf$id)
 
@@ -434,28 +437,15 @@
 
     polyclust_sp_df<-SpatialPolygonsDataFrame(polyclust_sp, data.frame(id = unique(dma15$cluster), row.names = unique(dma15$cluster)))
     
-    ##############
-    ##for KML
-    dmabounds<-polyclust_sp %>% 
-      fortify() %>% 
-      dplyr::select("long","lat","id","order") %>%
-      mutate(latround = round(lat, 2), lonround = round(long, 2), 
-             "Lat (Degree Minutes)" = paste( trunc(lat), formatC(round((lat %% 1)*60,0), width = 2,flag = 0), "N", sep = " "),
-             "Lon (Degree Minutes)" = paste( formatC(abs(trunc(long)), width = 3,flag = 0), formatC(round((abs(long) %% 1)*60,0), width = 2,flag = 0), "W", sep = " "))
-    ##for database (excludes the 5th point to close the polygon)
-    dmacoord<-dmabounds%>%
-      dplyr::rename(ID = id, Vertex = order, "Lat (Decimal Degrees)" = latround, "Lon (Decimal Degrees)" = lonround)%>%
-      dplyr::select(-long, -lat)%>%
-      filter(Vertex != 5)
-    
-    sasdma<-leaflet(data = egsas) %>% 
-      addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
-      addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-      addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-      addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
-      addPolygons(data = polyclust_sp, weight = 2, color = "blue") %>%
-      addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
-      addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
+    print("new dma bounds")
+    dmabounds<-polyclust_sp %>%
+      fortify() %>%
+      mutate(LAT = round(lat, 2), LON = round(long, 2))%>%
+      dplyr::select(id,order,LAT,LON)%>%
+      dplyr::rename("ID" = "id", "VERTEX" = "order")
+      
+    print(dmabounds)
+    ###############
     
     #############
     ## dma name #
@@ -527,34 +517,104 @@
     trigsize$cluster<-as.character(trigsize$cluster)
     dmanamedf<-left_join(dmanamedf,trigsize, by = c("ID" = "cluster"))
     print(dmanamedf)
+    
+  } # end of 4
+  
+  if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
+    print("4 or 5")
+    if(!exists("polyclust_sp")){
+      polyclust_sp<-SpatialPolygons(list(fakedma))
+    } 
+    
+    #the below is to put a bandaid on sightings trigger extensions not having black core ring to plot. 
+    #add it to the list
+    if(!exists("polycoorddf_sp")){
+      polycoorddf_sp<-SpatialPolygons(list(fakedma))
+    }
     ##############
     ##join dmanamedf with ext dmas
     ##ext IDs should be 1 + max(ID) of new dmas
+    if(exists("dmanamedf") & exists("extdfbound")){
+      alldmas<-rbind(dmanamedf,extdfbound)
+    } else if (!exists("dmanamedf") & exists("extdfbound")){
+      alldmas<-extdfbound
+    } else if (exists("dmanamedf") & !exists("extdfbound")){
+      alldmas<-dmanamedf
+    }  
+    print(alldmas)
+  
+    print("do bounds exist?")
+    if(exists("dmabounds") & exists("dmaext")){
+      print(dmabounds)
+
+      
+      alldmabounds<-rbind(dmabounds,dmaext)
+    } else if (!exists("dmabounds") & exists("dmaext")){
+      print(dmaext)
+      alldmabounds<-dmaext
+    } else if (exists("dmabounds") & !exists("edmaext")){
+      print(dmabounds)
+      alldmabounds<-dmabounds
+    } 
     
+    print(alldmabounds)
     
-    dmanameout<-dmanamedf%>%
-      dplyr::select(-INITOREXT)
-    dmanameout$TRIGGERDATE<-as.character(dmanameout$TRIGGERDATE)
-    print(dmanameout)
-    output$dmanameout<-renderTable({dmanameout})
+    ##for database (excludes the 5th point to close the polygon)
+    dmacoord<-alldmabounds%>%
+      mutate("Lat (Degree Minutes)" = paste( trunc(LAT), formatC(round((LAT %% 1)*60,0), width = 2,flag = 0), "N", sep = " "),
+             "Lon (Degree Minutes)" = paste( formatC(abs(trunc(LON)), width = 3,flag = 0), formatC(round((abs(LON) %% 1)*60,0), width = 2,flag = 0), "W", sep = " "))%>%
+      dplyr::rename("Lat (Decimal Degrees)" = LAT, "Lon (Decimal Degrees)" = LON)%>%
+      filter(VERTEX != 5)
+    print(dmacoord)
     
-    output$dmacoord<-renderTable({dmacoord})
-    #SAS=SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD
-    egsastab<-egsas %>% 
-      dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
-    ################
-    ##if DMA:
-    CRS.gearth <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
-    
-    dmabounds_kml<-dmabounds
-    coordinates(dmabounds_kml)<-~lonround+latround
+    ##KML for all dmas (new and/or ext)
+    CRS.gearth <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") # gearth = google earth
+    print(head(alldmabounds))
+    dmabounds_kml<-alldmabounds
+    coordinates(dmabounds_kml)<-~LON+LAT
     proj4string(dmabounds_kml)<-CRS.latlon
     dmabounds_kml.tr<- spTransform(dmabounds_kml, CRS.gearth)
     
-    dma_date<-paste0("DMA_",year(egsas$DateTime[1]),"_",strftime(egsas$DateTime[1], "%m"),"_",strftime(egsas$DateTime[1], "%d"))
+    ##KML making
+    output$kml <- downloadHandler(
+      filename = function() {
+        paste0(dma_date,".kml")
+      },
+      content = function(file) {
+        writeOGR(dmabounds_kml.tr, file, layer= "dmabounds_kml.tr", driver="KML")
+        kmlPolygons(obj=polyclust_sp_df, kmlfile=file, 
+                    name="KML DMA", description="", col=NULL, visibility=1, lwd=2,
+                    border="yellow", kmlname="", kmldescription="")
+      }
+    )
     
+    
+    
+    dma_date<-paste0("DMA_",year(egsas$DateTime[1]),"_",strftime(egsas$DateTime[1], "%m"),"_",strftime(egsas$DateTime[1], "%d"))
+    ###############
+    ##buttons
     enable("dmaup")
     enable("kml")
+    ###############
+    dmanameout<-alldmas
+    
+    dmanameout$TRIGGERDATE<-as.character(dmanameout$TRIGGERDATE)
+    output$dmanameout<-renderTable({dmanameout})
+    output$dmacoord<-renderTable({dmacoord})
+    
+    #SAS=SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD
+    egsastab<-egsas %>% 
+      dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+    
+    sasdma<-leaflet(data = egsas) %>% 
+      addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
+      addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
+      addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+      addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
+      addPolygons(data = polyclust_sp, weight = 2, color = "blue") %>%
+      addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
+      addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
+    
   } else { ##4 in egsas$action_new
     
     egsastab<-egsas %>% 
@@ -574,19 +634,6 @@
   
   output$sasdma = renderLeaflet({print(sasdma)})
   output$egsastab<-renderTable({egsastab},  striped = TRUE)
-  
-  ##KML making
-  output$kml <- downloadHandler(
-    filename = function() {
-      paste0(dma_date,".kml")
-    },
-    content = function(file) {
-      writeOGR(dmabounds_kml.tr, file, layer= "dmabounds_kml.tr", driver="KML")
-      kmlPolygons(obj=polyclust_sp_df, kmlfile=file, 
-                  name="KML DMA", description="", col=NULL, visibility=1, lwd=2,
-                  border="yellow", kmlname="", kmldescription="")
-    }
-  )
   
   observeEvent(input$sas,{
     
@@ -694,10 +741,10 @@
       }
 
     
-    dmanamedf$ID<-as.numeric(dmanamedf$ID) #a number to add to
+    alldmas$ID<-as.numeric(alldmas$ID) #a number to add to
     
-    #### this is where new dmas and extensions need to be together in dmanamedf
-    dmainfo<-dmanamedf%>%
+    #### this is where new dmas and extensions need to be together in alldmas
+    dmainfo<-alldmas%>%
       mutate(OLDID = ID,
              ID = ID + maxid,
              EXPDATE = paste0("to_timestamp('",exp,"', 'YYYY-MM-DD HH24:MI:SS')"),
@@ -734,7 +781,7 @@
     ####################
     dmacoord$ID<-as.numeric(dmacoord$ID)
     dmacoordinsert<-left_join(dmainfo,dmacoord, by = c("OLDID" = "ID"))%>%
-      dplyr::select(ID,Vertex,`Lat (Decimal Degrees)`,`Lon (Decimal Degrees)`)%>%
+      dplyr::select(ID,VERTEX,`Lat (Decimal Degrees)`,`Lon (Decimal Degrees)`)%>%
       dplyr::rename("VERTEX" = "Vertex","LAT" = "Lat (Decimal Degrees)","LON" = "Lon (Decimal Degrees)")%>%
       mutate(ROWNUMBER = 999999)
       
@@ -760,7 +807,7 @@
         
         print(tempReport)
         file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
-        params<-list(dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmanamedf = dmanamedf, dmacoord = dmacoord)
+        params<-list(dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, alldmas = alldmas, dmacoord = dmacoord)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
@@ -838,15 +885,15 @@
     
     letterdate<-format(Sys.Date(), '%B %d, %Y')
     #triggerword<-numbers2words(triggersize)
-    numberword<-dmanamedf%>%
-      mutate(triggerword = numbers2words(dmanamedf$TRIGGER_GROUPSIZE))
+    numberword<-alldmas%>%
+      mutate(triggerword = numbers2words(alldmas$TRIGGER_GROUPSIZE))
     triggerword<-as.list(numberword$triggerword)
     triggerword<-do.call("paste", c(triggerword, sep = ", "))
     triggerword<-sub(",([^,]*)$", " and\\1", triggerword)  
     
     letterdirect<-direction(dmanameselect)
     
-    letterbounds<-left_join(dmanamedf,dmacoord, by = "ID")
+    letterbounds<-left_join(alldmas,dmacoord, by = "ID")
     print(letterbounds)
     #initial/extension
     ie<-as.list(unique(letterbounds$INITOREXT))
