@@ -837,7 +837,7 @@
     ############
     
     letterdate<-format(Sys.Date(), '%B %d, %Y')
-    triggerword<-numbers2words(triggersize)
+    #triggerword<-numbers2words(triggersize)
     numberword<-dmanamedf%>%
       mutate(triggerword = numbers2words(dmanamedf$TRIGGER_GROUPSIZE))
     triggerword<-as.list(numberword$triggerword)
@@ -846,43 +846,62 @@
     
     letterdirect<-direction(dmanameselect)
     
-    observer<-input$triggrp
-    #choose group that saw the most to be the trigger org
-    if (exists("observer")){ 
-      print(observer)
-    }else{
-      observer<-"NOAA North Atlantic Right Whale Sighting Survey"
-    }
-    
-    neworextlet<-NULL
-    #get df of new and extended dmas
-    #get a list of the initext and see if
-    for (i in 1:nrow(x))
-      if (exists("i" & "e")){
-        neworextlet<-"Since whales were sighted both in a region where there are no protections in place, as well as within a region where the protections are due to expire in a week or less,
-        we recommend a DMA be initiated/extended at the following bounds:"
-      } else if (exists("i")){
-        neworextlet<-"Since no protections are in place in this region at this time, we recommend a DMA be initiated that is bounded by the following:"
-      } else if (exists("e")){
-        neworextlet<-"Since the current protections in this region are due to expire in a week or less, we recommend an extension of the DMA that is bounded by the following:"
-      }  
-    
     letterbounds<-left_join(dmanamedf,dmacoord, by = "ID")
     print(letterbounds)
-    title1<-letterbounds%>%filter(ID == 1)%>%dplyr::select(NAME)%>%distinct()
-    title1<-title1$NAME[1]
-    NLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == max(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
-    NLat1<-NLat1$`Lat (Degree Minutes)`[1]
-    SLat1<-letterbounds%>%filter(ID == 1 & `Lat (Decimal Degrees)` == min(`Lat (Decimal Degrees)`))%>%dplyr::select(`Lat (Degree Minutes)`)%>%distinct()
-    SLat1<-SLat1$`Lat (Degree Minutes)`[1]
-    WLon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == max(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)%>%distinct()
-    WLon1<-WLon1$`Lon (Degree Minutes)`[1]
-    ELon1<-letterbounds%>%filter(ID == 1 & `Lon (Decimal Degrees)` == min(`Lon (Decimal Degrees)`))%>%dplyr::select(`Lon (Degree Minutes)`)%>%distinct()
-    ELon1<-ELon1$`Lon (Degree Minutes)`[1]
+    #initial/extension
+    ie<-as.list(unique(letterbounds$INITOREXT))
+    print(ie)
+    neworextlet<-NULL
+
+      if ('e' %in% ie & 'i' %in% ie){
+         neworextlet<-"Since whales were sighted both in a region where there are no protections in place, as well as within a region where the protections are due to expire in a week or less,
+         we recommend a DMA be initiated/extended at the following bounds:"
+       } else if ('i' %in% ie){
+         neworextlet<-"Since no protections are in place in this region at this time, we recommend a DMA be initiated that is bounded by the following:"
+       } else if ('e' %in% ie){
+         neworextlet<-"Since the current protections in this region are due to expire in a week or less, we recommend an extension of the DMA that is bounded by the following:"
+       }  
+    
+    
+    DMA1<-letterbounds%>%filter(ID == 1)
+    title1<-unique(DMA1$NAME)
+    NLat1<-unique(DMA1$`Lat (Degree Minutes)`[DMA1$`Lat (Decimal Degrees)` == max(DMA1$`Lat (Decimal Degrees)`)])
+    SLat1<-unique(DMA1$`Lat (Degree Minutes)`[DMA1$`Lat (Decimal Degrees)` == min(DMA1$`Lat (Decimal Degrees)`)])
+    WLon1<-unique(DMA1$`Lon (Degree Minutes)`[DMA1$`Lon (Decimal Degrees)` == max(DMA1$`Lon (Decimal Degrees)`)])
+    ELon1<-unique(DMA1$`Lon (Degree Minutes)`[DMA1$`Lon (Decimal Degrees)` == min(DMA1$`Lon (Decimal Degrees)`)])
 
     print(paste(title1,NLat1,SLat1,WLon1,ELon1))
+    
+    DMA2<-letterbounds%>%filter(ID == 2)
+    title2<-unique(DMA2$NAME)
+    NLat2<-unique(DMA2$`Lat (Degree Minutes)`[DMA2$`Lat (Decimal Degrees)` == max(DMA2$`Lat (Decimal Degrees)`)])
+    SLat2<-unique(DMA2$`Lat (Degree Minutes)`[DMA2$`Lat (Decimal Degrees)` == min(DMA2$`Lat (Decimal Degrees)`)])
+    WLon2<-unique(DMA2$`Lon (Degree Minutes)`[DMA2$`Lon (Decimal Degrees)` == max(DMA2$`Lon (Decimal Degrees)`)])
+    ELon2<-unique(DMA2$`Lon (Degree Minutes)`[DMA2$`Lon (Decimal Degrees)` == min(DMA2$`Lon (Decimal Degrees)`)])
+    
+    print(paste(title2,NLat2,SLat2,WLon2,ELon2))
+    
+    DMA3<-letterbounds%>%filter(ID == 3)
+    title3<-unique(DMA3$NAME)
+    NLat3<-unique(DMA3$`Lat (Degree Minutes)`[DMA3$`Lat (Decimal Degrees)` == max(DMA3$`Lat (Decimal Degrees)`)])
+    SLat3<-unique(DMA3$`Lat (Degree Minutes)`[DMA3$`Lat (Decimal Degrees)` == min(DMA3$`Lat (Decimal Degrees)`)])
+    WLon3<-unique(DMA3$`Lon (Degree Minutes)`[DMA3$`Lon (Decimal Degrees)` == max(DMA3$`Lon (Decimal Degrees)`)])
+    ELon3<-unique(DMA3$`Lon (Degree Minutes)`[DMA3$`Lon (Decimal Degrees)` == min(DMA3$`Lon (Decimal Degrees)`)])
+    
+    print(paste(title3,NLat3,SLat3,WLon3,ELon3))
+    
+    DMA4<-letterbounds%>%filter(ID == 4)
+    title4<-unique(DMA4$NAME)
+    NLat4<-unique(DMA4$`Lat (Degree Minutes)`[DMA4$`Lat (Decimal Degrees)` == max(DMA4$`Lat (Decimal Degrees)`)])
+    SLat4<-unique(DMA4$`Lat (Degree Minutes)`[DMA4$`Lat (Decimal Degrees)` == min(DMA4$`Lat (Decimal Degrees)`)])
+    WLon4<-unique(DMA4$`Lon (Degree Minutes)`[DMA4$`Lon (Decimal Degrees)` == max(DMA4$`Lon (Decimal Degrees)`)])
+    ELon4<-unique(DMA4$`Lon (Degree Minutes)`[DMA4$`Lon (Decimal Degrees)` == min(DMA4$`Lon (Decimal Degrees)`)])
+    
+    print(paste(title4,NLat4,SLat4,WLon4,ELon4))
 
     ###keep adding these bounds
+
+    
     
     output$dmaletter <- downloadHandler(
       
@@ -898,9 +917,22 @@
         }        
         
         file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
-        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, letterdirect = letterdirect, 
-                     landmark = landmark, observer = observer, neworextlet = neworextlet, title1 = title1, 
-                     NLat1 = NLat1, SLat1 = SLat1, WLon1 = WLon1, ELon1 = ELon1, expletter = expletter)
+        
+        ##choose group that saw the most to be the trigger org
+        if (exists("triggrptrue")){ 
+          observer<-input$triggrp
+          print(observer)
+        }else{
+          observer<-"NOAA North Atlantic Right Whale Sighting Survey"
+        }
+        
+        params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, 
+                     letterdirect = letterdirect, landmark = landmark, observer = observer, neworextlet = neworextlet, 
+                     title1 = title1, NLat1 = NLat1, SLat1 = SLat1, WLon1 = WLon1, ELon1 = ELon1,
+                     title2 = title2, NLat2 = NLat2, SLat2 = SLat2, WLon2 = WLon2, ELon2 = ELon2,
+                     title3 = title3, NLat3 = NLat3, SLat3 = SLat3, WLon3 = WLon3, ELon3 = ELon3,
+                     title4 = title4, NLat4 = NLat4, SLat4 = SLat4, WLon4 = WLon4, ELon4 = ELon4,
+                     expletter = expletter)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
