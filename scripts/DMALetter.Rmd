@@ -14,6 +14,21 @@ params:
   SLat1: NA
   WLon1: NA
   ELon1: NA
+  title2: NA
+  NLat2: NA
+  SLat2: NA
+  WLon2: NA
+  ELon2: NA
+  title3: NA
+  NLat3: NA
+  SLat3: NA
+  WLon3: NA
+  ELon3: NA
+  title4: NA
+  NLat4: NA
+  SLat4: NA
+  WLon4: NA
+  ELon4: NA
   expletter: NA
 output: pdf_document
 ---
@@ -49,7 +64,6 @@ SUBJECT: \hspace*{87pt}	Materials documenting `r params$date1` North Atlantic ri
 \newline
 On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right whales were sighted `r params$letterdirect` `r params$landmark` by the `r params$observer`.  `r params$neworextlet`
 \newline
-`r #if(show.text){"la la la"}`
 `r params$title1`
 \begin{enumerate}
 	\item \quad	`r params$NLat1`
@@ -57,6 +71,18 @@ On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right wha
   \item	\quad `r params$WLon1`
   \item	\quad `r params$ELon1`
 \end{enumerate}
+
+```{r setup, echo=FALSE}
+DMAlet2 <- params$title2 != 'NA'
+DMAlet3 <- params$title3 != 'NA'
+DMAlet4 <- params$title4 != 'NA'
+```
+```{r conditional_block, echo=FALSE, results='asis', eval=DMAlet2, child='DMAlet2.Rmd'}
+```
+```{r conditional_block, echo=FALSE, results='asis', eval=DMAlet3, child='DMAlet3.Rmd'}
+```
+```{r conditional_block, echo=FALSE, results='asis', eval=DMAlet4, child='DMAlet4.Rmd'}
+```
 
 Expiration – `r params$expletter`\newline 
 \newline 
