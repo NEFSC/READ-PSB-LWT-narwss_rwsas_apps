@@ -29,14 +29,15 @@ SpatialPolygons(DMAcoord_)
 #################
 
 #query all relevant DMAs
-
+##the to_date(to_char) for the expdate is necessary, otherwise, the modayr seconds default to 00:00:00 and dmas that expire on the same day are still included
 activedmasql<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 8), 'YYYY-MM-DD') as ext
                   from rightwhalesight.dmainfo
-                  where to_date('",MODAYR,"', 'YYYY-MM-DD') < EXPDATE
-                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > STARTDATE;")
+                  where to_date('",MODAYR,"', 'YYYY-MM-DD') < to_date(to_char(EXPDATE, 'YYYY-MM-DD'),'YYYY-MM-DD') 
+                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(STARTDATE, 'YYYY-MM-DD'),'YYYY-MM-DD');")
 
 actdma<-sqlQuery(cnxn,activedmasql)
 
+print(actdma)
 actdma<-actdma%>%
   group_by(NAME)%>%
   arrange(EXPDATE)%>%
@@ -67,7 +68,7 @@ if (nrow(actdma) == 0){
   ############
   ## report ##
   ############
-  
+  actdma$EXPDATE<-lubridate::ymd(actdma$EXPDATE)
   actdma$EXPDATE<-format(actdma$EXPDATE, format = "%d %B %Y")
   print(actdma)
   repdma<-actdma%>%  
