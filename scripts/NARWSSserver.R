@@ -1271,7 +1271,8 @@ observeEvent(input$rawupload,{
 
           egsas<-egsas%>%
             dplyr::select(-CALVES, -Behavior)
-          
+      
+      triggrptrue <- FALSE
       source('./scripts/action & dma.R', local = TRUE)$value
         }
       
