@@ -4,7 +4,7 @@ params:
   dmanameselect: NA
   date1: NA
   egsastab: NA
-  dmanamedf: NA
+  dmanameout: NA
   dmacoord: NA
 output: pdf_document
 
@@ -21,7 +21,7 @@ knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp
 ```
 \vspace*{-4mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
-knitr::kable(params$dmanamedf, caption = "DMA Names")
+knitr::kable(params$dmanameout, caption = "DMA Names")
 ```
 
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
@@ -31,7 +31,7 @@ knitr::kable(params$dmacoord, caption = "DMA Bounds")
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
 egtab<-params$egsastab%>%
   dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
-  dplyr::filter(ACTION_NEW == 4)
+  dplyr::filter(ACTION_NEW == 4 | ACTION_NEW == 5)
 knitr::kable(egtab, caption = "Right Whale Sighting(s)")
 
 ```
