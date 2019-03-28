@@ -134,26 +134,46 @@
     ##filters for distinct sightings that should be considered for DMA calculation
     dmaextsightID<-data.frame(sightID = c(dmacandext$sightID,dmacandext$sightID2)) %>%
       distinct()
-    
+    #print(dmaextsightID)
+    if(triggrptrue == TRUE){
+      obs_org<-left_join(dmaextsightID,egsas, by = "sightID")%>%
+      group_by(GROUP_SIZE)%>%
+      mutate(rank = rank(GROUP_SIZE, ties.method = "first"))%>%
+      filter(rank == 1)%>%
+      ungroup()%>%
+      distinct(OBSERVER_ORG)
+      print(obs_org)
+      
+    exttot<-left_join(dmaextsightID,egsas, by = "sightID")%>%
+      dplyr::select(sightID,DateTime,LATITUDE,LONGITUDE,GROUP_SIZE,OBSERVER_ORG)%>%
+      distinct()%>%
+      arrange(sightID)%>%
+      summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime), OBSERVER_ORG = obs_org$OBSERVER_ORG)
+    } else{
     exttot<-left_join(dmaextsightID,egsas, by = "sightID")%>%
       dplyr::select(sightID,DateTime,LATITUDE,LONGITUDE,GROUP_SIZE)%>%
       distinct()%>%
       arrange(sightID)%>%
-      summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime))
-
+      summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime), OBSERVER_ORG = 1)
+    }
+    
+    print(exttot)
+    
     ##this will pass into the next for loop
     x <- i
     #blank df for the dmas to enter
     extdf<-data.frame(extDMAs = NA,
                       TRIGGER_GROUPSIZE = NA,
-                      TRIGGERDATE = NA)
+                      TRIGGERDATE = NA,
+                      TRIGGERORG = NA)
     
     for (i in 1:nrow(egsas))
       if (egsas$sightID[i] %in% dmaextsightID$sightID) {
         egsas$ACTION_NEW[i] = 5
         df<-data.frame(extDMAs = x,
                        TRIGGER_GROUPSIZE = exttot$total,
-                       TRIGGERDATE = exttot$TRIGGERDATE)
+                       TRIGGERDATE = exttot$TRIGGERDATE,
+                       TRIGGERORG = exttot$OBSERVER_ORG)
         extdf<-rbind(extdf,df)
       } else if (egsas$ACTION_NEW[i] == 55){
         egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
@@ -167,15 +187,74 @@
       filter(!is.na(extDMAs))%>%
       distinct()
     
-    print("extdfbound")
+    print("extdfname")
     extdf$extDMAs<-as.integer(extdf$extDMAs)
-    extdfbound<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
+    extdfname<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
       mutate(INITOREXT = "e")%>%
-      dplyr::select(extDMAs,NAME,INITOREXT,TRIGGER_GROUPSIZE,TRIGGERDATE)%>%
-      dplyr::rename("ID" = "extDMAs")
-    print(extdfbound)
-
+      dplyr::select(extDMAs,NAME,INITOREXT,TRIGGER_GROUPSIZE,TRIGGERDATE,TRIGGERORG)%>%
+      dplyr::rename("ID" = "extDMAs")%>%
+      distinct()
+    print(extdfname)
+    
+    extdfbounds<-left_join(extdf, dmaext, by = c("extDMAs" = "ID"))%>%
+      dplyr::select(extDMAs,VERTEX,LAT,LON)%>%
+      dplyr::rename("ID" = "extDMAs")%>%
+      distinct()
+    print(extdfbounds)
+    
     print("end 55")
+    
+    ##############
+    dmaextsig<-inner_join(comboext,dmaextsightID, by = "sightID")
+    dmaextsights<-dmaextsig%>%
+      dplyr::select(DateTime,LATITUDE,LONGITUDE,GROUP_SIZE, sightID)%>%
+      distinct(DateTime,LATITUDE,LONGITUDE,GROUP_SIZE,sightID)%>%
+      mutate(corer=round(sqrt(GROUP_SIZE/(pi*egden)),2))%>%
+      as.data.frame()
+    print(dmaextsights)
+    dmaextsights$GROUP_SIZE<-as.numeric(dmaextsights$GROUP_SIZE)
+    
+    extPolyID<-rownames(dmaextsights)
+    print(extPolyID)
+    #core radius in meters
+    extcorer_m<-dmaextsights$corer*1852
+    dmaextsights<-cbind(dmaextsights,extcorer_m,extPolyID)
+    
+    #copy for spatializing
+    dmaextdf<-dmaextsights
+    
+    ########################
+    ## df to spatial object ##
+    ########################
+    ##declare which values are coordinates
+    coordinates(dmaextdf)<-~LONGITUDE+LATITUDE
+    ##declare what projection they are in
+    proj4string(dmaextdf)<-CRS.latlon
+    ##transform projection
+    dmaextdf.tr<-spTransform(dmaextdf, CRS.utm)
+    ###########
+    
+    ##gbuffer needs utm to calculate radius in meters
+    dmaextbuff<-gBuffer(dmaextdf.tr, byid=TRUE, width = dmaextdf$extcorer_m, capStyle = "ROUND")
+    #print(dmabuff)
+    
+    ##creates a dataframe from the density buffers put around sightings considered for DMA analysis
+    extpolycoord<-dmaextbuff %>% fortify() %>% dplyr::select("long","lat","id")
+    ##poly coordinates out of utm
+    coordinates(extpolycoord)<-~long+lat
+    proj4string(extpolycoord)<-CRS.utm
+    extpolycoord.tr<-spTransform(extpolycoord, CRS.latlon)
+    extpolycoorddf<-as.data.frame(extpolycoord.tr)
+    
+    #############           
+    ## the circular core areas are the polygons in the below section
+    extidpoly<-split(extpolycoorddf, extpolycoorddf$id)
+    extidpoly<-lapply(extidpoly, function(x) { x["id"] <- NULL; x })
+    extpcoord<-lapply(extidpoly, Polygon)
+    extpcoord_<-lapply(seq_along(extpcoord), function(i) Polygons(list(extpcoord[[i]]), ID = names(extidpoly)[i]))
+    extpolycoorddf_sp<-SpatialPolygons(extpcoord_, proj4string = CRS.latlon)
+    
+    
   } #end 55 in action_new
   
   ###################################
@@ -369,9 +448,10 @@
     clustersigs<-left_join(sigs,clustid, by = c("sightID" = "PolyID"))
 
     clustersigs$DateTime<-ymd_hms(clustersigs$DateTime)
+
     trigsize<-clustersigs %>% 
       group_by(cluster)%>%
-      summarise(TRIGGER_GROUPSIZE = n(), TRIGGERDATE = min(DateTime))
+      summarise(TRIGGER_GROUPSIZE = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime))
     #################
     
     ##gets to the core for the cluster
@@ -444,7 +524,6 @@
       dplyr::select(id,order,LAT,LON)%>%
       dplyr::rename("ID" = "id", "VERTEX" = "order")
       
-    print(dmabounds)
     ###############
     
     #############
@@ -502,9 +581,7 @@
     
     ##combine list of multiple dma names
     dmanamedf<-rbindlist(dmanamedf)
-    landmark_ls<-as.list(unique(dmanamedf$port))
-    landmark<-do.call("paste", c(landmark_ls, sep = ", "))
-    landmark<-sub(",([^,]*)$", " and\\1", landmark)  
+
     ## paste together the title
     dmanamedf<-dmanamedf%>%
       mutate(NAME = paste0(round(dmanamedf$disttocenter_nm,0),'nm ',dmanamedf$cardinal,' ',dmanamedf$port),
@@ -516,7 +593,6 @@
     ##join on columns with same data type
     trigsize$cluster<-as.character(trigsize$cluster)
     dmanamedf<-left_join(dmanamedf,trigsize, by = c("ID" = "cluster"))
-    print(dmanamedf)
     
   } # end of 4
   
@@ -531,33 +607,55 @@
     if(!exists("polycoorddf_sp")){
       polycoorddf_sp<-SpatialPolygons(list(fakedma))
     }
+    
+    if(!exists("extpolycoorddf_sp")){
+      extpolycoorddf_sp<-SpatialPolygons(list(fakedma))
+    }
     ##############
     ##join dmanamedf with ext dmas
     ##ext IDs should be 1 + max(ID) of new dmas
-    if(exists("dmanamedf") & exists("extdfbound")){
-      alldmas<-rbind(dmanamedf,extdfbound)
-    } else if (!exists("dmanamedf") & exists("extdfbound")){
-      alldmas<-extdfbound
-    } else if (exists("dmanamedf") & !exists("extdfbound")){
+    if(exists("dmanamedf") & exists("extdfname")){
+      alldmas<-rbind(dmanamedf,extdfname)
+    } else if (!exists("dmanamedf") & exists("extdfname")){
+      alldmas<-extdfname
+    } else if (exists("dmanamedf") & !exists("extdfname")){
       alldmas<-dmanamedf
     }  
-    print(alldmas)
-  
+    
+    alldmas<-alldmas%>%
+      mutate(ID = dense_rank(ID))
+    
     print("do bounds exist?")
-    if(exists("dmabounds") & exists("dmaext")){
-      print(dmabounds)
-
-      
-      alldmabounds<-rbind(dmabounds,dmaext)
-    } else if (!exists("dmabounds") & exists("dmaext")){
-      print(dmaext)
-      alldmabounds<-dmaext
-    } else if (exists("dmabounds") & !exists("edmaext")){
-      print(dmabounds)
+    if(exists("dmabounds") & exists("extdfbounds")){
+      alldmabounds<-rbind(dmabounds,extdfbounds)
+    } else if (!exists("dmabounds") & exists("extdfbounds")){
+      alldmabounds<-extdfbounds
+    } else if (exists("dmabounds") & !exists("extdfbounds")){
       alldmabounds<-dmabounds
     } 
     
+    alldmabounds<-alldmabounds%>%
+      mutate(ID = dense_rank(ID))
     print(alldmabounds)
+    
+    
+    adb5<-alldmabounds%>%
+      filter(VERTEX == 1)%>%
+      mutate(VERTEX = 5)
+    
+    allbounds<-rbind(alldmabounds,adb5)
+    allbounds<-allbounds%>%
+      dplyr::select(-VERTEX)
+      
+    allbounds<-split(allbounds, allbounds$ID)
+    print(allbounds)
+    allbounds<-lapply(allbounds, function(x) { x["ID"] <- NULL; x })
+    print(allbounds)
+    allboundscoord<-lapply(allbounds, Polygon)
+    print(allboundscoord)
+    allboundscoord_<-lapply(seq_along(allboundscoord), function(i) Polygons(list(allboundscoord[[i]]), ID = names(allboundscoord)[i]))
+    print(allboundscoord_)
+    kml_sp_df<-SpatialPolygons(allboundscoord_, proj4string = CRS.latlon)
     
     ##for database (excludes the 5th point to close the polygon)
     dmacoord<-alldmabounds%>%
@@ -565,15 +663,16 @@
              "Lon (Degree Minutes)" = paste( formatC(abs(trunc(LON)), width = 3,flag = 0), formatC(round((abs(LON) %% 1)*60,0), width = 2,flag = 0), "W", sep = " "))%>%
       dplyr::rename("Lat (Decimal Degrees)" = LAT, "Lon (Decimal Degrees)" = LON)%>%
       filter(VERTEX != 5)
-    print(dmacoord)
+    #print(dmacoord)
     
     ##KML for all dmas (new and/or ext)
     CRS.gearth <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") # gearth = google earth
-    print(head(alldmabounds))
+    #print(head(alldmabounds))
     dmabounds_kml<-alldmabounds
     coordinates(dmabounds_kml)<-~LON+LAT
     proj4string(dmabounds_kml)<-CRS.latlon
     dmabounds_kml.tr<- spTransform(dmabounds_kml, CRS.gearth)
+    
     
     ##KML making
     output$kml <- downloadHandler(
@@ -582,7 +681,7 @@
       },
       content = function(file) {
         writeOGR(dmabounds_kml.tr, file, layer= "dmabounds_kml.tr", driver="KML")
-        kmlPolygons(obj=polyclust_sp_df, kmlfile=file, 
+        kmlPolygons(obj=kml_sp_df, kmlfile=file, 
                     name="KML DMA", description="", col=NULL, visibility=1, lwd=2,
                     border="yellow", kmlname="", kmldescription="")
       }
@@ -599,6 +698,7 @@
     dmanameout<-alldmas
     
     dmanameout$TRIGGERDATE<-as.character(dmanameout$TRIGGERDATE)
+    dmanameout$TRIGGER_GROUPSIZE<-sprintf("%.0f",round(dmanameout$TRIGGER_GROUPSIZE, digits = 0))
     output$dmanameout<-renderTable({dmanameout})
     output$dmacoord<-renderTable({dmacoord})
     
@@ -613,7 +713,8 @@
       addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
       addPolygons(data = polyclust_sp, weight = 2, color = "blue") %>%
       addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
-      addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
+      addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")%>%
+      addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))
     
   } else { ##4 in egsas$action_new
     
@@ -625,7 +726,7 @@
       addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
       addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
-      addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas$DateTime)
+      addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))
     
   }
   
@@ -695,33 +796,13 @@
     
     maxid<-sqlQuery(cnxn,maxidsql)
     maxid<-as.integer(maxid)
-
-    ##made this ACTION_NEW == 4 instead of ACTION to work with the survey app
     
-    # ##trigger group size
-    # totaldmaeg<-egsas %>%
-    #   filter(ACTION_NEW == 4) %>%
-    #   summarise(total = sum(GROUP_SIZE)) %>%
-    #   as.data.frame()
-    # print(totaldmaeg$total[1])
-    # print(max(totaldmaeg$total))
-    # triggersize<-max(totaldmaeg$total)
-    # 
-    #trigger date -- we really don't need this since we know what date it is, but whatever
-    triggersig<-egsas%>%
-      filter(ACTION_NEW == 4 & GROUP_SIZE == max(GROUP_SIZE))%>%
-      group_by(GROUP_SIZE)%>%
-      mutate(rank = rank(GROUP_SIZE, ties.method = "first"))%>%
-      filter(rank == 1)%>%
-      ungroup()
-      
-    trigger<-triggersig%>%
-      dplyr::select(DateTime)
-    trig<-lubridate::ymd_hms(trigger)
+    trigd<-alldmas%>%
+      dplyr::select(TRIGGERDATE)%>%
+      distinct()
+    trig<-lubridate::ymd_hms(trigd$TRIGGERDATE)
     trig<-force_tz(trig, tzone = "America/New_York")
-
     triggerdateletter<-format(date(trig), "%B %d, %Y")
-    
     ##expiration date
     exp<-trig
     hour(exp)<-0
@@ -731,16 +812,7 @@
 
     expletter<-format(exp, "%H:%M:%S %Z %B %d, %Y")
     ###
-    
-    #choose group that saw the most to be the trigger org
-    if (exists("OBSERVER_ORG", where = triggersig)){ 
-      trigorg<-triggersig$OBSERVER_ORG
-      print(trigorg)
-    }else{
-        trigorg<-1
-      }
 
-    
     alldmas$ID<-as.numeric(alldmas$ID) #a number to add to
     
     #### this is where new dmas and extensions need to be together in alldmas
@@ -749,15 +821,11 @@
              ID = ID + maxid,
              EXPDATE = paste0("to_timestamp('",exp,"', 'YYYY-MM-DD HH24:MI:SS')"),
              TRIGGERDATE = paste0("to_timestamp('",TRIGGERDATE,"', 'YYYY-MM-DD HH24:MI:SS')"),
-             TRIGGERORG = trigorg,
              STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"))%>%
       dplyr::select(OLDID,ID,NAME,EXPDATE,TRIGGERDATE,INITOREXT,TRIGGERORG,STARTDATE,TRIGGER_GROUPSIZE)
-    print(dmainfo)
     
     dmainfoinsert<-dmainfo%>%
       dplyr::select(-OLDID)
-    
-    print(dmainfoinsert)
     
     newdmalist<-as.list(dmainfoinsert$NAME)
     dmanameselect<-do.call("paste", c(newdmalist, sep = ", "))
@@ -782,7 +850,6 @@
     dmacoord$ID<-as.numeric(dmacoord$ID)
     dmacoordinsert<-left_join(dmainfo,dmacoord, by = c("OLDID" = "ID"))%>%
       dplyr::select(ID,VERTEX,`Lat (Decimal Degrees)`,`Lon (Decimal Degrees)`)%>%
-      dplyr::rename("VERTEX" = "Vertex","LAT" = "Lat (Decimal Degrees)","LON" = "Lon (Decimal Degrees)")%>%
       mutate(ROWNUMBER = 999999)
       
     for (i in 1:nrow(dmacoordinsert)){
@@ -807,7 +874,7 @@
         
         print(tempReport)
         file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
-        params<-list(dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, alldmas = alldmas, dmacoord = dmacoord)
+        params<-list(dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmanameout = dmanameout, dmacoord = dmacoord)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
@@ -884,7 +951,6 @@
     ############
     
     letterdate<-format(Sys.Date(), '%B %d, %Y')
-    #triggerword<-numbers2words(triggersize)
     numberword<-alldmas%>%
       mutate(triggerword = numbers2words(alldmas$TRIGGER_GROUPSIZE))
     triggerword<-as.list(numberword$triggerword)
@@ -893,11 +959,31 @@
     
     letterdirect<-direction(dmanameselect)
     
+    dmalandmark<-alldmas%>%
+      mutate(landmark = dplyr::case_when(
+          grepl('Bay of Fundy Canada',NAME) ~ 'Bay of Fundy Canada',
+          grepl('Portland ME',NAME) ~ 'Portland ME',
+          grepl('Portsmouth NH',NAME) ~ 'Portsmouth NH',
+          grepl('Boston MA',NAME) ~ 'Boston MA',
+          grepl('Providence RI',NAME) ~ 'Providence RI',
+          grepl('New York NY',NAME) ~ 'New York NY',
+          grepl('Atlantic City NJ',NAME) ~ 'Atlantic City NJ',
+          grepl('Virginia Beach VA',NAME) ~ 'Virginia Beach VA',
+          grepl("Martha's Vineyard MA",NAME) ~ "Martha's Vineyard MA",
+          grepl('Nantucket MA',NAME) ~ 'Nantucket MA',
+          grepl('Cape Cod MA',NAME) ~ 'Cape Cod MA',
+          grepl('Cape Cod Bay',NAME) ~ 'Cape Cod Bay'
+      ))
+
+    landmark_ls<-as.list(unique(dmalandmark$landmark))
+    landmark<-do.call("paste", c(landmark_ls, sep = ", "))
+    landmark<-sub(",([^,]*)$", " and\\1", landmark)  
+    
     letterbounds<-left_join(alldmas,dmacoord, by = "ID")
-    print(letterbounds)
+
     #initial/extension
     ie<-as.list(unique(letterbounds$INITOREXT))
-    print(ie)
+
     neworextlet<-NULL
 
       if ('e' %in% ie & 'i' %in% ie){
@@ -909,7 +995,7 @@
          neworextlet<-"Since the current protections in this region are due to expire in a week or less, we recommend an extension of the DMA that is bounded by the following:"
        }  
     
-    
+    if(1 %in% letterbounds$ID){
     DMA1<-letterbounds%>%filter(ID == 1)
     title1<-unique(DMA1$NAME)
     NLat1<-unique(DMA1$`Lat (Degree Minutes)`[DMA1$`Lat (Decimal Degrees)` == max(DMA1$`Lat (Decimal Degrees)`)])
@@ -917,8 +1003,9 @@
     WLon1<-unique(DMA1$`Lon (Degree Minutes)`[DMA1$`Lon (Decimal Degrees)` == max(DMA1$`Lon (Decimal Degrees)`)])
     ELon1<-unique(DMA1$`Lon (Degree Minutes)`[DMA1$`Lon (Decimal Degrees)` == min(DMA1$`Lon (Decimal Degrees)`)])
 
-    print(paste(title1,NLat1,SLat1,WLon1,ELon1))
+    print(paste(title1,NLat1,SLat1,WLon1,ELon1))}
     
+    if(2 %in% letterbounds$ID){
     DMA2<-letterbounds%>%filter(ID == 2)
     title2<-unique(DMA2$NAME)
     NLat2<-unique(DMA2$`Lat (Degree Minutes)`[DMA2$`Lat (Decimal Degrees)` == max(DMA2$`Lat (Decimal Degrees)`)])
@@ -927,7 +1014,15 @@
     ELon2<-unique(DMA2$`Lon (Degree Minutes)`[DMA2$`Lon (Decimal Degrees)` == min(DMA2$`Lon (Decimal Degrees)`)])
     
     print(paste(title2,NLat2,SLat2,WLon2,ELon2))
+    } else {
+      title2 = ""
+      NLat2 = ""
+      SLat2 = ""
+      WLon2 = ""
+      ELon2 = ""
+    }
     
+    if(3 %in% letterbounds$ID){
     DMA3<-letterbounds%>%filter(ID == 3)
     title3<-unique(DMA3$NAME)
     NLat3<-unique(DMA3$`Lat (Degree Minutes)`[DMA3$`Lat (Decimal Degrees)` == max(DMA3$`Lat (Decimal Degrees)`)])
@@ -936,7 +1031,15 @@
     ELon3<-unique(DMA3$`Lon (Degree Minutes)`[DMA3$`Lon (Decimal Degrees)` == min(DMA3$`Lon (Decimal Degrees)`)])
     
     print(paste(title3,NLat3,SLat3,WLon3,ELon3))
+    } else {
+      title3 = ""
+      NLat3 = ""
+      SLat3 = ""
+      WLon3 = ""
+      ELon3 = ""
+    }
     
+    if(4 %in% letterbounds$ID){
     DMA4<-letterbounds%>%filter(ID == 4)
     title4<-unique(DMA4$NAME)
     NLat4<-unique(DMA4$`Lat (Degree Minutes)`[DMA4$`Lat (Decimal Degrees)` == max(DMA4$`Lat (Decimal Degrees)`)])
@@ -945,11 +1048,15 @@
     ELon4<-unique(DMA4$`Lon (Degree Minutes)`[DMA4$`Lon (Decimal Degrees)` == min(DMA4$`Lon (Decimal Degrees)`)])
     
     print(paste(title4,NLat4,SLat4,WLon4,ELon4))
+    } else {
+      title4 = ""
+      NLat4 = ""
+      SLat4 = ""
+      WLon4 = ""
+      ELon4 = ""
+    }
 
-    ###keep adding these bounds
 
-    
-    
     output$dmaletter <- downloadHandler(
       
       filename = function() {
@@ -966,7 +1073,7 @@
         file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
         
         ##choose group that saw the most to be the trigger org
-        if (exists("triggrptrue")){ 
+        if (triggrptrue == TRUE){ 
           observer<-input$triggrp
           print(observer)
         }else{
