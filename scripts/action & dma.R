@@ -581,7 +581,7 @@
     
     ##combine list of multiple dma names
     dmanamedf<-rbindlist(dmanamedf)
-
+    print(dmanamedf)
     ## paste together the title
     dmanamedf<-dmanamedf%>%
       mutate(NAME = paste0(round(dmanamedf$disttocenter_nm,0),'nm ',dmanamedf$cardinal,' ',dmanamedf$port),
@@ -593,6 +593,29 @@
     ##join on columns with same data type
     trigsize$cluster<-as.character(trigsize$cluster)
     dmanamedf<-left_join(dmanamedf,trigsize, by = c("ID" = "cluster"))
+    print("with trigsize")
+    print(dmanamedf)
+    
+    if(triggrptrue == TRUE){
+      obs_org2<-left_join(dmasightID,egsas, by = "sightID")%>%
+        group_by(GROUP_SIZE)%>%
+        mutate(rank = rank(GROUP_SIZE, ties.method = "first"))%>%
+        filter(rank == 1)%>%
+        ungroup()%>%
+        distinct(OBSERVER_ORG)
+      print(obs_org2)
+      
+      dmanamedf<-dmanamedf%>%
+        mutate(TRIGGERORG = obs_org2$OBSERVER_ORG)
+      
+    } else{
+      
+      dmanamedf<-dmanamedf%>%
+        mutate(TRIGGERORG = 1)
+    }
+    
+    print(dmanamedf)
+    
     
   } # end of 4
   
@@ -814,7 +837,7 @@
     ###
 
     alldmas$ID<-as.numeric(alldmas$ID) #a number to add to
-    
+    print(head(alldmas))
     #### this is where new dmas and extensions need to be together in alldmas
     dmainfo<-alldmas%>%
       mutate(OLDID = ID,
