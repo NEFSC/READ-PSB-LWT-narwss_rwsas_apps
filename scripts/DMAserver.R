@@ -39,6 +39,8 @@ observeEvent(input$query,{
         dplyr::select(Select, everything())
       
       dailyeghot<-rhandsontable(dailyeg,readOnly = TRUE)%>%
+        hot_table(highlightCol = TRUE, highlightRow = TRUE)%>%
+        hot_cols(columnSorting = TRUE)%>%
         hot_col("SIGHTDATE", width = 150)%>%
         hot_col("Select", readOnly = FALSE)
         
