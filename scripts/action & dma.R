@@ -136,12 +136,16 @@
       distinct()
     #print(dmaextsightID)
     if(triggrptrue == TRUE){
+      
       obs_org<-left_join(dmaextsightID,egsas, by = "sightID")%>%
       group_by(GROUP_SIZE)%>%
       mutate(rank = rank(GROUP_SIZE, ties.method = "first"))%>%
       filter(rank == 1)%>%
-      ungroup()%>%
-      distinct(OBSERVER_ORG)
+      ungroup()
+      print(obs_org)
+      
+      obs_org<-obs_org%>%
+        distinct(OBSERVER_ORG)
       print(obs_org)
       
     exttot<-left_join(dmaextsightID,egsas, by = "sightID")%>%
@@ -166,18 +170,31 @@
                       TRIGGER_GROUPSIZE = NA,
                       TRIGGERDATE = NA,
                       TRIGGERORG = NA)
-    
+
     for (i in 1:nrow(egsas))
-      if (egsas$sightID[i] %in% dmaextsightID$sightID) {
+      if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
+        print(i)
+        print("4")
+        egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
+      } else if (egsas$sightID[i] %in% dmaextsightID$sightID) {
+        print(i)
+        print("1")
         egsas$ACTION_NEW[i] = 5
+        print(head(egsas))
         df<-data.frame(extDMAs = x,
                        TRIGGER_GROUPSIZE = exttot$total,
                        TRIGGERDATE = exttot$TRIGGERDATE,
                        TRIGGERORG = exttot$OBSERVER_ORG)
+        print(df)
         extdf<-rbind(extdf,df)
+        print(extdf)
       } else if (egsas$ACTION_NEW[i] == 55){
+        print(i)
+        print("2")
         egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
       } else {
+        print(i)
+        print("3")
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
     
