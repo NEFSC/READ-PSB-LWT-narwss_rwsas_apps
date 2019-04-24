@@ -31,7 +31,8 @@ knitr::kable(params$dmacoord, caption = "DMA Bounds")
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
 egtab<-params$egsastab%>%
   dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
-  dplyr::filter(ACTION_NEW == 4 | ACTION_NEW == 5)
+  dplyr::filter(ACTION_NEW == 4 | ACTION_NEW == 5)%>%
+  dplyr::rename("LAT"="LATITUDE","LON"="LONGITUDE")
 knitr::kable(egtab, caption = "Right Whale Sighting(s)")
 
 ```
