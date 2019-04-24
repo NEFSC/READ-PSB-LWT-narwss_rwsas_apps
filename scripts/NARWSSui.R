@@ -45,7 +45,7 @@ fluidPage(
                   tabPanel("SAS & DMA Evaluation",
                            splitLayout(uiOutput("obspeeps_options"),
                                        uiOutput("plane_options")),
-                           tableOutput("egsastab"),
+                           tableOutput("egsastabout"),
                            textOutput("error5"),
                            actionButton("sas","Upload sightings to SAS"),
                            br(),
