@@ -744,9 +744,13 @@
     output$dmanameout<-renderTable({dmanameout})
     output$dmacoord<-renderTable({dmacoord})
     
-    #SAS=SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD
-    egsastab<-egsas %>% 
-      dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+    if ("ID" %in% colnames(egsas)){
+      egsastab<-egsas %>% 
+        dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+    } else {
+      egsastab<-egsas %>% 
+        dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+    }
     
     sasdma<-leaflet(data = egsas) %>% 
       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
@@ -762,8 +766,13 @@
     
   } else { ##4 in egsas$action_new
     
+    if ("ID" %in% colnames(egsas)){
     egsastab<-egsas %>% 
       dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+    } else {
+      egsastab<-egsas %>% 
+        dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+    }
     
     sasdma<-leaflet(data = egsas) %>% 
       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
@@ -775,11 +784,21 @@
     
   }
   
-  egsastab$ACTION_NEW<-sprintf("%.0f",round(egsastab$ACTION_NEW, digits = 0))
   egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
   
+###egsas table for output
+  egsastabout<-egsastab
+  egsastabout$ACTION_NEW<-as.numeric(egsastabout$ACTION_NEW)
+  
+  egsastabout<-egsastabout%>%
+    left_join(actioncodedf, by = c("ACTION_NEW" = "ID"))%>%
+    dplyr::rename("ACTION_NEW_TRANSLATION" = "ACTION")
+  
+  egsastabout$ACTION_NEW<-sprintf("%.0f",round(egsastabout$ACTION_NEW, digits = 0))
+##########
+  
   output$sasdma = renderLeaflet({print(sasdma)})
-  output$egsastab<-renderTable({egsastab},  striped = TRUE)
+  output$egsastabout<-renderTable({egsastabout},  striped = TRUE)
   
   observeEvent(input$sas,{
     
@@ -798,9 +817,13 @@
       output$error5<-renderText({"Which plane were you in?"})
     } else {
       output$error5<-renderText({""})
+      
+    if ("ID" %in% colnames(egsastab)){
+        egsastab<-egsastab%>%
+          dplyr::select(-ID)
+      }  
     
     egsastab<-egsastab%>%
-      dplyr::select(-ID)%>%
       mutate(OBSERVER_PEOPLE = input$obspeeps,
              OBSERVER_PLATFORM = input$plane,
              ID = 99999, #SAS has a procedure to make this number chronological with the table, but it cannot be NULL
@@ -921,7 +944,7 @@
         
         print(tempReport)
         file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
-        params<-list(dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmanameout = dmanameout, dmacoord = dmacoord)
+        params<-list(dmanameselect = dmanameselect, date1 = date1, egsastabout = egsastabout, dmanameout = dmanameout, dmacoord = dmacoord)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
