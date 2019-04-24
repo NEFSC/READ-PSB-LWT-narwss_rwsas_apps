@@ -438,6 +438,7 @@
     ##put together the trigger sightings that don't overlap with any other sightings, with those that do with assigned clusters
     totpolyassign<-rbind(polyassign,not)
     totpolyassign$cluster<-as.numeric(totpolyassign$cluster)
+    print(totpolyassign)
     ##clustmin is for a totpolyassign df without any overlapping triggers
     clustmin = 0
     ##assigns consecutive cluster numbers to those sightings that don't overlap, but are triggering all on their own
@@ -446,29 +447,29 @@
         totpolyassign$cluster[i]<-max(totpolyassign$cluster)+1
       } else if (totpolyassign$cluster[i] == -1 & max(totpolyassign$cluster) < 0 ){
         totpolyassign$cluster[i]<-clustmin+1
-      } else {                
+      } else { 
       }
 
     #########
     clustdf$PolyID<-as.numeric(clustdf$PolyID)
     clustdf<-full_join(clustdf,totpolyassign,by=c("PolyID"="upoly"))
+    print(clustdf)
     polycoorddf$id<-as.numeric(polycoorddf$id)
     corepoly<-left_join(polycoorddf, clustdf, by=c('id'='PolyID'))%>%
               dplyr::select("long","lat","id","DateTime","GROUP_SIZE","corer","corer_m", "LONGITUDE","LATITUDE","cluster")
-    
+    print(corepoly)
     #################
     ## for DMA insert
-    clustid<-clustdf%>%
-      dplyr::select(PolyID,cluster)
-    sigs<-clustdf%>%
-      dplyr::select(DateTime, GROUP_SIZE, sightID)
-    clustersigs<-left_join(sigs,clustid, by = c("sightID" = "PolyID"))
+    
+    clustersigs<-clustdf%>%
+      dplyr::select(PolyID,cluster,DateTime,GROUP_SIZE,sightID)
 
     clustersigs$DateTime<-ymd_hms(clustersigs$DateTime)
-
+    print(clustersigs)
     trigsize<-clustersigs %>% 
       group_by(cluster)%>%
       summarise(TRIGGER_GROUPSIZE = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime))
+    print(trigsize)
     #################
     
     ##gets to the core for the cluster
@@ -754,7 +755,9 @@
       addPolygons(data = polyclust_sp, weight = 2, color = "blue") %>%
       addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
       addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")%>%
-      addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))
+      addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
+      addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area for sightings triggering DMA"), opacity = 0.4, position = "topleft")
+      
     
   } else { ##4 in egsas$action_new
     
@@ -766,7 +769,8 @@
       addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
       addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
-      addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))
+      addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
+      addLegend(colors = c("red","yellow","orange"), labels = c("SMA","Active DMA","Active DMA eligible for extension"), opacity = 0.4, position = "topleft")
     
   }
   
