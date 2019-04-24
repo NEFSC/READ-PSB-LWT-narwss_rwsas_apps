@@ -756,7 +756,7 @@
       addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
       addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")%>%
       addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
-      addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area for sightings triggering DMA"), opacity = 0.4, position = "topleft")
+      addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area for sighting triggering DMA"), opacity = 0.4, position = "topleft")
       
     
   } else { ##4 in egsas$action_new
