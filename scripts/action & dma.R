@@ -541,6 +541,9 @@
       mutate(LAT = round(lat, 2), LON = round(long, 2))%>%
       dplyr::select(id,order,LAT,LON)%>%
       dplyr::rename("ID" = "id", "VERTEX" = "order")
+    
+    kmlcoord<-dmabounds#%>%
+      #filter(Vertex != 5)
       
     ###############
     
@@ -677,26 +680,6 @@
     
     alldmabounds<-alldmabounds%>%
       mutate(ID = dense_rank(ID))
-    print(alldmabounds)
-    
-    
-    adb5<-alldmabounds%>%
-      filter(VERTEX == 1)%>%
-      mutate(VERTEX = 5)
-    
-    allbounds<-rbind(alldmabounds,adb5)
-    allbounds<-allbounds%>%
-      dplyr::select(-VERTEX)
-      
-    allbounds<-split(allbounds, allbounds$ID)
-    print(allbounds)
-    allbounds<-lapply(allbounds, function(x) { x["ID"] <- NULL; x })
-    print(allbounds)
-    allboundscoord<-lapply(allbounds, Polygon)
-    print(allboundscoord)
-    allboundscoord_<-lapply(seq_along(allboundscoord), function(i) Polygons(list(allboundscoord[[i]]), ID = names(allboundscoord)[i]))
-    print(allboundscoord_)
-    kml_sp_df<-SpatialPolygons(allboundscoord_, proj4string = CRS.latlon)
     
     ##for database (excludes the 5th point to close the polygon)
     dmacoord<-alldmabounds%>%
@@ -706,13 +689,16 @@
       filter(VERTEX != 5)
     #print(dmacoord)
     
-    ##KML for all dmas (new and/or ext)
+    kmlcoord<-kmlcoord%>%
+      dplyr::select(-VERTEX)
+
+
+    ##KML for new dmas only
     CRS.gearth <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") # gearth = google earth
-    #print(head(alldmabounds))
-    dmabounds_kml<-alldmabounds
-    coordinates(dmabounds_kml)<-~LON+LAT
-    proj4string(dmabounds_kml)<-CRS.latlon
-    dmabounds_kml.tr<- spTransform(dmabounds_kml, CRS.gearth)
+    
+    coordinates(kmlcoord)<-~LON+LAT
+    proj4string(kmlcoord)<-CRS.latlon
+    dmabounds_kml.tr<- spTransform(kmlcoord, CRS.gearth)
     
     
     ##KML making
@@ -722,7 +708,7 @@
       },
       content = function(file) {
         writeOGR(dmabounds_kml.tr, file, layer= "dmabounds_kml.tr", driver="KML")
-        kmlPolygons(obj=kml_sp_df, kmlfile=file, 
+        kmlPolygons(obj=polyclust_sp_df, kmlfile=file,
                     name="KML DMA", description="", col=NULL, visibility=1, lwd=2,
                     border="yellow", kmlname="", kmldescription="")
       }
@@ -944,7 +930,7 @@
         
         print(tempReport)
         file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
-        params<-list(dmanameselect = dmanameselect, date1 = date1, egsastabout = egsastabout, dmanameout = dmanameout, dmacoord = dmacoord)
+        params<-list(dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmanameout = dmanameout, dmacoord = dmacoord)
         
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
