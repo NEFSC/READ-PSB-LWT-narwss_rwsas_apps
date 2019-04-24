@@ -8,7 +8,7 @@ fluidPage(
                            textOutput("error3"),
                            rHandsontableOutput("dailyeghot"),
                            actionButton("eval","Evaluate"),
-                           tableOutput("egsastab"), ##egsas or egsastab?
+                           tableOutput("egsastabout"), 
                            leafletOutput("sasdma"),    
                            tableOutput("dmanameout"), 
                            tableOutput("dmacoord"),    
