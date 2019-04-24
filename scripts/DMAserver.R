@@ -16,7 +16,8 @@ observeEvent(input$query,{
       datesql<-paste0("select SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
                 from rightwhalesight.sas
                 where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD')
-                      and LAT > 36.5;") 
+                      and LAT > 36.5
+                      and SPECIES_CERT = 3;") 
       
       dailyeg<-sqlQuery(fish,datesql)
       
