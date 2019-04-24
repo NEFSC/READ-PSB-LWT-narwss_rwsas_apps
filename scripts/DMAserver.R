@@ -13,11 +13,12 @@ observeEvent(input$query,{
       
       fish <- odbcConnect("fish", uid="RIGHTWHALESIGHT", pwd="m1les0ch5+??",believeNRows=FALSE)
       
-      datesql<-paste0("select ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
-                from rightwhalesight.sas
+      datesql<-paste0("select rightwhalesight.sas.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,rightwhalesight.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
+                from rightwhalesight.sas,rightwhalesight.action
                 where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD')
                       and LAT > 36.5
                       and SPECIES_CERT = 3
+                      and rightwhalesight.sas.action = rightwhalesight.action.ID
                 order by ID;") 
       
       dailyeg<-sqlQuery(fish,datesql)
