@@ -736,16 +736,17 @@
     enable("dmaup")
     enable("kml")
     ###############
-    dmanameout<-alldmas
-    
+    dmanameout<-alldmas%>%
+      dplyr::rename("GROUP_SIZE" = "TRIGGER_GROUPSIZE")
+    print(dmanameout)
     dmanameout$TRIGGERDATE<-as.character(dmanameout$TRIGGERDATE)
-    dmanameout$TRIGGER_GROUPSIZE<-sprintf("%.0f",round(dmanameout$TRIGGER_GROUPSIZE, digits = 0))
+    dmanameout$GROUP_SIZE<-sprintf("%.0f",round(dmanameout$GROUP_SIZE, digits = 0))
     output$dmanameout<-renderTable({dmanameout})
     output$dmacoord<-renderTable({dmacoord})
     
     #SAS=SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD
     egsastab<-egsas %>% 
-      dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+      dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
     
     sasdma<-leaflet(data = egsas) %>% 
       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
@@ -762,7 +763,7 @@
   } else { ##4 in egsas$action_new
     
     egsastab<-egsas %>% 
-      dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+      dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
     
     sasdma<-leaflet(data = egsas) %>% 
       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
@@ -798,15 +799,17 @@
     } else {
       output$error5<-renderText({""})
     
-    OBSERVER_PEOPLE = input$obspeeps 
-    OBSERVER_PLATFORM = input$plane
-    ID = 99999 #SAS has a procedure to make this number chronological with the table, but it cannot be NULL
-    OBSERVER_ORG = 1
-    OOD = 929 #929 means it came through this Shiny App
+    egsastab<-egsastab%>%
+      dplyr::select(-ID)%>%
+      mutate(OBSERVER_PEOPLE = input$obspeeps,
+             OBSERVER_PLATFORM = input$plane,
+             ID = 99999, #SAS has a procedure to make this number chronological with the table, but it cannot be NULL
+             OBSERVER_ORG = 1,
+             OOD = 929 #929 means it came through this Shiny App
+             )
     
-    egsastab<-cbind(egsastab,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD)
+      print(head(egsastab))
       
-      #print(egsastab)
       for (i in 1:nrow(egsastab)){
         egvalues<-egsastab
         egvalues$DateTime<-paste0("'to_timestamp('",egvalues$DateTime,"', 'YYYY-MM-DD HH24:MI:SS')")
@@ -827,7 +830,7 @@
     enable("kml")
     print("dma button pressed")
     
-    dmareportmap<-fitBounds(sasdma,min(dmacoord$`Lon (Decimal Degrees)`), min(dmacoord$`Lat (Decimal Degrees)`), max(dmacoord$`Lon (Decimal Degrees)`), max(dmacoord$`Lat (Decimal Degrees)`))
+    dmareportmap<-fitBounds(sasdma,min(dmacoord$`Lon (Decimal Degrees)`)+0.5, min(dmacoord$`Lat (Decimal Degrees)`)-0.5, max(dmacoord$`Lon (Decimal Degrees)`)-0.5, max(dmacoord$`Lat (Decimal Degrees)`)+0.5)
     htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
     webshot::webshot("temp.html", file = paste0(date1,"_dmamap.png"))#,cliprect = bounds)
     
