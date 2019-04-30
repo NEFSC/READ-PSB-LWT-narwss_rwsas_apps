@@ -48,12 +48,12 @@
   
   ACTION_NEW<-NULL
   for (i in 1:nrow(egsas))
-    if (egsas$eDMA[i] == TRUE){ #extension dma?
-      egsas$ACTION_NEW[i] = 55   
+    if (egsas$inoutsma[i] == TRUE){
+      egsas$ACTION_NEW[i] = 2  
     } else if (egsas$bDMA[i] == TRUE){ #benign dma
       egsas$ACTION_NEW[i] = 2   
-    } else if (egsas$inoutsma[i] == TRUE){
-      egsas$ACTION_NEW[i] = 2
+    } else if (egsas$eDMA[i] == TRUE){ #extension dma?
+      egsas$ACTION_NEW[i] = 55 
     } else if (egsas$Canada[i] == TRUE){
       egsas$ACTION_NEW[i] = 6
     } else if (egsas$SPM[i] == TRUE){
@@ -297,7 +297,8 @@
   #I don't remember why I named this dmacand -- maybe dma combo and... then some?
   dmacand<-combo %>%
     dplyr::filter((combo$dist_nm != 0 & combo$dist_nm <= combo$corer) | (combo$GROUP_SIZE > 2 & combo$dist_nm == 0))
-  #print(dmacand)
+  print("dmacand")
+  print(dmacand)
   ##filters for distinct sightings that should be considered for DMA calculation
   dmasightID<-data.frame(sightID = c(dmacand$sightID,dmacand$sightID2)) %>%
     distinct()
@@ -310,7 +311,7 @@
   ##the below sees if the sightings are good for DMA calc (are in the dmasightID list), and assigns action codes accordingly which is part of NOAA database
   for (i in 1:nrow(egsas))
     if (egsas$sightID[i] %in% dmasightID$sightID) {
-      egsas$ACTION_NEW[i] = 4
+      egsas$ACTION_NEW[i] = 44
     } else if (is.na(egsas$ACTION_NEW[i])){
       egsas$ACTION_NEW[i] = 1
     } else {
@@ -321,7 +322,7 @@
   ##Create DMA
   ######
   #only sightings with an action of 4 will be evaluated here for DMA
-  if (4 %in% egsas$ACTION_NEW){
+  if (44 %in% egsas$ACTION_NEW){
     ##################
     ##CREATING A DMA##
     ##################
@@ -385,7 +386,8 @@
     pcoord_<-lapply(seq_along(pcoord), function(i) Polygons(list(pcoord[[i]]), ID = names(idpoly)[i]))
 
     polycoorddf_sp<-SpatialPolygons(pcoord_, proj4string = CRS.latlon)
-
+    print(polycoorddf_sp)
+    print(str(polycoorddf_sp))
     ##############
     if (length(names(idpoly)) > 1){
       ##Overlap of whale density core area analysis
@@ -429,7 +431,7 @@
     poly12<-rbind(unlist(polycluster$poly1),unlist(polycluster$poly2))
     poly12 <- data.frame(upoly = c(polycluster$poly1,polycluster$poly2))
     
-    ##the sightings are NOT triggering on their own (without overlapping sightings) are assigned a cluster of -1
+    ##these sightings are NOT triggering on their own (or are trigger by one sighting of 3+ without overlapping sightings) are assigned a cluster of -1
     not<-poly12%>%
       filter((!poly12$upoly %in% polyassign$upoly) | (!poly12$upoly %in% polyassign$upoly))%>%
       distinct()%>%
@@ -450,18 +452,44 @@
       } else { 
       }
 
+    
     #########
     clustdf$PolyID<-as.numeric(clustdf$PolyID)
     clustdf<-full_join(clustdf,totpolyassign,by=c("PolyID"="upoly"))
     print(clustdf)
+    
+    clusty<-clustdf%>%
+      group_by(cluster)%>%
+      mutate(totes = sum(GROUP_SIZE))%>%
+      filter(totes >= 3)
+    clustn<-clustdf%>%
+      group_by(cluster)%>%
+      mutate(totes = sum(GROUP_SIZE))%>%
+      filter(totes < 3)
+    
+    print(clusty)
+    print(clustn)
+    print(egsas)
+    
+    for (i in 1:nrow(egsas))
+      if (egsas$ACTION_NEW[i] == 44 & (egsas$sightID[i] %in% clusty$sightID)) {
+        egsas$ACTION_NEW[i] = 4
+      } else if (egsas$ACTION_NEW[i] == 44 & (egsas$sightID[i] %in% clustn$sightID)){
+        egsas$ACTION_NEW[i] = 1
+      } else {
+        egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
+      }
+
+    
     polycoorddf$id<-as.numeric(polycoorddf$id)
-    corepoly<-left_join(polycoorddf, clustdf, by=c('id'='PolyID'))%>%
+    corepoly<-right_join(polycoorddf, clusty, by=c('id'='PolyID'))%>%
               dplyr::select("long","lat","id","DateTime","GROUP_SIZE","corer","corer_m", "LONGITUDE","LATITUDE","cluster")
     print(corepoly)
+    
     #################
     ## for DMA insert
     
-    clustersigs<-clustdf%>%
+    clustersigs<-clusty%>%
       dplyr::select(PolyID,cluster,DateTime,GROUP_SIZE,sightID)
 
     clustersigs$DateTime<-ymd_hms(clustersigs$DateTime)
@@ -747,7 +775,7 @@
       addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
       addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")%>%
       addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
-      addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area for sighting triggering DMA"), opacity = 0.4, position = "topleft")
+      addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area for sighting considered for DMA"), opacity = 0.4, position = "topleft")
       
     
   } else { ##4 in egsas$action_new
