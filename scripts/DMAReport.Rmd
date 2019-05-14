@@ -3,6 +3,7 @@ title:  "Potential DMA Report"
 params:
   dmanameselect: NA
   date1: NA
+  expletter: NA
   egsastab: NA
   dmanameout: NA
   dmacoord: NA
@@ -13,7 +14,9 @@ output: pdf_document
 \begin{center}\LARGE`r params$dmanameselect`\end{center}
 \vspace*{-8mm}
 \begin{center}\LARGE Trigger date: `r params$date1`\end{center}
-
+\vspace*{-8mm}
+\begin{center}\LARGE Expiration: `r params$expletter`\end{center}
+\vspace*{-8mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
 knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/",params$date1,"_dmamap.png"))
