@@ -247,6 +247,7 @@ if (55 %in% egsas$ACTION_NEW) {
   ## df to spatial object ##
   ########################
   ##declare which values are coordinates
+  print("250")
   coordinates(dmaextdf)<-~LONGITUDE+LATITUDE
   ##declare what projection they are in
   proj4string(dmaextdf)<-CRS.latlon
@@ -256,11 +257,11 @@ if (55 %in% egsas$ACTION_NEW) {
   
   ##gbuffer needs utm to calculate radius in meters
   dmaextbuff<-gBuffer(dmaextdf.tr, byid=TRUE, width = dmaextdf$extcorer_m, capStyle = "ROUND")
-  #print(dmabuff)
   
   ##creates a dataframe from the density buffers put around sightings considered for DMA analysis
   extpolycoord<-dmaextbuff %>% fortify() %>% dplyr::select("long","lat","id")
   ##poly coordinates out of utm
+  print("264")
   coordinates(extpolycoord)<-~long+lat
   proj4string(extpolycoord)<-CRS.utm
   extpolycoord.tr<-spTransform(extpolycoord, CRS.latlon)
@@ -325,6 +326,7 @@ if (NA %in% egsas$ACTION_NEW) {
 ##Create DMA
 ######
 #only sightings with an action of 4 will be evaluated here for DMA
+print(egsas)
 if (44 %in% egsas$ACTION_NEW){
   ##################
   ##CREATING A DMA##
@@ -355,6 +357,7 @@ if (44 %in% egsas$ACTION_NEW){
   ## df to spatial object ##
   ########################
   ##declare which values are coordinates
+  print("359")
   coordinates(dmadf)<-~LONGITUDE+LATITUDE
   ##declare what projection they are in
   proj4string(dmadf)<-CRS.latlon
@@ -373,6 +376,7 @@ if (44 %in% egsas$ACTION_NEW){
   ##creates a dataframe from the density buffers put around sightings considered for DMA analysis
   polycoord<-dmabuff %>% fortify() %>% dplyr::select("long","lat","id")
   ##poly coordinates out of utm
+  print("378")
   coordinates(polycoord)<-~long+lat
   proj4string(polycoord)<-CRS.utm
   polycoord.tr<-spTransform(polycoord, CRS.latlon)
@@ -483,7 +487,7 @@ if (44 %in% egsas$ACTION_NEW){
       egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
     }
   
-  
+  if (4 %in% egsas$ACTION_NEW){
   polycoorddf$id<-as.numeric(polycoorddf$id)
   corepoly<-right_join(polycoorddf, clusty, by=c('id'='PolyID'))%>%
     dplyr::select("long","lat","id","DateTime","GROUP_SIZE","corer","corer_m", "LONGITUDE","LATITUDE","cluster")
@@ -508,6 +512,9 @@ if (44 %in% egsas$ACTION_NEW){
     group_by(cluster) %>%
     summarise(maxlat = max(lat), minlat = min(lat), maxlon = max(long), minlon = min(long))%>%
     as.data.frame()
+  print(polymaxmin)
+  print("515")
+  
   
   ##spatialize the corners
   corebounds_nw<-polymaxmin
@@ -591,6 +598,7 @@ if (44 %in% egsas$ACTION_NEW){
                       cardinal = NA)
   
   dmadist<-dmaname
+  print("598")
   coordinates(dmadist)<-~lon+lat
   proj4string(dmadist)<-CRS.latlon
   ##########
@@ -668,7 +676,7 @@ if (44 %in% egsas$ACTION_NEW){
   
   print(dmanamedf)
   
-  
+  } 
 } # end of 4
 
 if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
@@ -720,15 +728,16 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
     filter(VERTEX != 5)
   #print(dmacoord)
   
-  if (nrow(kmlcoord) > 0){
+  if (exists("kmlcoord")){
     print("enter kml land")
   
   kmlcoord<-kmlcoord%>%
     dplyr::select(-VERTEX)
   
+    if(nrow(kmlcoord) > 0){
   ##KML for new dmas only
   CRS.gearth <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") # gearth = google earth
-  
+  print("737")
   coordinates(kmlcoord)<-~LON+LAT
   proj4string(kmlcoord)<-CRS.latlon
   dmabounds_kml.tr<- spTransform(kmlcoord, CRS.gearth)
@@ -746,6 +755,7 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
     }
   )
   enable("kml")
+    }
   }
   
   dma_date<-paste0("DMA_",year(egsas$DateTime[1]),"_",strftime(egsas$DateTime[1], "%m"),"_",strftime(egsas$DateTime[1], "%d"))
