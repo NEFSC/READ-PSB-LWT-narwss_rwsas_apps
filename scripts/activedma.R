@@ -39,7 +39,7 @@ actioncodedf$ID<-as.numeric(actioncodedf$ID)
 activedmasql<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 7), 'YYYY-MM-DD') as ext
                   from rightwhalesight.dmainfo
                   where to_date('",MODAYR,"', 'YYYY-MM-DD') < to_date(to_char(EXPDATE, 'YYYY-MM-DD'),'YYYY-MM-DD') 
-                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(STARTDATE, 'YYYY-MM-DD'),'YYYY-MM-DD');")
+                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(TRIGGERDATE, 'YYYY-MM-DD'),'YYYY-MM-DD');")
 
 actdma<-sqlQuery(cnxn,activedmasql)
 
@@ -91,7 +91,7 @@ if (nrow(actdma) == 0){
   actdma_boundssql<-paste0("select rightwhalesight.dmacoords.ID, vertex, lat, lon
                   from rightwhalesight.dmacoords, rightwhalesight.dmainfo
                   where to_date('",MODAYR,"', 'YYYY-MM-DD') < EXPDATE
-                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > STARTDATE
+                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > TRIGGERDATE
                     and rightwhalesight.dmacoords.ID = RIGHTWHALESIGHT.DMAINFO.ID;")
   
   
