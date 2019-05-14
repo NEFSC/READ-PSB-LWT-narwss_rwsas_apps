@@ -8,7 +8,8 @@ sightings20<-egtable%>%
 sightings19<-egtable%>%
   filter(LONGITUDE < -66)
 
-if (nrow(sightings19) > nrow(sightings20)){
+
+if (nrow(sightings19) >= nrow(sightings20)){
   ##US
   CRS.new<-CRS("+proj=utm +zone=19 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
 } else if (nrow(sightings19) < nrow(sightings20)){
@@ -18,7 +19,7 @@ if (nrow(sightings19) > nrow(sightings20)){
 
 print(CRS.new)
 
-if (nrow(sightings19) > nrow(sightings20)){
+if (nrow(sightings19) >= nrow(sightings20)){
   ##US
   CRS.utm<-CRS("+proj=utm +zone=19 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 } else if (nrow(sightings19) < nrow(sightings20)){
