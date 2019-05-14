@@ -8,6 +8,7 @@
 egsas$GROUP_SIZE<-as.numeric(egsas$GROUP_SIZE)
 ##copy for spatializing
 eg<-egsas
+print(eg)
 ##declare which columns are coordinates
 coordinates(eg)<-~LONGITUDE+LATITUDE
 ##declare what kind of projection thy are in
@@ -136,7 +137,17 @@ if (55 %in% egsas$ACTION_NEW) {
     ##filters for distinct sightings that should be considered for DMA calculation
     dmaextsightID<-data.frame(sightID = c(dmacandext$sightID,dmacandext$sightID2)) %>%
       distinct()
-    #print(dmaextsightID)
+    print("139")
+    print(dmaextsightID)
+    
+    #blank df for the dmas to enter
+    extdf<-data.frame(extDMAs = NA,
+                      TRIGGER_GROUPSIZE = NA,
+                      TRIGGERDATE = NA,
+                      TRIGGERORG = NA)
+    
+    if (nrow(dmaextsightID) > 0){
+      
     if(triggrptrue == TRUE){
       
       obs_org<-left_join(dmaextsightID,egsas, by = "sightID")%>%
@@ -162,16 +173,13 @@ if (55 %in% egsas$ACTION_NEW) {
         arrange(sightID)%>%
         summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime), OBSERVER_ORG = 1)
     }
+      print(exttot)
+    }
     
-    print(exttot)
     
     ##this will pass into the next for loop
     x <- i
-    #blank df for the dmas to enter
-    extdf<-data.frame(extDMAs = NA,
-                      TRIGGER_GROUPSIZE = NA,
-                      TRIGGERDATE = NA,
-                      TRIGGERORG = NA)
+
     
     for (i in 1:nrow(egsas))
       if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
@@ -239,6 +247,7 @@ if (55 %in% egsas$ACTION_NEW) {
   extcorer_m<-dmaextsights$corer*1852
   dmaextsights<-cbind(dmaextsights,extcorer_m,extPolyID)
   
+  if (nrow(dmaextsights) > 0){
   #copy for spatializing
   dmaextdf<-dmaextsights
   
@@ -275,7 +284,8 @@ if (55 %in% egsas$ACTION_NEW) {
   extpcoord_<-lapply(seq_along(extpcoord), function(i) Polygons(list(extpcoord[[i]]), ID = names(extidpoly)[i]))
   extpolycoorddf_sp<-SpatialPolygons(extpcoord_, proj4string = CRS.latlon)
   
-  
+  print(egsas)
+  }
 } #end 55 in action_new
 
 ###################################
@@ -657,6 +667,7 @@ if (44 %in% egsas$ACTION_NEW){
   print(dmanamedf)
   
   if(triggrptrue == TRUE){
+    
     obs_org2<-left_join(dmasightID,egsas, by = "sightID")%>%
       group_by(GROUP_SIZE)%>%
       mutate(rank = rank(GROUP_SIZE, ties.method = "first"))%>%
@@ -924,7 +935,7 @@ observeEvent(input$dmaup,{
   
   dmainfoinsert<-dmainfo%>%
     dplyr::select(-OLDID)
-  
+  print(dmainfoinsert)
   newdmalist<-as.list(dmainfoinsert$NAME)
   dmanameselect<-do.call("paste", c(newdmalist, sep = ", "))
   dmanameselect<-sub(",([^,]*)$", " and\\1", dmanameselect)  
