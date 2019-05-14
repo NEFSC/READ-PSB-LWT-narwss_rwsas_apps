@@ -983,7 +983,7 @@ observeEvent(input$dmaup,{
       
       print(tempReport)
       file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
-      params<-list(dmanameselect = dmanameselect, date1 = date1, egsastab = egsastab, dmanameout = dmanameout, dmacoord = dmacoord)
+      params<-list(dmanameselect = dmanameselect, date1 = date1, expletter = expletter, egsastab = egsastab, dmanameout = dmanameout, dmacoord = dmacoord)
       
       rmarkdown::render(tempReport, output_file = file,
                         params = params,
