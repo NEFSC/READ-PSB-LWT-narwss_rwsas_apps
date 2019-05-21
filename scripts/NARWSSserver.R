@@ -17,6 +17,8 @@ observeEvent(input$rawupload,{
       path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
     } else if (input$filepathway == 'Local'){
       path<-input$filepathinput
+      print(path)
+      print(typeof(path))
     }
 
     mfyn<-input$multiflight
@@ -920,6 +922,9 @@ observeEvent(input$rawupload,{
       rf$LATITUDE<-sprintf("%.5f",round(rf$LATITUDE, digits = 5))
       rf$LONGITUDE<-sprintf("%.5f",round(rf$LONGITUDE, digits = 5))
       
+      ftype<-unique(rf$FLIGHT_TYPE)
+      print(ftype)
+      
       rf[] <- lapply(rf, as.character)
       
       #####
@@ -1202,9 +1207,22 @@ observeEvent(input$rawupload,{
       MODA<-final%>%distinct(as.Date(DateTime))
       MODA<-unique(format(MODA, "%m-%d"))
       print(MODA)
-      source('./scripts/oracleaccess.R', local = TRUE)$value
+      
       source('./scripts/sma.R', local = TRUE)$value
-      source('./scripts/activedma.R', local = TRUE)$value
+      
+      ##############
+      ## FAKE DMA ##
+      ##############
+      fakedma<-data.frame(
+        long = c(-71,-71,-71,-71,-71),
+        lat = c(42,42,42,42,42))
+      
+      fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
+      ##############
+      
+      if (input$filepathway == 'Network'){
+      source('./scripts/oracleaccess.R', local = TRUE)$value
+      source('./scripts/activedma.R', local = TRUE)$value}
       
       if(nrow(egtable) == 0 | egtable$DateTime[1] == 'No right whales sighted'){
         ##if no Eg:
@@ -1297,8 +1315,6 @@ observeEvent(input$rawupload,{
           addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
           addPolylines(lng=~maplon, lat = ~maplat, weight = 2, color = "black") %>%
           addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-          addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-          addPolygons(data = extensiondma, weight = 2, color = "yellow") %>%
           addCircleMarkers(lng = ~LONGITUDE, lat = ~LATITUDE, color = ~leafpal(SPCODE), stroke = FALSE, fillOpacity = 2, radius = 5) %>%
           addLegend(colors = c("yellow","red"), labels = c("Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)%>%
           addLegend(pal = leafpal, values = spectab$SPCODE, opacity = 1)%>%
@@ -1308,14 +1324,18 @@ observeEvent(input$rawupload,{
             options = WMSTileOptions(format = "image/png8", transparent = TRUE),
             attribution = NULL)
         
+        if (input$filepathway == 'Network'){
+          reportleaf<-reportleaf %>%
+            addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+            addPolygons(data = extensiondma, weight = 2, color = "yellow")
+        } 
+        
       } else {
         
         reportleaf<-leaflet(data = spectab, options = leafletOptions(zoomControl = FALSE)) %>% 
           addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
           addPolylines(lng=~maplon, lat = ~maplat, weight = 2, color = "black") %>%
           addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-          addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-          addPolygons(data = extensiondma, weight = 2, color = "yellow") %>%
           addCircleMarkers(lng = ~LONGITUDE, lat = ~LATITUDE, color = ~leafpal(SPCODE), stroke = FALSE, fillOpacity = 2, radius = 5) %>%
           addLegend(colors = c("yellow","red"), position = "topleft", labels = c("Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)%>%
           addLegend(pal = leafpal, position = "topleft", values = spectab$SPCODE, opacity = 0.9)%>%
@@ -1325,6 +1345,11 @@ observeEvent(input$rawupload,{
             options = WMSTileOptions(format = "image/png8", transparent = TRUE),
             attribution = NULL)
         
+        if (input$filepathway == 'Network'){
+          reportleaf<-reportleaf %>%
+            addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+            addPolygons(data = extensiondma, weight = 2, color = "yellow")
+        } 
         
       }
       
@@ -1345,19 +1370,30 @@ observeEvent(input$rawupload,{
           filename = paste0(day1,month1,year1,"_NOAA_NERW_Aerial_Report.pdf"),
           content = function(file) {
             
-            if (loc == 'Network'){
               print(tempdir())
-              tempReport<-file.path("./scripts/Report.Rmd")
-            } else if (loc == 'Local'){
-              tempReport<-file.path(paste0(inputpath,"/Report.Rmd"))
+            
+            if (ftype == 20){
+              ftypesent<-"Only large whale sightings were recorded on this survey."
+            } else if (ftype == 21){
+              ftypesent<-"Only large whale sightings (excluding live minke whales) were recorded on this survey."
             }
             
+            tempReport<-file.path("./scripts/FlightReport.Rmd")
             rptnotes<-input$reportnotes
             
-            file.copy("Report.Rmd", tempReport, overwrite = FALSE)
-            params<-list(date1 = date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexp = dmanamesexp)
+            file.copy("FlightReport.Rmd", tempReport, overwrite = FALSE)
             
-            rmarkdown::render(tempReport, output_file = file,
+            if (loc == 'Network'){
+              webshotpath<-paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/",date1,"_map.png")
+              dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
+            } else if (loc == 'Local'){
+              webshotpath<-paste0(path,"narwss_rwsas_apps_local/",date1,"_map.png")
+              dmanamesexpsent<-""
+            }
+            
+              params<-list(date1 = date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
+              print(webshotpath)
+              rmarkdown::render(tempReport, output_file = file,
                               params = params,
                               envir = new.env(parent = globalenv())
                               
