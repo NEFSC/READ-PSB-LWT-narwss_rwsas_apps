@@ -1387,7 +1387,7 @@ observeEvent(input$rawupload,{
               webshotpath<-paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/",date1,"_map.png")
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
             } else if (loc == 'Local'){
-              webshotpath<-paste0(path,"narwss_rwsas_apps_local/",date1,"_map.png")
+              webshotpath<-paste0(path,date1,"_map.png")
               dmanamesexpsent<-""
             }
             
