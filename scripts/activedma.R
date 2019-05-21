@@ -51,15 +51,6 @@ actdma<-actdma%>%
   ungroup()
 
 print(actdma)
-##############
-## FAKE DMA ##
-##############
-
-fakedma<-data.frame(
-  long = c(-71,-71,-71,-71,-71),
-  lat = c(42,42,42,42,42))
-
-fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
 
 ##do we have ANY dmas?
 if (nrow(actdma) == 0){
