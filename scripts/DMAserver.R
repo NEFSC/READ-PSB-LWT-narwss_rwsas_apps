@@ -83,6 +83,17 @@ observeEvent(input$eval,{
       
       source('./scripts/oracleaccess.R', local = TRUE)$value
       source('./scripts/sma.R', local = TRUE)$value
+      
+      ##############
+      ## FAKE DMA ##
+      ##############
+      fakedma<-data.frame(
+        long = c(-71,-71,-71,-71,-71),
+        lat = c(42,42,42,42,42))
+      
+      fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
+      ##############
+      
       source('./scripts/activedma.R', local = TRUE)$value
       
         #####
