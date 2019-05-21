@@ -38,23 +38,36 @@ for (i in 1:nrow(egsas))
     inoutsma<-FALSE
   }
 
+sightID<-1:nrow(egsas)
+
+######
+
 Canada<-!is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons")))
 SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
-bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
-eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
 
-sightID<-1:nrow(egsas)
-######
-egsas<-cbind(egsas,inoutsma,Canada,SPM,bDMA,eDMA,sightID)
 
+if (input$filepathway == 'Network'){
+  bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
+  eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
+  
+  egsas<-cbind(egsas,inoutsma,Canada,SPM,bDMA,eDMA,sightID)
+  
+} else if (input$filepathway == 'Local'){
+  egsas<-cbind(egsas,inoutsma,Canada,SPM,sightID)
+}
+
+print(head(egsas))
+  
 ACTION_NEW<-NULL
 for (i in 1:nrow(egsas))
   if (egsas$inoutsma[i] == TRUE){
     egsas$ACTION_NEW[i] = 2  
-  } else if (egsas$eDMA[i] == TRUE){ #extension dma?
+  } else if (input$filepathway == 'Network'){
+    if (egsas$eDMA[i] == TRUE) { #extension dma?
     egsas$ACTION_NEW[i] = 55 
-  } else if (egsas$bDMA[i] == TRUE){ #benign dma
+    } else if (egsas$bDMA[i] == TRUE) { #benign dma
     egsas$ACTION_NEW[i] = 2   
+    }
   } else if (egsas$Canada[i] == TRUE){
     egsas$ACTION_NEW[i] = 6
   } else if (egsas$SPM[i] == TRUE){
@@ -748,7 +761,7 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
     if(nrow(kmlcoord) > 0){
   ##KML for new dmas only
   CRS.gearth <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") # gearth = google earth
-  print("737")
+  print("764")
   coordinates(kmlcoord)<-~LON+LAT
   proj4string(kmlcoord)<-CRS.latlon
   dmabounds_kml.tr<- spTransform(kmlcoord, CRS.gearth)
@@ -794,14 +807,17 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
   sasdma<-leaflet(data = egsas) %>% 
     addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
     addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-    addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-    addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
     addPolygons(data = polyclust_sp, weight = 2, color = "blue") %>%
     addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
     addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")%>%
     addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
     addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area for sighting considered for DMA"), opacity = 0.4, position = "topleft")
   
+  if (input$filepathway == 'Network'){
+  sasdma<-sasdma%>%
+    addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+    addPolygons(data = extensiondma, weight = 2, color = "orange")
+  }
   
 } else { ##4 in egsas$action_new
   
@@ -816,11 +832,14 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
   sasdma<-leaflet(data = egsas) %>% 
     addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
     addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-    addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-    addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
     addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
     addLegend(colors = c("red","yellow","orange"), labels = c("SMA","Active DMA","Active DMA eligible for extension"), opacity = 0.4, position = "topleft")
-  
+ 
+  if (input$filepathway == 'Network'){
+    sasdma<-sasdma%>%
+      addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+      addPolygons(data = extensiondma, weight = 2, color = "orange")
+  } 
 }
 
 egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
@@ -828,7 +847,9 @@ egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
 ###egsas table for output
 egsastabout<-egsastab
 egsastabout$ACTION_NEW<-as.numeric(egsastabout$ACTION_NEW)
+output$sasdma = renderLeaflet({print(sasdma)})
 
+if (input$filepathway == 'Network'){
 egsastabout<-egsastabout%>%
   left_join(actioncodedf, by = c("ACTION_NEW" = "ID"))%>%
   dplyr::rename("ACTION_NEW_TRANSLATION" = "ACTION")
@@ -836,7 +857,6 @@ egsastabout<-egsastabout%>%
 egsastabout$ACTION_NEW<-sprintf("%.0f",round(egsastabout$ACTION_NEW, digits = 0))
 ##########
 
-output$sasdma = renderLeaflet({print(sasdma)})
 output$egsastabout<-renderTable({egsastabout},  striped = TRUE)
 
 observeEvent(input$sas,{
@@ -1202,5 +1222,5 @@ observeEvent(input$dmaup,{
                         envir = new.env(parent = globalenv())
       )})
   
-  })
-
+  })#inputdma
+}#ends network path for Orcale uploads
