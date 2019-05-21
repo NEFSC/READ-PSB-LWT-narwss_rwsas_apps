@@ -38,35 +38,33 @@ for (i in 1:nrow(egsas))
     inoutsma<-FALSE
   }
 
+Canada<-!is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons")))
+SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
 sightID<-1:nrow(egsas)
+egsas<-cbind(egsas,inoutsma,Canada,SPM,sightID)
+egsas<-egsas%>%mutate(ACTION_NEW = NA)
+print(egsas)
+
+if (loc == 'Network'){
+bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
+eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
+
+egsas<-cbind(egsas,bDMA,eDMA)
+}
+
+print(egsas)
 
 ######
 
-Canada<-!is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons")))
-SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
-
-
-if (loc == 'Network'){
-  bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
-  eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
-  
-  egsas<-cbind(egsas,inoutsma,Canada,SPM,bDMA,eDMA,sightID)
-  
-} else if (loc == 'Local'){
-  egsas<-cbind(egsas,inoutsma,Canada,SPM,sightID)
-}
-
-print(head(egsas))
-  
-ACTION_NEW<-NULL
 for (i in 1:nrow(egsas))
   if (egsas$inoutsma[i] == TRUE){
     egsas$ACTION_NEW[i] = 2  
   } else if (loc == 'Network'){
+    print("network if")
     if (egsas$eDMA[i] == TRUE) { #extension dma?
-    egsas$ACTION_NEW[i] = 55 
+      egsas$ACTION_NEW[i] = 55 
     } else if (egsas$bDMA[i] == TRUE) { #benign dma
-    egsas$ACTION_NEW[i] = 2   
+      egsas$ACTION_NEW[i] = 2   
     }
   } else if (egsas$Canada[i] == TRUE){
     egsas$ACTION_NEW[i] = 6
@@ -75,8 +73,9 @@ for (i in 1:nrow(egsas))
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})
   } else if (egsas$inoutsma[i] == FALSE){
     egsas$ACTION_NEW[i] = NA
-  } 
-
+  }
+print("83")
+print(egsas)
 ##############
 ## dma eval ##
 ##############
