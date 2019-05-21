@@ -46,13 +46,13 @@ Canada<-!is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons")))
 SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
 
 
-if (input$filepathway == 'Network'){
+if (loc == 'Network'){
   bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
   eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
   
   egsas<-cbind(egsas,inoutsma,Canada,SPM,bDMA,eDMA,sightID)
   
-} else if (input$filepathway == 'Local'){
+} else if (loc == 'Local'){
   egsas<-cbind(egsas,inoutsma,Canada,SPM,sightID)
 }
 
@@ -62,7 +62,7 @@ ACTION_NEW<-NULL
 for (i in 1:nrow(egsas))
   if (egsas$inoutsma[i] == TRUE){
     egsas$ACTION_NEW[i] = 2  
-  } else if (input$filepathway == 'Network'){
+  } else if (loc == 'Network'){
     if (egsas$eDMA[i] == TRUE) { #extension dma?
     egsas$ACTION_NEW[i] = 55 
     } else if (egsas$bDMA[i] == TRUE) { #benign dma
@@ -813,7 +813,7 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
     addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
     addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area for sighting considered for DMA"), opacity = 0.4, position = "topleft")
   
-  if (input$filepathway == 'Network'){
+  if (loc == 'Network'){
   sasdma<-sasdma%>%
     addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
     addPolygons(data = extensiondma, weight = 2, color = "orange")
@@ -835,7 +835,7 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
     addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
     addLegend(colors = c("red","yellow","orange"), labels = c("SMA","Active DMA","Active DMA eligible for extension"), opacity = 0.4, position = "topleft")
  
-  if (input$filepathway == 'Network'){
+  if (loc == 'Network'){
     sasdma<-sasdma%>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
       addPolygons(data = extensiondma, weight = 2, color = "orange")
@@ -849,7 +849,7 @@ egsastabout<-egsastab
 egsastabout$ACTION_NEW<-as.numeric(egsastabout$ACTION_NEW)
 output$sasdma = renderLeaflet({print(sasdma)})
 
-if (input$filepathway == 'Network'){
+if (loc == 'Network'){
 egsastabout<-egsastabout%>%
   left_join(actioncodedf, by = c("ACTION_NEW" = "ID"))%>%
   dplyr::rename("ACTION_NEW_TRANSLATION" = "ACTION")
