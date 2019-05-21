@@ -20,7 +20,7 @@ observeEvent(input$rawupload,{
       print(path)
       print(typeof(path))
     }
-
+    
     mfyn<-input$multiflight
     rawed<-input$rawedits
     vis = 0:35
