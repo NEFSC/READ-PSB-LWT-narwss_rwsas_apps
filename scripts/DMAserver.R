@@ -52,7 +52,7 @@ observeEvent(input$query,{
 })
       
 observeEvent(input$eval,{
-      
+
       dmaevaldate<-input$sasdate
       print(dmaevaldate)
       egtable = hot_to_r(input$dailyeghot)
