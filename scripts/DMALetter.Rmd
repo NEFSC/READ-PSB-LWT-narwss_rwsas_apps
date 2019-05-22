@@ -73,9 +73,10 @@ On `r params$triggerdateletter`, `r params$triggerword` North Atlantic right wha
 \end{enumerate}
 
 ```{r setup, echo=FALSE}
-DMAlet2 <- length(params$title2) > 1
-DMAlet3 <- length(params$title3) > 1
-DMAlet4 <- length(params$title4) > 1
+
+DMAlet2 <- nchar(params$title2) > 0
+DMAlet3 <- nchar(params$title3) > 0
+DMAlet4 <- nchar(params$title4) > 0
 ```
 ```{r conditional_block, echo=FALSE, results='asis', eval=DMAlet2, child='DMAlet2.Rmd'}
 ```
