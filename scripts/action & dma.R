@@ -96,39 +96,59 @@ if (55 %in% egsas$ACTION_NEW) {
   
   ##assess which DMA they are in
   for (i in names(extdma.tr)){
-    indDMA<-sp::over(eg.tr, as(extdma.tr[[i]], "SpatialPolygons"))
-    indDMA[indDMA == 1] <- i
-    print(i)
+    if(exists("actionext_indlist") == FALSE){
+      indDMA<-sp::over(eg.tr, as(extdma.tr[[i]], "SpatialPolygons"))
+      indDMA[indDMA == 1] <- i
+      actionext<-cbind(egsas,indDMA)
+      actionext_sig<-actionext %>% 
+        filter(ACTION_NEW == 55) %>% 
+        dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID","indDMA")
+      actionext_indlist<-list(actionext_sig)
+    } else {
+      indDMA<-sp::over(eg.tr, as(extdma.tr[[i]], "SpatialPolygons"))
+      indDMA[indDMA == 1] <- i
+      actionext<-cbind(egsas,indDMA)
+      actionext_sig<-actionext %>% 
+        filter(ACTION_NEW == 55) %>% 
+        dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID","indDMA")
+      actionext_indlist<-list.append(actionext_indlist,actionext_sig)
     }
-
-  actionext<-cbind(egsas,indDMA)
-  print(actionext)
-  actionext_ind<-actionext %>% 
-    filter(ACTION_NEW == 55) %>% 
-    dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID","indDMA")
+  }
   
+  print(actionext_indlist)
+  
+  ##cycle through all animals for each ext dma
+fullextlist<-lapply(actionext_indlist, function(x){
+  print("enter the ext list")
+  actionext_ind<-x
   ##animals that are in a DMA up for extension
   ##factor to numeric -- maybe not be necessary
   actionext_ind$indDMA<-as.character(actionext_ind$indDMA)
   actionext_ind$indDMA<-as.numeric(actionext_ind$indDMA)
-  print(actionext_ind)
   #filter out the sightings that aren't in any of these DMAs up for extension
-  fullextlist<-actionext_ind %>% filter(!is.na(indDMA))
-  
-  #which dmas have sightings in them
-  uniqueext<-unique(fullextlist$indDMA)
-  
+  actionext_ind %>% filter(!is.na(indDMA))
+})
+print(fullextlist)
+
+uniqueextlist<-lapply(fullextlist,function(x){
+  x%>%
+    distinct(indDMA)
+})
+# print(uniqueextlist)
+uniqueext<-bind_rows(uniqueextlist)
+print(uniqueext)
+DMAlist<-as.list(uniqueext$indDMA)
+print(DMAlist)
+
   #test if the sightings in each DMA will trigger an extension (are there enough within the right distance to eachother)
-  for (i in uniqueext){
-    
-    actionfil<-fullextlist%>%
-      filter(indDMA == i)%>%
-      dplyr::select(-indDMA)
-    
-    #########
+comboext<-lapply(fullextlist,function(x){
+  print(x)
+  actionfil<-x#%>%
+  #   dplyr::select(-indDMA)
+  print(actionfil)
     ##distance between points matrix -- compares right whale sightings positions to each other
     comboext<-reshape::expand.grid.df(actionfil,actionfil)
-    names(comboext)[6:10]<-c("DateTime2","LATITUDE2","LONGITUDE2","GROUP_SIZE2","sightID2")
+    names(comboext)[7:12]<-c("DateTime2","LATITUDE2","LONGITUDE2","GROUP_SIZE2","sightID2","indDMA2")
     comboext$GROUP_SIZE<-as.character(comboext$GROUP_SIZE)
     comboext$GROUP_SIZE<-as.numeric(comboext$GROUP_SIZE)
     ##calculates core area
@@ -137,23 +157,30 @@ if (55 %in% egsas$ACTION_NEW) {
     setDT(comboext)[ ,dist_nm:=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
                                                                 matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
                                                                 a=6378137, f=1/298.257222101)*m_nm]
-    #print(comboext)
+    comboext})
+print("comboext")
+print(comboext)
+names(comboext)<-DMAlist
+print(comboext)
     #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
     #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
     #I don't remember why I named this dmacand -- maybe dma combo and... then some?
+
+extdf_list<-lapply(comboext, function(x) {
     
-    dmacandext<-comboext %>%
-      dplyr::filter((comboext$dist_nm != 0 & comboext$dist_nm <= comboext$corer) | (comboext$GROUP_SIZE > 2 & comboext$dist_nm == 0))
-    #print(dmacandext)
-    
+    dmacandext<-x %>%
+      dplyr::filter((x$dist_nm != 0 & x$dist_nm <= x$corer) | (x$GROUP_SIZE > 2 & x$dist_nm == 0))
+    print(dmacandext)
+    DMAid<-unique(x$indDMA)
+    print(DMAid)
     ##filters for distinct sightings that should be considered for DMA calculation
     dmaextsightID<-data.frame(sightID = c(dmacandext$sightID,dmacandext$sightID2)) %>%
       distinct()
     print("139")
-    print(dmaextsightID)
+    #print(dmaextsightID)
     
     #blank df for the dmas to enter
-    extdf<-data.frame(extDMAs = NA,
+    extdf_list<-data.frame(extDMAs = NA,
                       TRIGGER_GROUPSIZE = NA,
                       TRIGGERDATE = NA,
                       TRIGGERORG = NA)
@@ -167,11 +194,11 @@ if (55 %in% egsas$ACTION_NEW) {
         mutate(rank = rank(GROUP_SIZE, ties.method = "first"))%>%
         filter(rank == 1)%>%
         ungroup()
-      print(obs_org)
+      #print(obs_org)
       
       obs_org<-obs_org%>%
         distinct(OBSERVER_ORG)
-      print(obs_org)
+      #print(obs_org)
       
       exttot<-left_join(dmaextsightID,egsas, by = "sightID")%>%
         dplyr::select(sightID,DateTime,LATITUDE,LONGITUDE,GROUP_SIZE,OBSERVER_ORG)%>%
@@ -185,13 +212,10 @@ if (55 %in% egsas$ACTION_NEW) {
         arrange(sightID)%>%
         summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime), OBSERVER_ORG = 1)
     }
-      print(exttot)
+      #print(exttot)
     }
     
-    
-    ##this will pass into the next for loop
-    x <- i
-
+    ##DMAid will pass into the next for loop
     
     for (i in 1:nrow(egsas))
       if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
@@ -202,14 +226,14 @@ if (55 %in% egsas$ACTION_NEW) {
         print(i)
         print("1")
         egsas$ACTION_NEW[i] = 5
-        print(head(egsas))
-        df<-data.frame(extDMAs = x,
+        #print(head(egsas))
+        df<-data.frame(extDMAs = DMAid,
                        TRIGGER_GROUPSIZE = exttot$total,
                        TRIGGERDATE = exttot$TRIGGERDATE,
                        TRIGGERORG = exttot$OBSERVER_ORG)
-        print(df)
-        extdf<-rbind(extdf,df)
-        print(extdf)
+        #print(df)
+        extdf_list<-rbind(extdf_list,df)
+        #print(extdf)
       } else if (egsas$ACTION_NEW[i] == 55){
         print(i)
         print("2")
@@ -219,13 +243,17 @@ if (55 %in% egsas$ACTION_NEW) {
         print("3")
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
-    
-  }
+
+   extdf_list})
+  print(extdf_list)
   
+  extdf<-bind_rows(extdf_list, .id = "column_label")
+  print(extdf)
+  #######
   extdf<-extdf%>%
     filter(!is.na(extDMAs))%>%
     distinct()
-  
+  print(extdf)
   print("extdfname")
   extdf$extDMAs<-as.integer(extdf$extDMAs)
   extdfname<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
@@ -242,12 +270,40 @@ if (55 %in% egsas$ACTION_NEW) {
   print(extdfbounds)
   
   print("end 55")
-  
   ##############
-  dmaextsig<-inner_join(comboext,dmaextsightID, by = "sightID")
+  ##this section I copied from above because I am not clever enough right now
+  dmaextsightID<-lapply(comboext, function(x) {
+    dmacandext<-x %>%
+      dplyr::filter((x$dist_nm != 0 & x$dist_nm <= x$corer) | (x$GROUP_SIZE > 2 & x$dist_nm == 0))
+    ##filters for distinct sightings that should be considered for DMA calculation
+    data.frame(sightID = c(dmacandext$sightID,dmacandext$sightID2)) %>%
+      distinct()
+  })
+  
+  allcomboext<-bind_rows(comboext, .id = "column_label")
+  alldmaextsightID<-bind_rows(dmaextsightID, .id = "column_label")
+  
+  print(allcomboext)
+  print(alldmaextsightID)
+  
+  for (i in 1:nrow(egsas))
+    if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
+      egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
+    } else if (egsas$sightID[i] %in% alldmaextsightID$sightID) {
+      egsas$ACTION_NEW[i] = 5
+      #print(head(egsas))
+    } else if (egsas$ACTION_NEW[i] == 55){
+      egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
+    } else {
+      egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
+    }
+  print(egsas)
+  #################  
+  
+  dmaextsig<-inner_join(allcomboext,alldmaextsightID, by = "sightID")
   dmaextsights<-dmaextsig%>%
-    dplyr::select(DateTime,LATITUDE,LONGITUDE,GROUP_SIZE, sightID)%>%
-    distinct(DateTime,LATITUDE,LONGITUDE,GROUP_SIZE,sightID)%>%
+    dplyr::select(DateTime,LATITUDE,LONGITUDE,GROUP_SIZE,sightID,indDMA)%>%
+    distinct()%>%
     mutate(corer=round(sqrt(GROUP_SIZE/(pi*egden)),2))%>%
     as.data.frame()
   print(dmaextsights)
@@ -282,7 +338,7 @@ if (55 %in% egsas$ACTION_NEW) {
   ##creates a dataframe from the density buffers put around sightings considered for DMA analysis
   extpolycoord<-dmaextbuff %>% fortify() %>% dplyr::select("long","lat","id")
   ##poly coordinates out of utm
-  print("264")
+  print("297")
   coordinates(extpolycoord)<-~long+lat
   proj4string(extpolycoord)<-CRS.utm
   extpolycoord.tr<-spTransform(extpolycoord, CRS.latlon)
@@ -297,7 +353,7 @@ if (55 %in% egsas$ACTION_NEW) {
   extpolycoorddf_sp<-SpatialPolygons(extpcoord_, proj4string = CRS.latlon)
   
   print(egsas)
-  }
+  } #276
 } #end 55 in action_new
 
 ###################################
@@ -1077,10 +1133,13 @@ observeEvent(input$dmaup,{
     )
   }
   ############
-  
+  print(alldmas)
   letterdate<-format(Sys.Date(), '%B %d, %Y')
   numberword<-alldmas%>%
-    mutate(triggerword = numbers2words(alldmas$TRIGGER_GROUPSIZE))
+    dplyr::select(-ID,-NAME)%>%
+    distinct(INITOREXT, TRIGGER_GROUPSIZE, TRIGGERDATE, TRIGGERORG)%>%
+    mutate(triggerword = numbers2words(TRIGGER_GROUPSIZE))
+  print(numberword)
   triggerword<-as.list(numberword$triggerword)
   triggerword<-do.call("paste", c(triggerword, sep = ", "))
   triggerword<-sub(",([^,]*)$", " and\\1", triggerword)  
@@ -1108,7 +1167,7 @@ observeEvent(input$dmaup,{
   landmark<-sub(",([^,]*)$", " and\\1", landmark)  
   
   letterbounds<-left_join(alldmas,dmacoord, by = "ID")
-  
+  print(letterbounds)
   #initial/extension
   ie<-as.list(unique(letterbounds$INITOREXT))
   
@@ -1120,12 +1179,13 @@ observeEvent(input$dmaup,{
   } else if ('i' %in% ie){
     neworextlet<-"Since no protections are in place in this region at this time, we recommend a DMA be initiated that is bounded by the following:"
   } else if ('e' %in% ie){
-    neworextlet<-"Since the current protections in this region are due to expire in a week or less, we recommend an extension of the DMA that is bounded by the following:"
+    neworextlet<-"Since the current protections in this region are due to expire in a week or less, we recommend an extension of the DMA(s) that is/are bounded by the following:"
   }  
   
   if(1 %in% letterbounds$ID){
     DMA1<-letterbounds%>%filter(ID == 1)
     title1<-unique(DMA1$NAME)
+    print(typeof(title1))
     NLat1<-unique(DMA1$`Lat (Degree Minutes)`[DMA1$`Lat (Decimal Degrees)` == max(DMA1$`Lat (Decimal Degrees)`)])
     SLat1<-unique(DMA1$`Lat (Degree Minutes)`[DMA1$`Lat (Decimal Degrees)` == min(DMA1$`Lat (Decimal Degrees)`)])
     WLon1<-unique(DMA1$`Lon (Degree Minutes)`[DMA1$`Lon (Decimal Degrees)` == max(DMA1$`Lon (Decimal Degrees)`)])
@@ -1136,6 +1196,8 @@ observeEvent(input$dmaup,{
   if(2 %in% letterbounds$ID){
     DMA2<-letterbounds%>%filter(ID == 2)
     title2<-unique(DMA2$NAME)
+    title2<-as.character(title2)
+    print(typeof(title2))
     NLat2<-unique(DMA2$`Lat (Degree Minutes)`[DMA2$`Lat (Decimal Degrees)` == max(DMA2$`Lat (Decimal Degrees)`)])
     SLat2<-unique(DMA2$`Lat (Degree Minutes)`[DMA2$`Lat (Decimal Degrees)` == min(DMA2$`Lat (Decimal Degrees)`)])
     WLon2<-unique(DMA2$`Lon (Degree Minutes)`[DMA2$`Lon (Decimal Degrees)` == max(DMA2$`Lon (Decimal Degrees)`)])
@@ -1144,6 +1206,7 @@ observeEvent(input$dmaup,{
     print(paste(title2,NLat2,SLat2,WLon2,ELon2))
   } else {
     title2 = ""
+    title2<-as.character(title2)
     NLat2 = ""
     SLat2 = ""
     WLon2 = ""
@@ -1153,6 +1216,7 @@ observeEvent(input$dmaup,{
   if(3 %in% letterbounds$ID){
     DMA3<-letterbounds%>%filter(ID == 3)
     title3<-unique(DMA3$NAME)
+    title3<-as.character(title3)
     NLat3<-unique(DMA3$`Lat (Degree Minutes)`[DMA3$`Lat (Decimal Degrees)` == max(DMA3$`Lat (Decimal Degrees)`)])
     SLat3<-unique(DMA3$`Lat (Degree Minutes)`[DMA3$`Lat (Decimal Degrees)` == min(DMA3$`Lat (Decimal Degrees)`)])
     WLon3<-unique(DMA3$`Lon (Degree Minutes)`[DMA3$`Lon (Decimal Degrees)` == max(DMA3$`Lon (Decimal Degrees)`)])
@@ -1161,6 +1225,7 @@ observeEvent(input$dmaup,{
     print(paste(title3,NLat3,SLat3,WLon3,ELon3))
   } else {
     title3 = ""
+    title3<-as.character(title3)
     NLat3 = ""
     SLat3 = ""
     WLon3 = ""
@@ -1170,6 +1235,7 @@ observeEvent(input$dmaup,{
   if(4 %in% letterbounds$ID){
     DMA4<-letterbounds%>%filter(ID == 4)
     title4<-unique(DMA4$NAME)
+    title4<-as.character(title4)
     NLat4<-unique(DMA4$`Lat (Degree Minutes)`[DMA4$`Lat (Decimal Degrees)` == max(DMA4$`Lat (Decimal Degrees)`)])
     SLat4<-unique(DMA4$`Lat (Degree Minutes)`[DMA4$`Lat (Decimal Degrees)` == min(DMA4$`Lat (Decimal Degrees)`)])
     WLon4<-unique(DMA4$`Lon (Degree Minutes)`[DMA4$`Lon (Decimal Degrees)` == max(DMA4$`Lon (Decimal Degrees)`)])
@@ -1178,6 +1244,7 @@ observeEvent(input$dmaup,{
     print(paste(title4,NLat4,SLat4,WLon4,ELon4))
   } else {
     title4 = ""
+    title4<-as.character(title4)
     NLat4 = ""
     SLat4 = ""
     WLon4 = ""
@@ -1222,4 +1289,4 @@ observeEvent(input$dmaup,{
       )})
   
   })#inputdma
-}#ends network path for Orcale uploads
+}#ends network path for Oracle uploads
