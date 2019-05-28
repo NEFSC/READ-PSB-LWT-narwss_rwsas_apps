@@ -1389,6 +1389,9 @@ observeEvent(input$rawupload,{
             } else if (loc == 'Local'){
               webshotpath<-paste0(path,date1,"_map.png")
               dmanamesexpsent<-""
+              disable("dmaup")
+              disable("kml")
+              disable("dmaletter")
             }
             
               params<-list(date1 = date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
