@@ -3,6 +3,7 @@
 ##########################
 
 #UTM unPROJECTED 19 for US, should be 20 for CA
+print(egtable)
 sightings20<-egtable%>%
   filter(LONGITUDE >= -66)
 sightings19<-egtable%>%
@@ -48,6 +49,9 @@ maso<-readOGR(smapath, layer = "MA_SMA_south_po")
 seshore<-readOGR(smapath, layer = "SE_SMA2shore2_po")
 ##canada
 ecanada<-readOGR(smapath, layer = "ecanada")
+dyna_ship<-readOGR(smapath, layer = "Dynamic_Shipping_Section")
+crab_grid<-readOGR(smapath, layer = "Snow_Crab_Grids")
+stat_fish<-readOGR(smapath, layer = "Static_Fishing_Closure")
 ##france
 spm<-readOGR(smapath, layer = "spm")
 
@@ -60,6 +64,9 @@ mano.tr<-spTransform(mano, CRS.new)
 maso.tr<-spTransform(maso, CRS.new)
 seshore.tr<-spTransform(seshore, CRS.new)
 ecanada<-spTransform(ecanada, CRS.new)
+dyna_ship.tr<-spTransform(dyna_ship, CRS.new)
+crab_grid.tr<-spTransform(crab_grid, CRS.new)
+stat_fish.tr<-spTransform(stat_fish, CRS.new)
 spm<-spTransform(spm, CRS.new)
 
 ##no SEUS
@@ -114,3 +121,7 @@ smafort<-cbind(smafort,MA)
 smafort$MA<-as.factor(smafort$MA)
 
 ######  
+
+dyna_ship.sp<-spTransform(dyna_ship.tr,CRS.latlon)
+crab_grid.sp<-spTransform(crab_grid.tr,CRS.latlon)
+stat_fish.sp<-spTransform(stat_fish.tr,CRS.latlon)
