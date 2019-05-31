@@ -58,7 +58,12 @@ print(egsas)
 
 for (i in 1:nrow(egsas))
   if (egsas$inoutsma[i] == TRUE){
-    egsas$ACTION_NEW[i] = 2  
+    egsas$ACTION_NEW[i] = 2
+  } else if (egsas$Canada[i] == TRUE){
+    egsas$ACTION_NEW[i] = 6
+  } else if (egsas$SPM[i] == TRUE){
+    egsas$ACTION_NEW[i] = 6
+    output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
   } else if (loc == 'Network'){
     print("network if")
     if (egsas$eDMA[i] == TRUE) { #extension dma?
@@ -66,11 +71,6 @@ for (i in 1:nrow(egsas))
     } else if (egsas$bDMA[i] == TRUE) { #benign dma
       egsas$ACTION_NEW[i] = 2   
     }
-  } else if (egsas$Canada[i] == TRUE){
-    egsas$ACTION_NEW[i] = 6
-  } else if (egsas$SPM[i] == TRUE){
-    egsas$ACTION_NEW[i] = 6
-    output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})
   } else if (egsas$inoutsma[i] == FALSE){
     egsas$ACTION_NEW[i] = NA
   }
