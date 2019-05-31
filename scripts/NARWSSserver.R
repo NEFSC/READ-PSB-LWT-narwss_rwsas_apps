@@ -1309,51 +1309,48 @@ observeEvent(input$rawupload,{
                              domain = c("BEWH","BLWH","BOWH","FIWH","HUWH","KIWH","MIWH","NBWH","PIWH","RIWH","SEWH","SPWH"))
       
       
-      if(egtable$DateTime[1] == 'No right whales sighted'){
         
         reportleaf<-leaflet(data = spectab, options = leafletOptions(zoomControl = FALSE)) %>% 
           addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
           addPolylines(lng=~maplon, lat = ~maplat, weight = 2, color = "black") %>%
           addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
           addCircleMarkers(lng = ~LONGITUDE, lat = ~LATITUDE, color = ~leafpal(SPCODE), stroke = FALSE, fillOpacity = 2, radius = 5) %>%
-          addLegend(colors = c("yellow","red"), labels = c("Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)%>%
-          addLegend(pal = leafpal, values = spectab$SPCODE, opacity = 1)%>%
+          addLegend(pal = leafpal, values = spectab$SPCODE, opacity = 0.9)%>%
           addWMSTiles(
             "https://gis.ngdc.noaa.gov/arcgis/services/graticule/MapServer/WMSServer/",
             layers = c("1-degree grid", "5-degree grid"),
             options = WMSTileOptions(format = "image/png8", transparent = TRUE),
             attribution = NULL)
         
-        if (input$filepathway == 'Network'){
+        if (input$filepathway == 'Network'){ #on network means DMAs queried
           reportleaf<-reportleaf %>%
             addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
             addPolygons(data = extensiondma, weight = 2, color = "yellow")
-        } 
-        
-      } else {
-        
-        reportleaf<-leaflet(data = spectab, options = leafletOptions(zoomControl = FALSE)) %>% 
-          addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
-          addPolylines(lng=~maplon, lat = ~maplat, weight = 2, color = "black") %>%
-          addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-          addCircleMarkers(lng = ~LONGITUDE, lat = ~LATITUDE, color = ~leafpal(SPCODE), stroke = FALSE, fillOpacity = 2, radius = 5) %>%
-          addLegend(colors = c("yellow","red"), position = "topleft", labels = c("Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)%>%
-          addLegend(pal = leafpal, position = "topleft", values = spectab$SPCODE, opacity = 0.9)%>%
-          addWMSTiles(
-            "https://gis.ngdc.noaa.gov/arcgis/services/graticule/MapServer/WMSServer/",
-            layers = c("1-degree grid", "5-degree grid"),
-            options = WMSTileOptions(format = "image/png8", transparent = TRUE),
-            attribution = NULL)
-        
-        if (input$filepathway == 'Network'){
+            
+          if (nrow(sightings19) >= nrow(sightings20)){ #US
+            reportleaf<-reportleaf %>% 
+              addLegend(colors = c("yellow","red"), labels = c("Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)
+          } else if (nrow(sightings19) < nrow(sightings20)){
+            reportleaf<-reportleaf %>%
+              addPolygons(data = dyna_ship.sp, weight = 2, color = "green") %>%
+              addPolygons(data = crab_grid.sp, weight = 2, color = "grey", fill = F, opacity = 0.2) %>%
+              addPolygons(data = stat_fish.sp, weight = 2, color = "yellow")%>%
+              addLegend(colors = c("green","grey","yellow"), labels = c("Dynamic Shipping Section","Fishing Grid","Static Fishing Closure"), opacity = 0.3) 
+            }
+        } else if (nrow(sightings19) < nrow(sightings20)){ #Canada on/off network?
           reportleaf<-reportleaf %>%
-            addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-            addPolygons(data = extensiondma, weight = 2, color = "yellow")
-        } 
-        
-      }
+            addPolygons(data = dyna_ship.sp, weight = 2, color = "green") %>%
+            addPolygons(data = crab_grid.sp, weight = 2, color = "grey", fill = F, opacity = 0.2) %>%
+            addPolygons(data = stat_fish.sp, weight = 2, color = "yellow")%>%
+            addLegend(colors = c("green","grey","yellow"), labels = c("Dynamic Shipping Section","Fishing Grid","Static Fishing Closure"), opacity = 0.3)  
+        } else if (nrow(sightings19) >= nrow(sightings20)){ #US off network
+          reportleaf<-reportleaf %>%
+            addLegend(colors = c("yellow","red"), labels = c("Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)
+        }
+
       
       reportmap<-fitBounds(reportleaf,min(final$LONGITUDE), min(final$LATITUDE), max(final$LONGITUDE), max(final$LATITUDE))
+
       print(getwd())
       
       enable("report")
