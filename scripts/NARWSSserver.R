@@ -1357,16 +1357,10 @@ observeEvent(input$rawupload,{
       output$reportmap = renderLeaflet({print(reportmap)})
       output$netable<-renderTable({netable}, digits = 0)
       output$egreport<-renderTable({egreport})
-
-      ws_temppath<-paste0(path,"temp.html")
-      print(ws_temppath)
-      htmlwidgets::saveWidget(reportmap, file = ws_temppath, selfcontained = FALSE)
-      webshot::webshot(ws_temppath, file = paste0(path,date1,"_map.png"))
-      print("webshot")
       
-      # htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
-      # webshot::webshot("temp.html", file = paste0(date1,"_map.png"))
-      # print("webshot")
+      htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
+      webshot::webshot("temp.html", file = paste0(date1,"_map.png"))
+      print("webshot")
         
         output$report<-downloadHandler(
           filename = paste0(day1,month1,year1,"_NOAA_NERW_Aerial_Report.pdf"),
