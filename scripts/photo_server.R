@@ -17,8 +17,6 @@ output$finalmess <- renderText({
    
   }else{
     
-  
-    
   subraw<-read.csv(inFile$datapath, header = input$header, stringsAsFactors = FALSE)
   print(head (subraw))
   subraw$Month<-sprintf("%02d",subraw$Month)
@@ -32,10 +30,15 @@ output$finalmess <- renderText({
   withProgress(message = 'Finding whale positions from timestamp...', min = 0, max = nrow(subraw), {
     for(i in 1:nrow(subraw))
     if ( is.na(subraw$Latitude[i]) && subraw$Local.Time[i] != '' && !is.na(subraw$Year[i]) && subraw$Month[i] != 'NA' && subraw$Day[i] != 'NA' ){
-    
     yr<-substr(subraw$Year[i],3,4)
     datestr<-paste0(yr,subraw$Month[i],subraw$Day[i])
-    path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
+   
+    if (input$filepathway == 'Network'){
+      path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
+    } else if (input$filepathway == 'Local'){
+      path<-input$filepathinput
+    }
+    
     gps<-as.data.frame(read.csv(paste0(path,datestr,'/',datestr,'.gps'), header=FALSE, stringsAsFactors = FALSE))
     names(gps)<-c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE','T1')
     gps$DateTime<-dmy_hms(gps$DateTime, tz = "GMT")
