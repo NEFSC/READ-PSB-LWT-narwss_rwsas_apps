@@ -247,11 +247,13 @@ output$finalmess <- renderText({
   
   subed<-subed%>%
     dplyr::rename("Field EGNO" = Field.EGNO, "EG Letter" = EG.Letter, "Local Time" = Local.Time, "Image Type" = Image.Type, "Assoc. Type" = Assoc..Type, "First Edit" = First.Edit, "Second Edit" = Second.Edit, "Final Edit" = Final.Edit)
-  x<-Sys.time()
-  write.csv(subed, paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_',x,'.csv'), na = '', row.names = FALSE)
 
-  output$finalmess<-renderText({"The photo submission spreadsheet can be found on the network in the 'Image Submission' folder and is named 'NEFSC Sighting Data Table_Twin Otter_[datetime created].csv'"})
-  
+  if (input$filepathway == 'Network'){
+    write.csv(subed, paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'), na = '', row.names = FALSE)
+  } else if (input$filepathway == 'Local'){
+    write.csv(subed, paste0(input$filepathinput,'NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'), na = '', row.names = FALSE)
+    print(paste0(input$filepathinput,'NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'))  
+  }
   
     finalleaf<-leaflet(data = subed, options = leafletOptions(zoomControl = TRUE)) %>% 
       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
@@ -264,6 +266,9 @@ output$finalmess <- renderText({
         options = WMSTileOptions(format = "image/png8", transparent = TRUE),
         attribution = NULL)  
     output$finalleaf = renderLeaflet({print(finalleaf)})
+    
+    "The photo submission spreadsheet can be found on the network in the 'Image Submission' folder and is named 'NEFSC Sighting Data Table_Twin Otter_[datetime created].csv'"
+    
   }#else
 })
 
