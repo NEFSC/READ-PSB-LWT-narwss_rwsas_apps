@@ -744,6 +744,18 @@ if (44 %in% egsas$ACTION_NEW){
       distinct(OBSERVER_ORG)
     print(obs_org2)
     
+    if (nrow(obs_org2) != 1){
+      obs_org2<-obs_org2%>%
+        filter(OBSERVER_ORG != 0)
+    }
+    print(obs_org2)
+    
+    if (nrow(obs_org2) != 1){
+      obs_org2<-obs_org2%>%
+        slice(1)
+    }
+    print(obs_org2)
+    
     dmanamedf<-dmanamedf%>%
       mutate(TRIGGERORG = obs_org2$OBSERVER_ORG)
     
