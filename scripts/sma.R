@@ -54,7 +54,7 @@ crab_grid<-readOGR(smapath, layer = "Snow_Crab_Grids")
 stat_fish<-readOGR(smapath, layer = "Static_Fishing_Closure")
 ##france
 spm<-readOGR(smapath, layer = "spm")
-
+print('line 57')
 ##sma projected properly
 ccb.tr<-sp::spTransform(ccb, CRS.new)
 race.tr<-sp::spTransform(race, CRS.new)
@@ -68,7 +68,7 @@ dyna_ship.tr<-sp::spTransform(dyna_ship, CRS.new)
 crab_grid.tr<-sp::spTransform(crab_grid, CRS.new)
 stat_fish.tr<-sp::spTransform(stat_fish, CRS.new)
 spm<-sp::spTransform(spm, CRS.new)
-
+print('line 71')
 ##no SEUS
 ##01Jan - 29Feb CCB, MANO, BI
 sma1<-rgeos::union(ccb.tr, mano.tr)
@@ -121,7 +121,7 @@ smafort<-cbind(smafort,MA)
 smafort$MA<-as.factor(smafort$MA)
 
 ######  
-
-dyna_ship.sp<-spTransform(dyna_ship.tr,CRS.latlon)
-crab_grid.sp<-spTransform(crab_grid.tr,CRS.latlon)
-stat_fish.sp<-spTransform(stat_fish.tr,CRS.latlon)
+print('line124')
+dyna_ship.sp<-sp::spTransform(dyna_ship.tr,CRS.latlon)
+crab_grid.sp<-sp::spTransform(crab_grid.tr,CRS.latlon)
+stat_fish.sp<-sp::spTransform(stat_fish.tr,CRS.latlon)
