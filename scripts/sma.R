@@ -113,7 +113,8 @@ if (between(MODA,"01-01", "02-29")){
 }
 
 if (is.null(smapresent)){
-  smapresent.sp<-benigndma.sp
+  fakesma<-SpatialPolygons(list(fakedma))
+  smapresent.sp<-fakesma
 } else {
   smapresent.sp<-sp::spTransform(smapresent,CRS.latlon)
 }

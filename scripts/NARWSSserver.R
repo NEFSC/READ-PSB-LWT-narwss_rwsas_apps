@@ -1208,8 +1208,6 @@ observeEvent(input$rawupload,{
       MODA<-unique(format(MODA, "%m-%d"))
       print(MODA)
       
-      source('./scripts/sma.R', local = TRUE)$value
-      
       ##############
       ## FAKE DMA ##
       ##############
@@ -1219,6 +1217,8 @@ observeEvent(input$rawupload,{
       
       fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
       ##############
+      
+      source('./scripts/sma.R', local = TRUE)$value
       
       if (input$filepathway == 'Network'){
       source('./scripts/oracleaccess.R', local = TRUE)$value
