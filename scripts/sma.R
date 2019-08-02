@@ -111,7 +111,13 @@ if (between(MODA,"01-01", "02-29")){
   smapresent<-smapresent
   smaname<-"none"
 }
-smapresent.sp<-sp::spTransform(smapresent,CRS.latlon)
+
+if (is.null(smapresent)){
+  smapresent.sp<-benigndma.sp
+} else {
+  smapresent.sp<-sp::spTransform(smapresent,CRS.latlon)
+}
+
 smafort<-fortify(smapresent.sp)
 MA = NULL
 for (i in 1:nrow(smafort)){
