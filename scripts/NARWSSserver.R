@@ -204,6 +204,11 @@ observeEvent(input$rawupload,{
       
       ######
       ##merge and add columns
+      print(head(eff))
+      print(head(sig))
+      print(str(eff))
+      print(str(sig))
+      
       eff_sig<-merge(eff, sig, by=c("DateTime","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
       eff_sig<-eff_sig%>%
         filter(!is.na(DateTime))
