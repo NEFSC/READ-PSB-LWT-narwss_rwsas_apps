@@ -204,8 +204,8 @@ observeEvent(input$rawupload,{
       #merge effort and sighting files
       ######
       ##merge and add columns
-      ##the below came out of an error thrown 8/3/2019 where eff$LATITUDE were characters for some reason
-      eff$LATITUDE<-as.double(eff$LATITUDE)
+      ##the below came out of an error thrown 8/3/2019 where eff$LONGITUDE were characters for some reason
+      eff$LONGITUDE<-as.double(eff$LONGITUDE)
       
       eff_sig<-merge(eff, sig, by=c("DateTime","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
       eff_sig<-eff_sig%>%
