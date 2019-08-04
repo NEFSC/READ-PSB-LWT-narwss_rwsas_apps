@@ -917,7 +917,9 @@ observeEvent(input$rawupload,{
                                 B3_FINAL_CODE,B4_FINAL_CODE,B5_FINAL_CODE,PHOTOS,EFFORT_COMMENTS,SIGHTING_COMMENTS,
                                 EDIT1,EDIT2,EDIT3)
       rf[is.na(rf)] <- ""
-      
+      print(str(rf))
+      rf$LONGITUDE<-as.numeric(rf$LONGITUDE)
+      print(str(rf))
       maplat<-rf$LATITUDE
       maplon<-rf$LONGITUDE
       rf$DateTime<-ymd_hms(rf$DateTime, tz = "GMT")
