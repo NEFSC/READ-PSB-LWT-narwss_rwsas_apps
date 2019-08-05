@@ -81,9 +81,6 @@ observeEvent(input$eval,{
 
       egsas$DateTime<-strftime(egsas$DateTime,'%Y-%m-%d %H:%M:%S')
       
-      source('./scripts/oracleaccess.R', local = TRUE)$value
-      source('./scripts/sma.R', local = TRUE)$value
-      
       ##############
       ## FAKE DMA ##
       ##############
@@ -94,6 +91,8 @@ observeEvent(input$eval,{
       fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
       ##############
       
+      source('./scripts/oracleaccess.R', local = TRUE)$value
+      source('./scripts/sma.R', local = TRUE)$value
       source('./scripts/activedma.R', local = TRUE)$value
       
         #####
