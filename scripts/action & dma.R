@@ -845,7 +845,7 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
                   border="yellow", kmlname="", kmldescription="")
     }
   )
-  enable("kml")
+  #enable("kml")
     }
   }
   
@@ -853,7 +853,7 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
   ###############
   ##buttons
   enable("dmaup")
-
+  
   ###############
   dmanameout<-alldmas%>%
     dplyr::rename("GROUP_SIZE" = "TRIGGER_GROUPSIZE")
@@ -1057,7 +1057,7 @@ observeEvent(input$dmaup,{
   print("dma end")
   disable("dmaup")
   enable("dmareport")
-  
+  enable("dmaletter")
   output$dmareport<-downloadHandler(
     filename = paste0(day1,month1,year1,"_PotentialDMA_Report.pdf"),
     content = function(file) {
@@ -1075,6 +1075,7 @@ observeEvent(input$dmaup,{
       rmarkdown::render(tempReport, output_file = file,
                         params = params,
                         envir = new.env(parent = globalenv())
+      
       )})
   
   #######
