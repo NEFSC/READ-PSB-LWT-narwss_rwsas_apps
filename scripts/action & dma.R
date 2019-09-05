@@ -845,7 +845,6 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
                   border="yellow", kmlname="", kmldescription="")
     }
   )
-  #enable("kml")
     }
   }
   
@@ -976,7 +975,6 @@ observeEvent(input$sas,{
 
 observeEvent(input$dmaup,{
   
-  enable("kml")
   print("dma button pressed")
   
   dmareportmap<-fitBounds(sasdma,min(dmacoord$`Lon (Decimal Degrees)`)+0.5, min(dmacoord$`Lat (Decimal Degrees)`)-0.5, max(dmacoord$`Lon (Decimal Degrees)`)-0.5, max(dmacoord$`Lat (Decimal Degrees)`)+0.5)
@@ -1057,6 +1055,7 @@ observeEvent(input$dmaup,{
   print("dma end")
   disable("dmaup")
   enable("dmareport")
+  if("i" %in% dmanameout$INITOREXT){enable("kml")}
   enable("dmaletter")
   output$dmareport<-downloadHandler(
     filename = paste0(day1,month1,year1,"_PotentialDMA_Report.pdf"),
