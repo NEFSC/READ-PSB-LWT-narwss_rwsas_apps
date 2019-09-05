@@ -1,7 +1,7 @@
 
-#disable("dmaup")
-#disable("dmareport")
-#disable("kml")
+disable("dmaup")
+disable("dmareport")
+disable("kml")
 
 loc<-"Network"
     ###########
@@ -95,7 +95,7 @@ observeEvent(input$eval,{
       source('./scripts/sma.R', local = TRUE)$value
       source('./scripts/activedma.R', local = TRUE)$value
       
-        #####
+      #####
       ##egtable for SAS
         output$error1<-renderText({""})
         
