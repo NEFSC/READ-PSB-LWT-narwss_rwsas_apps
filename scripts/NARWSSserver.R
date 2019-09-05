@@ -5,7 +5,8 @@ disable("report")
 disable("sas")
 disable("dmaup")
 disable("dmareport")
-#disable("kml")
+disable("kml")
+disable("dmaletter")
 
 observeEvent(input$rawupload,{
   
@@ -1392,6 +1393,7 @@ observeEvent(input$rawupload,{
               webshotpath<-paste0(path,date1,"_map.png")
               dmanamesexpsent<-""
               disable("dmaup")
+              disable("dmareport")
               disable("kml")
               disable("dmaletter")
             }
