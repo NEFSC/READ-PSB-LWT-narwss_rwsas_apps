@@ -496,30 +496,31 @@ observeEvent(input$rawupload,{
         }  
       
       f<-cbind(f, FLIGHT_TYPE)
-      ##########
-      #LEGTYPE
-      ######
+      #########
+      #LEGTYPE# 
+      #########
+      ##searches for ' '+legtype abbreviation+' ' OR ' '+legtype abbreviation ($ means it's the end of the string)
       LEGTYPE = NULL
       for (i in 1:nrow(f))
         if (grepl('break', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 4
-        } else if (grepl(' str', f$EFFORT_COMMENTS[i])) {
+        } else if (grepl(' str .| str$', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 12
-        } else if (grepl(' st', f$EFFORT_COMMENTS[i])) {
+        } else if (grepl(' st .| st$', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 11
-        } else if (grepl(' ha', f$EFFORT_COMMENTS[i])) {
+        } else if (grepl(' ha .| ha$', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 10
-        } else if (grepl(' di', f$EFFORT_COMMENTS[i])) {
+        } else if (grepl(' di .| di$', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 9
-        } else if (grepl(' br', f$EFFORT_COMMENTS[i])) {
+        } else if (grepl(' br .| br$', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 8
-        } else if (grepl(' ra', f$EFFORT_COMMENTS[i])) {
+        } else if (grepl(' ra .| ra$', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 7
-        } else if (grepl(' fi', f$EFFORT_COMMENTS[i])) {
+        } else if (grepl(' fi .| fi$', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 6
-        } else if (grepl(' cr', f$EFFORT_COMMENTS[i])) {
+        } else if (grepl(' cr .| cr$', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 3
-        } else if (grepl(' tr', f$EFFORT_COMMENTS[i])) {
+        } else if (grepl(' tr .| tr$', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 1
         } else {
           LEGTYPE[i] = NA
