@@ -1,5 +1,6 @@
 
-
+# Longterm goal to change the pathway creation to grab positions
+# Get rid of yr variable and make it not matter
 
 output$finalmess <- renderText({
   # input$file1 will be NULL initially. After the user selects
@@ -18,14 +19,13 @@ output$finalmess <- renderText({
   }else{
     
   subraw<-read.csv(inFile$datapath, header = input$header, stringsAsFactors = FALSE)
-  print(head (subraw))
+  print(head(subraw))
   subraw$Month<-sprintf("%02d",subraw$Month)
   subraw$Day<-sprintf("%02d", subraw$Day)
   
-  subraw<-data.frame(date_tz = "",
-                     subraw)
-  
+  subraw<-data.frame(date_tz = "",subraw)
   subraw$date_tz<-dmy_hms(subraw$date_tz)
+  print(head(subraw))
 
   withProgress(message = 'Finding whale positions from timestamp...', min = 0, max = nrow(subraw), {
     for(i in 1:nrow(subraw))
@@ -78,6 +78,8 @@ output$finalmess <- renderText({
   
   subraw$Latitude[which(is.na(subraw$Latitude))]<-0
   subraw$Longitude[which(is.na(subraw$Longitude))]<-0
+  subraw$Latitude<-as.numeric(subraw$Latitude)
+  subraw$Longitude<-as.numeric(subraw$Longitude)
   
   subraw.tr<-subraw
   coordinates(subraw.tr)<-~Longitude+Latitude
