@@ -1118,7 +1118,7 @@ observeEvent(input$rawupload,{
       ##egrep is the aps and fin est no breaks without dupes and without new?
       #egrep<-filter(egtable, ((!grepl('new?', egtable$SIGHTING_COMMENTS) | !grepl('dup', egtable$SIGHTING_COMMENTS)) & (grepl('ap',egtable$SIGHTING_COMMENTS) | grepl('fin est no break', egtable$SIGHTING_COMMENTS) | grepl('No right whales', egtable$DateTime))))
       egrep<-egtable%>%
-        filter((startsWith(SIGHTING_COMMENTS, "ap") | startsWith(SIGHTING_COMMENTS, "fin est no break") | grepl('No right whales', egtable$DateTime)))
+        filter((PSB_LEGSTAGE == 7 | startsWith(SIGHTING_COMMENTS, "fin est no break") | grepl('No right whales', egtable$DateTime)))
       print(egrep)
       egrep<-egrep%>%
         filter(!grepl('new\\?', egrep$SIGHTING_COMMENTS) & !grepl('dup', egrep$SIGHTING_COMMENTS))
