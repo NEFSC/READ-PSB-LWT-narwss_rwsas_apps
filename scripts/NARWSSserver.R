@@ -38,11 +38,11 @@ observeEvent(input$rawupload,{
     if (input$sd == "") {
         output$error<-renderText({"Enter a survey date"})
     } else if (!file.exists(paste0(path,survey_date,'/',survey_date,'.gps'))) { 
-        output$error2<-renderText({"Uh oh! Those files can't be found! Double check your connection to the network, the local network pathway, and/or your survey date entry."})         
+        output$error2<-renderText({"Uh oh! Those files can't be found! Double check your connection to the network, the local network pathway, your data, and/or your survey date entry."})         
     } else if (rawed == "Yes" && !file.exists(paste0(path,survey_date,'/','effsig_',survey_date,'.csv'))){
         output$error2<-renderText({"No initial eff/sig edits were saved."})    
     } else {
-      
+      output$error2<-renderText({""})
       if (rawed == "Yes"){
         eff_sig<-as.data.frame(read.csv(paste0(path,survey_date,'/','effsig_',survey_date,'.csv'),header=TRUE, stringsAsFactors = FALSE))
       } else if (rawed == "No"){
