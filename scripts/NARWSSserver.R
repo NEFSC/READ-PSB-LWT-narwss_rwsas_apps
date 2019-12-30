@@ -22,7 +22,6 @@ observeEvent(input$rawupload,{
       print(typeof(path))
     }
     
-    mfyn<-input$multiflight
     rawed<-input$rawedits
     vis = 0:35
     beau = seq(0, 12, by = 0.1)
@@ -40,10 +39,6 @@ observeEvent(input$rawupload,{
         output$error<-renderText({"Enter a survey date"})
     } else if (!file.exists(paste0(path,survey_date,'/',survey_date,'.gps'))) { 
         output$error2<-renderText({"Uh oh! Those files can't be found! Double check your connection to the network, the local network pathway, and/or your survey date entry."})         
-    } else if (rawed == "No" && mfyn == "Yes" && !file.exists(paste0(path,survey_date,'/',survey_date,' (2).eff'))){
-        output$error2<-renderText({"Are you sure you had a two flight day?"})
-    } else if (rawed == "No" && mfyn == "No" && file.exists(paste0(path,survey_date,'/',survey_date,' (2).eff'))){
-        output$error2<-renderText({"Are you sure you had a single flight day?"})
     } else if (rawed == "Yes" && !file.exists(paste0(path,survey_date,'/','effsig_',survey_date,'.csv'))){
         output$error2<-renderText({"No initial eff/sig edits were saved."})    
     } else {
@@ -52,143 +47,69 @@ observeEvent(input$rawupload,{
         eff_sig<-as.data.frame(read.csv(paste0(path,survey_date,'/','effsig_',survey_date,'.csv'),header=TRUE, stringsAsFactors = FALSE))
       } else if (rawed == "No"){
         
-        if(mfyn == "Yes"){
-        output$error2<-renderText({""})  
-        ######
-        ##this is the same as the else path except what is between the ###**###
-        ###**###
+########################        
+
+        #path<-"//net/mmi/Fieldwrk/Aerials/2019/Flights/edit_data/"
+        #survey_date<-199996
+        
+        ## gps ##
         
         gps<-as.data.frame(read.csv(paste0(path,survey_date,'/',survey_date,'.gps'), header=FALSE, stringsAsFactors = FALSE))
         names(gps)<-c('DateTime','LATITUDE','LONGITUDE','SPEED','HEADING','ALTITUDE','T1')
         
-        eff1<-as.data.frame(read.csv(paste0(path,survey_date,'/',survey_date,' (1).eff'), header=FALSE, stringsAsFactors = FALSE))
-        eff2<-as.data.frame(read.csv(paste0(path,survey_date,'/',survey_date,' (2).eff'), header=FALSE, stringsAsFactors = FALSE))
-        names(eff1)<-c('Trans','Line','ABE','DateTime','BEAUFORT','VISIBILTY','CLOUD_CODE','GLARE_L','GLARE_R',
+        ## effort ##
+        
+        eff_list<-list.files(paste0(path,survey_date,'/'), "*\\.eff")
+        eff_files<-lapply(eff_list, function (x) read.csv(paste0(path,survey_date,'/',x), header=FALSE, stringsAsFactors = FALSE))
+        eff_all<-do.call(rbind, eff_files)
+        names(eff_all)<-c('Trans','Line','ABE','DateTime','BEAUFORT','VISIBILTY','CLOUD_CODE','GLARE_L','GLARE_R',
                        'QUALITY_L','QUALITY_R','EFFORT_COMMENTS')#,'EDIT1','EDIT2','EDIT3','T1') ##T1=trash
-        names(eff2)<-c('Trans','Line','ABE','DateTime','BEAUFORT','VISIBILTY','CLOUD_CODE','GLARE_L','GLARE_R',
-                       'QUALITY_L','QUALITY_R','EFFORT_COMMENTS')#,'EDIT1','EDIT2','EDIT3','T1') ##T1=trash
+      
+        ## sightings ##
         
-        sig1name<-paste0(path,survey_date,'/',survey_date,' (1).sig')
-        sig2name<-paste0(path,survey_date,'/',survey_date,' (2).sig')
+        sig_list<-list.files(paste0(path,survey_date,'/'), "*\\.sig")
         
-          if (file.info(sig1name)$size == 0 & file.info(sig2name)$size > 0){
+        sig_files<-lapply(sig_list, function (x) 
           
-            sig1<-data.frame(Trans=NA,Line=NA,SIGHTING_NUMBER=NA,DateTime=NA,OBSERVER=NA,ANGLE=NA,SPCODE=NA,GROUP_SIZE=NA,CUE=NA,
-                          ACTUAL_HEADING=NA,T1=NA,T2=NA,SIGHTING_COMMENTS=NA,OBS_POSITION=NA,LATITUDE=NA,LONGITUDE=NA,T3=NA,CALVES=NA,
-                          T4=NA,B1_FINAL_CODE=NA,T5=NA)
-            sig1$LATITUDE<-as.double(sig1$LATITUDE)
-            sig1$LONGITUDE<-as.double(sig1$LONGITUDE)
-          
-            sig2<-as.data.frame(read.csv(sig2name, header=FALSE, stringsAsFactors = FALSE))
-            names(sig2)<-c('Trans','Line','SIGHTING_NUMBER','DateTime','OBSERVER','ANGLE','SPCODE','GROUP_SIZE','CUE',
-                         'ACTUAL_HEADING','T1','T2','SIGHTING_COMMENTS','OBS_POSITION','LATITUDE','LONGITUDE','T3','CALVES',
-                         'T4','B1_FINAL_CODE','T5') ##T1=trash
-          
-          } else if (file.info(sig1name)$size > 0 & file.info(sig2name)$size == 0){
-  
-            sig1<-as.data.frame(read.csv(sig1name, header=FALSE, stringsAsFactors = FALSE))
-            names(sig1)<-c('Trans','Line','SIGHTING_NUMBER','DateTime','OBSERVER','ANGLE','SPCODE','GROUP_SIZE','CUE',
-                 'ACTUAL_HEADING','T1','T2','SIGHTING_COMMENTS','OBS_POSITION','LATITUDE','LONGITUDE','T3','CALVES',
-                 'T4','B1_FINAL_CODE','T5') ##T1=trash
-  
-            sig2<-data.frame(Trans=NA,Line=NA,SIGHTING_NUMBER=NA,DateTime=NA,OBSERVER=NA,ANGLE=NA,SPCODE=NA,GROUP_SIZE=NA,CUE=NA,
-                   ACTUAL_HEADING=NA,T1=NA,T2=NA,SIGHTING_COMMENTS=NA,OBS_POSITION=NA,LATITUDE=NA,LONGITUDE=NA,T3=NA,CALVES=NA,
-                   T4=NA,B1_FINAL_CODE=NA,T5=NA)
-            sig2$LATITUDE<-as.double(sig2$LATITUDE)
-            sig2$LONGITUDE<-as.double(sig2$LONGITUDE)
-  
-          } else if (file.info(sig1name)$size == 0 & file.info(sig2name)$size == 0){
+          if (file.info(paste0(path,survey_date,'/',x))$size > 0) {
+          read.csv(paste0(path,survey_date,'/',x), header=FALSE, stringsAsFactors = FALSE)
             
-            sig1<-data.frame(Trans=NA,Line=NA,SIGHTING_NUMBER=NA,DateTime=NA,OBSERVER=NA,ANGLE=NA,SPCODE=NA,GROUP_SIZE=NA,CUE=NA,
-                             ACTUAL_HEADING=NA,T1=NA,T2=NA,SIGHTING_COMMENTS=NA,OBS_POSITION=NA,LATITUDE=NA,LONGITUDE=NA,T3=NA,CALVES=NA,
-                             T4=NA,B1_FINAL_CODE=NA,T5=NA)
-            sig1$LATITUDE<-as.double(sig1$LATITUDE)
-            sig1$LONGITUDE<-as.double(sig1$LONGITUDE)
-            
-            sig2<-data.frame(Trans=NA,Line=NA,SIGHTING_NUMBER=NA,DateTime=NA,OBSERVER=NA,ANGLE=NA,SPCODE=NA,GROUP_SIZE=NA,CUE=NA,
-                   ACTUAL_HEADING=NA,T1=NA,T2=NA,SIGHTING_COMMENTS=NA,OBS_POSITION=NA,LATITUDE=NA,LONGITUDE=NA,T3=NA,CALVES=NA,
-                   T4=NA,B1_FINAL_CODE=NA,T5=NA)
-            sig2$LATITUDE<-as.double(sig2$LATITUDE)
-            sig2$LONGITUDE<-as.double(sig2$LONGITUDE)
-            
-          } else {
-          
-            sig1<-as.data.frame(read.csv(sig1name, header=FALSE, stringsAsFactors = FALSE))
-            sig2<-as.data.frame(read.csv(sig2name, header=FALSE, stringsAsFactors = FALSE))
-            names(sig1)<-c('Trans','Line','SIGHTING_NUMBER','DateTime','OBSERVER','ANGLE','SPCODE','GROUP_SIZE','CUE',
-                         'ACTUAL_HEADING','T1','T2','SIGHTING_COMMENTS','OBS_POSITION','LATITUDE','LONGITUDE','T3','CALVES',
-                         'T4','B1_FINAL_CODE','T5') ##T1=trash
-            names(sig2)<-c('Trans','Line','SIGHTING_NUMBER','DateTime','OBSERVER','ANGLE','SPCODE','GROUP_SIZE','CUE',
-                         'ACTUAL_HEADING','T1','T2','SIGHTING_COMMENTS','OBS_POSITION','LATITUDE','LONGITUDE','T3','CALVES',
-                         'T4','B1_FINAL_CODE','T5') ##T1=trash
-          }
+        } else if (file.info(paste0(path,survey_date,'/',x))$size == 0)  {
+          data.frame(V1=NA,V2=NA,V3=NA,V4=NA,V5=NA,V6=NA,V7=NA,V8=NA,V9=NA,V10=NA,V11=NA,V12=NA,V13=NA,V14=NA,V15=NA,V16=NA,V17=NA,V18=NA,V19=NA,V20=NA,V21=NA)
+        })
         
-        eff<-merge(eff1, eff2, by=c('Trans','Line','ABE','DateTime','BEAUFORT','VISIBILTY','CLOUD_CODE','GLARE_L','GLARE_R',
-                                    'QUALITY_L','QUALITY_R','EFFORT_COMMENTS'), all=TRUE)
-        sig<-merge(sig1, sig2, by=c('Trans','Line','SIGHTING_NUMBER','DateTime','OBSERVER','ANGLE','SPCODE','GROUP_SIZE','CUE',
-                                    'ACTUAL_HEADING','T1','T2','SIGHTING_COMMENTS','OBS_POSITION','LATITUDE','LONGITUDE','T3','CALVES',
-                                    'T4','B1_FINAL_CODE','T5'), all=TRUE)
-        ###**###
-        } else if (mfyn == "No"){
-        output$error2<-renderText({""})
+        sig_all<-do.call(rbind, sig_files)
+        names(sig_all)<-c('Trans','Line','SIGHTING_NUMBER','DateTime','OBSERVER','ANGLE','SPCODE','GROUP_SIZE','CUE',
+                       'ACTUAL_HEADING','T1','T2','SIGHTING_COMMENTS','OBS_POSITION','LATITUDE','LONGITUDE','T3','CALVES',
+                       'T4','B1_FINAL_CODE','T5') ##T1=trash
+        sig_all$LATITUDE<-as.double(sig_all$LATITUDE)
+        sig_all$LONGITUDE<-as.double(sig_all$LONGITUDE)
+      
+      #############
+      #Drop Columns
+      #############
         
-        eff<-as.data.frame(read.csv(paste0(path,survey_date,'/',survey_date,'.eff'), header=FALSE, stringsAsFactors = FALSE))
-        gps<-as.data.frame(read.csv(paste0(path,survey_date,'/',survey_date,'.gps'), header=FALSE, stringsAsFactors = FALSE))
-        
-        names(gps)<-c('DateTime','LATITUDE','LONGITUDE','SPEED','HEADING','ALTITUDE','T1')
-        names(eff)<-c('Trans','Line','ABE','DateTime','BEAUFORT','VISIBILTY','CLOUD_CODE','GLARE_L','GLARE_R',
-                      'QUALITY_L','QUALITY_R','EFFORT_COMMENTS')#,'EDIT1','EDIT2','EDIT3','T1') ##T1=trash
-        signame<-paste0(path,survey_date,'/',survey_date,'.sig')
-        
-          if (file.info(signame)$size == 0){
-            sig<-data.frame(Trans=NA,Line=NA,SIGHTING_NUMBER=NA,DateTime=NA,OBSERVER=NA,ANGLE=NA,SPCODE=NA,GROUP_SIZE=NA,CUE=NA,
-                          ACTUAL_HEADING=NA,T1=NA,T2=NA,SIGHTING_COMMENTS=NA,OBS_POSITION=NA,LATITUDE=NA,LONGITUDE=NA,T3=NA,CALVES=NA,
-                          T4=NA,B1_FINAL_CODE=NA,T5=NA)
-            sig$LATITUDE<-as.double(sig$LATITUDE)
-            sig$LONGITUDE<-as.double(sig$LONGITUDE)
-          } else {
-            sig<-as.data.frame(read.csv(signame, header=FALSE, stringsAsFactors = FALSE))
-            names(sig)<-c('Trans','Line','SIGHTING_NUMBER','DateTime','OBSERVER','ANGLE','SPCODE','GROUP_SIZE','CUE',
-                          'ACTUAL_HEADING','T1','T2','SIGHTING_COMMENTS','OBS_POSITION','LATITUDE','LONGITUDE','T3','CALVES',
-                          'T4','B1_FINAL_CODE','T5') ##T1=trash
-          }
-        }
+      eff<-eff_all%>%
+        filter(ABE != "E")%>%  ##remove rows with "E" from eff
+        dplyr::select(-Trans,-Line,-ABE)
+      
+      sig<-sig_all%>%
+        filter(!is.na(Trans))%>% ##remove rows with no sig data
+        dplyr::select(-Trans,-Line,-T1,-T2,-T3,-T4,-T5)
+
+      gps<-gps%>%
+        dplyr::select(-T1,-ALTITUDE)
       
       ######
       eff$BEAUFORT<-as.numeric(eff$BEAUFORT)
       sig$ACTUAL_HEADING<-as.numeric(sig$ACTUAL_HEADING)
-      ##delete rows with "E" from eff
-      
-      eff<-filter(eff, eff$ABE != "E")
-      #effx<-eff[which(eff$ABE != "B" & eff$EFFORT_COMMENTS != ''),]
-      #effz<-eff[which(eff$ABE == "B" & eff$EFFORT_COMMENTS != ''),]
-      #eff<-merge(effx, effz, by=c('Trans','Line','ABE','DateTime','BEAUFORT','VISIBILTY','CLOUD_CODE','GLARE_L','GLARE_R',
-      #                            'QUALITY_L','QUALITY_R','EFFORT_COMMENTS'), all=TRUE)
       
       ##format DateTime
       gps$DateTime<-dmy_hms(gps$DateTime)
       eff$DateTime<-dmy_hms(eff$DateTime)
       sig$DateTime<-dmy_hms(sig$DateTime)
       
-      #############
-      #Drop Columns
-      ########
-      eff$Trans<-NULL
-      eff$Line<-NULL
-      eff$ABE<-NULL
-      eff$T1<-NULL
-      
-      sig$Trans<-NULL
-      sig$Line<-NULL
-      sig$T1<-NULL
-      sig$T2<-NULL
-      sig$T3<-NULL
-      sig$T4<-NULL
-      sig$T5<-NULL
-      
-      gps$T1<-NULL
-      gps$ALTITUDE<-NULL
-      ################
+      ###############
       ###############
       #DATETIME link to position, spead, and heading data
       #package data.table documentation
@@ -206,6 +127,7 @@ observeEvent(input$rawupload,{
       ######
       ##merge and add columns
       ##the below came out of an error thrown 8/3/2019 where eff$LONGITUDE were characters for some reason
+      eff$LATITUDE<-as.double(eff$LATITUDE)
       eff$LONGITUDE<-as.double(eff$LONGITUDE)
       
       eff_sig<-merge(eff, sig, by=c("DateTime","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
