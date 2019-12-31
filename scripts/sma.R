@@ -33,6 +33,8 @@ print(CRS.utm)
 CRS.latlon<-CRS("+init=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_defs +towgs84=0,0,0")
 ######
 
+smapath<-"./SMA ind shp"
+
 ##cape cod bay 01 Jan - 15 May
 ccb<-readOGR(smapath, layer = "sma_ccb")
 ##race point 01 March - 30 April

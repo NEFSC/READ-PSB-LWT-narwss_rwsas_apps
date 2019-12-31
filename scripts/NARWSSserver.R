@@ -1110,13 +1110,6 @@ observeEvent(input$rawupload,{
       ##Seasonal Management Area (SMA) evaluation ##
       ##############################################
       
-      if (loc == 'Network'){
-        smapath<-"./SMA ind shp"
-      } else if (loc == 'Local'){
-        smapath<-"./SMA ind shp"
-      }
-      print(smapath)
-      
       ##month day for sma evaluation
       MODAYR<-final$DateTime[1]
       MODAYR<-as.Date(MODAYR)
