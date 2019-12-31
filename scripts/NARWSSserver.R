@@ -427,6 +427,8 @@ observeEvent(input$rawupload,{
       for (i in 1:nrow(f))
         if (grepl('break', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 4
+        } else if (grepl(' ds | ds$', f$EFFORT_COMMENTS[i])) {
+          LEGTYPE[i] = 13
         } else if (grepl(' str | str$', f$EFFORT_COMMENTS[i])) {
           LEGTYPE[i] = 12
         } else if (grepl(' st | st$', f$EFFORT_COMMENTS[i])) {
