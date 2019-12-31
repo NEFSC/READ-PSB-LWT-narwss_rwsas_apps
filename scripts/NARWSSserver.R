@@ -1297,7 +1297,6 @@ observeEvent(input$rawupload,{
               file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
               webshotpath<-paste0(path,date1,"_map.png")
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
-              dmanamesexpsent<-""
               disable("dmaup")
               disable("dmareport")
               disable("kml")
