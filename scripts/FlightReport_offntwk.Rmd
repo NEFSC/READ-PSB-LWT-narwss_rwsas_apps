@@ -1,0 +1,37 @@
+---
+title:  "NOAA Northeast Region  \nRight Whale Aerial Survey Report"
+params:
+  date1: NA
+  rptnotes: NA
+  reportmap: NA
+  netable: NA
+  egreport: NA
+  dmanamesexpsent: NA
+  ftypesent: NA
+  webshotpath: NA
+output: pdf_document
+
+---
+\vspace*{-7mm}
+\begin{center}\LARGE`r params$date1`\end{center}
+
+```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
+
+knitr::include_graphics(params$webshotpath)
+
+```
+
+\begin{center}\normalsize `r params$rptnotes`\end{center}
+
+\begin{center}\normalsize `r params$dmanamesexpsent`\end{center}
+
+\begin{center}\normalsize `r params$ftypesent`\end{center}
+
+```{r echo = FALSE, warning = FALSE, results = 'asis'}
+knitr::kable(params$netable, caption = "Species Sighted")
+```
+
+```{r echo = FALSE, warning = FALSE, results = 'asis'}
+knitr::kable(params$egreport, caption = "Right Whale Sighting(s) Details")
+```
+

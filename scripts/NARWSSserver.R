@@ -1285,16 +1285,18 @@ observeEvent(input$rawupload,{
               ftypesent<-"Only large whale sightings (excluding live minke whales) were recorded on this survey."
             }
             
-            tempReport<-file.path("./scripts/FlightReport.Rmd")
             rptnotes<-input$reportnotes
             
-            file.copy("FlightReport.Rmd", tempReport, overwrite = FALSE)
-            
             if (loc == 'Network'){
+              tempReport<-file.path("./scripts/FlightReport_ntwk.Rmd")
+              file.copy("FlightReport_ntwk.Rmd", tempReport, overwrite = FALSE)
               webshotpath<-paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/",date1,"_map.png")
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
             } else if (loc == 'Local'){
+              tempReport<-file.path("./scripts/FlightReport_offntwk.Rmd")
+              file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
               webshotpath<-paste0(path,date1,"_map.png")
+              dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
               dmanamesexpsent<-""
               disable("dmaup")
               disable("dmareport")
