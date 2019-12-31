@@ -967,7 +967,10 @@ observeEvent(input$rawupload,{
       cond<-cond%>%
         distinct
       
-      final<-final[order(final$DateTime, -final$EFFORT_COMMENTS),]
+      final<-final%>%
+        arrange(DateTime, desc(EFFORT_COMMENTS))
+      #final<-final[order(final$DateTime, -final$EFFORT_COMMENTS),]
+      
       ##confsig = other species
       confsig<-filter(final, final$SPCODE != '' & !grepl('UN',final$SPCODE) & !grepl('-',final$SPCODE) & !is.na(final$SPCODE))
       #print(confsig)
