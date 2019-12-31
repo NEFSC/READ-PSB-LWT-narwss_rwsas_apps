@@ -313,9 +313,9 @@ observeEvent(input$rawupload,{
       
       f<-merge(eff_sig2, gpsfil, by=c("DateTime","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
       f<-f[order(f$DateTime, -f$EFFORT_COMMENTS),]
-      ##
-      #ALTITUDE
-      #####
+      ##########
+      #ALTITUDE#
+      ##########
       
       f$ALTITUDE = na.locf(f$ALTITUDE, na.rm = FALSE)
       f$ALTITUDE[which(is.na(f$ALTITUDE))]<-1000
@@ -387,11 +387,13 @@ observeEvent(input$rawupload,{
       
       #get rid of before on watch
       f<-subset(f, !is.na(BEAUFORT) | (is.na(BEAUFORT) & !is.na(SPCODE)))
-      #####
-      #Flight Codes
-      #####
-      #FLIGHT_TYPE
-      #####
+      ################
+      # Flight Codes #
+      ################
+      
+      ###############
+      # FLIGHT_TYPE #
+      ###############
       FLIGHT_TYPE = NULL
       for (i in 1:nrow(f))
         if (grepl('beg cs', f$EFFORT_COMMENTS[i])) {
@@ -452,9 +454,9 @@ observeEvent(input$rawupload,{
         } 
       
       f<-cbind(f, LEGTYPE)
-      ########
-      #LEGSTAGE
-      ########
+      ############
+      # LEGSTAGE #
+      ############
       LEGSTAGE = NULL
       for (i in 1:nrow(f))
         if (grepl('off watch', f$EFFORT_COMMENTS[i]) | grepl('no res', f$EFFORT_COMMENTS[i])) {
@@ -472,9 +474,9 @@ observeEvent(input$rawupload,{
         } 
       
       f<-cbind(f, LEGSTAGE)
-      #####
-      #PSB_LEGSTAGE
-      #######
+      ################
+      # PSB_LEGSTAGE #
+      ################
       
       PSB_LEGSTAGE = NULL
       for (i in 1:nrow(f))
@@ -819,25 +821,13 @@ observeEvent(input$rawupload,{
         } 
       
       #####
-      #SST_C
-      #####
-      SST_C = NULL
-      for (i in 1:nrow(f))
-        SST_C[i] = NA
-      
-      f<-cbind(f,SST_C)
-      
-      ##drop rank columns
-      f$gpsbin<-NULL
-      f$rank<-NULL
-      
-      
-      #####
-      #reorder columns
+      #add SST_C, drop and reorder columns
       #####
       
       ##reordered final
-      rf <- f %>% dplyr::select(DateTime,EVENT_NUMBER,LATITUDE,LONGITUDE,FLIGHT_TYPE,LEGTYPE,LEGSTAGE,PSB_LEGSTAGE,
+      rf <- f%>%
+        mutate(SST_C = NA)%>%
+        dplyr::select(DateTime,EVENT_NUMBER,LATITUDE,LONGITUDE,FLIGHT_TYPE,LEGTYPE,LEGSTAGE,PSB_LEGSTAGE,
                                 ALTITUDE,HEADING,SPEED,SST_C,VISIBILTY,BEAUFORT,CLOUD_CODE,GLARE_L,GLARE_R,
                                 QUALITY_L,QUALITY_R,SIGHTING_NUMBER,SPCODE,ID_RELIABILITY,GROUP_SIZE,CALVES,
                                 ACTUAL_HEADING,OBSERVER,OBS_POSITION,ANGLE,CUE,B1_FINAL_CODE,B2_FINAL_CODE,
@@ -1032,15 +1022,13 @@ observeEvent(input$rawupload,{
             } else {
               egtable$B5_FINAL_CODE[i] = ""
             }
-          
         }
-      
       
       Behavior<-as.character(paste0(egtable$B1_FINAL_CODE," ",egtable$B2_FINAL_CODE," ",egtable$B3_FINAL_CODE," ",egtable$B4_FINAL_CODE," ",egtable$B5_FINAL_CODE))
       egtable<-cbind(egtable, Behavior)
       print(egtable)
-      ##egrep is the aps and fin est no breaks without dupes and without new?
-      #egrep<-filter(egtable, ((!grepl('new?', egtable$SIGHTING_COMMENTS) | !grepl('dup', egtable$SIGHTING_COMMENTS)) & (grepl('ap',egtable$SIGHTING_COMMENTS) | grepl('fin est no break', egtable$SIGHTING_COMMENTS) | grepl('No right whales', egtable$DateTime))))
+      
+      ## egrep is the aps and fin est no breaks without dupes and without new?
       egrep<-egtable%>%
         filter((PSB_LEGSTAGE == 7 | startsWith(SIGHTING_COMMENTS, "fin est no break") | grepl('No right whales', egtable$DateTime)))
       print(egrep)
@@ -1056,7 +1044,6 @@ observeEvent(input$rawupload,{
       egreport$Behavior<-gsub("92","entangled", egreport$Behavior)
       
       names(egreport)<-c("Date/Time (ET)", "Latitude", "Longitude", "Number", "Calves", "Behavior")
-      
       
       ##non eg table
       noneg<-filter(confsig, confsig$SPCODE != 'RIWH' & grepl('WH',confsig$SPCODE))
@@ -1115,10 +1102,10 @@ observeEvent(input$rawupload,{
       }
       
       names(netable)<-c("Species", "Total number")
-      
-      ###############
-      ##SMA evaluation
-      ########
+
+      ##############################################
+      ##Seasonal Management Area (SMA) evaluation ##
+      ##############################################
       
       if (loc == 'Network'){
         smapath<-"./SMA ind shp"
@@ -1126,10 +1113,6 @@ observeEvent(input$rawupload,{
         smapath<-paste0(input$filepathinput,"SMA ind shp")
       }
       print(smapath)
-      
-      ###############
-      ##Seasonal Management Area (SMA) evaluation
-      ########
       
       ##month day for sma evaluation
       MODAYR<-final$DateTime[1]
