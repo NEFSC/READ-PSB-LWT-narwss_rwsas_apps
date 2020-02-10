@@ -4,14 +4,15 @@ disable("dmareport")
 disable("kml")
 
 loc<-"Network"
-source('./scripts/oracleaccess.R', local = TRUE)$value
+
     ###########
     
 observeEvent(input$query,{
-  
+      
       dmaevaldate<-input$sasdate    
       print(dmaevaldate)
       
+      source('./scripts/oracleaccess.R', local = TRUE)$value
       fish <- odbcConnect(server, uid=sasuid, pwd=saspswd,believeNRows=FALSE)
       
       ######################
