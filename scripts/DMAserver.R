@@ -17,7 +17,7 @@ observeEvent(input$query,{
       ######################
       ## VISUAL SIGHTINGS ##
       ######################
-    if (sig_acou == 'Visual Sightings'){ 
+    if (input$sig_acou == 'Visual Sightings'){ 
       
       datesql<-paste0("select rightwhalesight.sas.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,rightwhalesight.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
                 from rightwhalesight.sas,rightwhalesight.action
@@ -32,7 +32,7 @@ observeEvent(input$query,{
       #########################
       ## Acoustic Detections ##
       #########################           
-    } else if (sig_acou == 'Acoustic Detections'){
+    } else if (input$sig_acou == 'Acoustic Detections'){
       
       datesql<-paste0("select *
                 from rightwhalesight.acoustic_detections
