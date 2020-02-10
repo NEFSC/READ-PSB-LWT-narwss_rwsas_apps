@@ -21,7 +21,6 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Aerial Survey Processing App", tabName = "NARWSS"),
       menuItem("RWSAS DMA Evaluation", tabName = "RWSAS"),
-      menuItem("Acoustic DMA Evaluation", tabName = "Acoustic"),
       menuItem("Photo Position Finder", tabName = "Photo")
     )
   ),
@@ -40,11 +39,6 @@ ui <- dashboardPage(
       ),
       
       # Third tab content
-      tabItem(tabName = "Acoustic",
-              source('./scripts/Acoustic_app.R', local = TRUE)$value
-      ),
-      
-      # Fourth tab content
       tabItem(tabName = "Photo",
               source('./scripts/photo_app.R', local = TRUE)$value
       )
@@ -52,11 +46,6 @@ ui <- dashboardPage(
   )
 )
 
-server = function(input, output, session) {
-  
-
-  #source('./scripts/NARWSSserver.R', local = TRUE)$value
-  #source('./scripts/DMAserver.R', local = TRUE)$value
-}
+server = function(input, output, session) {}
 
 shinyApp(ui, server)
