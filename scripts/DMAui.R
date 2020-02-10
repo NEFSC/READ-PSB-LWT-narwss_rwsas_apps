@@ -1,6 +1,6 @@
 fluidPage(
   useShinyjs(),
-  titlePanel("DMA eval"),
+  titlePanel("DMA evaluation"),
   splitLayout(radioButtons("where", "Survey Area", choices = c("US", "Canada"), selected = "US", inline = FALSE),
               dateInput("sasdate", "Date:")),
                            actionButton("query","Query Database"),
