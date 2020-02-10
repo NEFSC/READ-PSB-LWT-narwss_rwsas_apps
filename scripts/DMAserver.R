@@ -13,6 +13,11 @@ observeEvent(input$query,{
       
       fish <- odbcConnect(server, uid=sasuid, pwd=saspswd,believeNRows=FALSE)
       
+      ######################
+      ## VISUAL SIGHTINGS ##
+      ######################
+    if (sig_acou == 'Visual Sightings'){ 
+      
       datesql<-paste0("select rightwhalesight.sas.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,rightwhalesight.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
                 from rightwhalesight.sas,rightwhalesight.action
                 where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD')
@@ -22,6 +27,21 @@ observeEvent(input$query,{
                 order by ID;") 
       
       dailyeg<-sqlQuery(fish,datesql)
+ 
+      #########################
+      ## Acoustic Detections ##
+      #########################           
+    } else if (sig_acou == 'Acoustic Detections'){
+      
+      datesql<-paste0("select *
+                from rightwhalesight.acoustic_detections
+                where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD')
+                      and LAT > 36.5
+                order by datetime_utc;") 
+      
+      dailyeg<-sqlQuery(fish,datesql)
+      
+    }
       
       if(nrow(dailyeg) == 0){
         ##if no Eg:
@@ -29,26 +49,27 @@ observeEvent(input$query,{
         disable("eval")
       }
       else {
-      output$error1<-renderText({""})  
-      enable("eval")
-      dailyeg$SIGHTDATE<-ymd_hms(dailyeg$SIGHTDATE, tz = "America/New_York")
-      dailyeg$LAT<-sprintf("%.5f",round(dailyeg$LAT, digits = 5))
-      dailyeg$LON<-sprintf("%.5f",round(dailyeg$LON, digits = 5))
-      
-      dailyeg[] <- lapply(dailyeg, as.character)
-      
-      dailyeg<-dailyeg%>%
-        mutate(Select = TRUE)%>%
-        dplyr::select(Select, everything())
-      
-      dailyeghot<-rhandsontable(dailyeg,readOnly = TRUE)%>%
-        hot_table(highlightCol = TRUE, highlightRow = TRUE)%>%
-        hot_cols(columnSorting = TRUE)%>%
-        hot_col("SIGHTDATE", width = 150)%>%
-        hot_col("Select", readOnly = FALSE)
+        output$error1<-renderText({""})  
+        enable("eval")
+        dailyeg$SIGHTDATE<-ymd_hms(dailyeg$SIGHTDATE, tz = "America/New_York")
+        dailyeg$LAT<-sprintf("%.5f",round(dailyeg$LAT, digits = 5))
+        dailyeg$LON<-sprintf("%.5f",round(dailyeg$LON, digits = 5))
         
-      output$dailyeghot = renderRHandsontable({dailyeghot})
-}
+        dailyeg[] <- lapply(dailyeg, as.character)
+        
+        dailyeg<-dailyeg%>%
+          mutate(Select = TRUE)%>%
+          dplyr::select(Select, everything())
+        
+        dailyeghot<-rhandsontable(dailyeg,readOnly = TRUE)%>%
+          hot_table(highlightCol = TRUE, highlightRow = TRUE)%>%
+          hot_cols(columnSorting = TRUE)%>%
+          hot_col("SIGHTDATE", width = 150)%>%
+          hot_col("Select", readOnly = FALSE)
+        
+        output$dailyeghot = renderRHandsontable({dailyeghot})
+      }
+      
 })
       
 observeEvent(input$eval,{
