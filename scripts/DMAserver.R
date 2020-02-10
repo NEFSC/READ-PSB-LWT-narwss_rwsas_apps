@@ -4,6 +4,7 @@ disable("dmareport")
 disable("kml")
 
 loc<-"Network"
+source('./scripts/oracleaccess.R', local = TRUE)$value
     ###########
     
 observeEvent(input$query,{
