@@ -360,6 +360,7 @@ extdf_list<-lapply(comboext, function(x) {
 ## animals potential for new DMA ##
 ###################################
 if (NA %in% egsas$ACTION_NEW) {
+  print("beg NA")
   ##only taking ACTION_NEW = na
   actionna<-egsas %>% filter(is.na(egsas$ACTION_NEW)) %>% dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID")
   ##distance between points matrix -- compares right whale sightings positions to each other
@@ -861,7 +862,7 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
   dmanameout$GROUP_SIZE<-sprintf("%.0f",round(dmanameout$GROUP_SIZE, digits = 0))
   output$dmanameout<-renderTable({dmanameout})
   output$dmacoord<-renderTable({dmacoord})
-  
+print("a&d 864")  
   if ("ID" %in% colnames(egsas)){
     egsastab<-egsas %>% 
       dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
@@ -886,14 +887,26 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
   }
   
 } else { ##4 in egsas$action_new
+ 
+  if (input$sig_acou == 'Visual Sightings'){   
   
-  if ("ID" %in% colnames(egsas)){
-    egsastab<-egsas %>% 
-      dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
-  } else {
-    egsastab<-egsas %>% 
-      dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
-  }
+      if ("ID" %in% colnames(egsas)){
+          egsastab<-egsas %>% 
+              dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+      } else {
+          egsastab<-egsas %>% 
+              dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+      }
+  } else if (input$sig_acou == 'Acoustic Detections'){
+      
+      if ("ID" %in% colnames(egsas)){
+          egsastab<-egsas %>% 
+            dplyr::select(ID,PLATFORM,DateTime,LATITUDE,LONGITUDE,SPECIES,PRESENT_ABSENT,ANALYST,NOTES,ACTION_NEW,GROUP_SIZE)
+      } else {
+        egsastab<-egsas %>% 
+          dplyr::select(PLATFORM,DateTime,LATITUDE,LONGITUDE,SPECIES,PRESENT_ABSENT,ANALYST,NOTES,ACTION_NEW,GROUP_SIZE)
+      } 
+  }  
   
   sasdma<-leaflet(data = egsas) %>% 
     addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
@@ -908,19 +921,21 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
   } 
 }
 
+print(str(egsastab))
 egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
 
 ###egsas table for output
 egsastabout<-egsastab
 egsastabout$ACTION_NEW<-as.numeric(egsastabout$ACTION_NEW)
 output$sasdma = renderLeaflet({print(sasdma)})
-
+print(str(egsastabout))
 if (loc == 'Network'){
 egsastabout<-egsastabout%>%
   left_join(actioncodedf, by = c("ACTION_NEW" = "ID"))%>%
   dplyr::rename("ACTION_NEW_TRANSLATION" = "ACTION")
-
+print(str(egsastabout))
 egsastabout$ACTION_NEW<-sprintf("%.0f",round(egsastabout$ACTION_NEW, digits = 0))
+
 ##########
 
 output$egsastabout<-renderTable({egsastabout},  striped = TRUE)
