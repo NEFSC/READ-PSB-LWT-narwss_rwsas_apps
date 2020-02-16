@@ -1202,6 +1202,7 @@ observeEvent(input$rawupload,{
             dplyr::select(-CALVES, -Behavior)
       
       triggrptrue <- FALSE
+      DMAapp<-"rwsurv"
       source('./scripts/action & dma.R', local = TRUE)$value
         }
       

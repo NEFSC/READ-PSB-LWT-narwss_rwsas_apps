@@ -28,7 +28,7 @@ observeEvent(input$query,{
                 order by ID;") 
       
       dailyeg<-sqlQuery(cnxn,datesql)
- 
+      DMAapp<-"vissig"
       #########################
       ## Acoustic Detections ##
       #########################           
@@ -41,7 +41,7 @@ observeEvent(input$query,{
                 order by datetime_utc;") 
       
       dailyeg<-sqlQuery(cnxn,datesql)
-      
+      DMAapp<-"acoudet"
     }
       
       if(nrow(dailyeg) == 0){

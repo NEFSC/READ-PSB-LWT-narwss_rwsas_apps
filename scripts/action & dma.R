@@ -888,7 +888,8 @@ print("a&d 864")
   
 } else { ##4 in egsas$action_new
  
-  if (input$sig_acou == 'Visual Sightings'){   
+
+  if (DMAapp == 'vissig' | DMAapp == 'rwsurv'){   
   
       if ("ID" %in% colnames(egsas)){
           egsastab<-egsas %>% 
@@ -897,7 +898,7 @@ print("a&d 864")
           egsastab<-egsas %>% 
               dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
       }
-  } else if (input$sig_acou == 'Acoustic Detections'){
+  } else if (DMAapp == 'acoudet'){
       
       if ("ID" %in% colnames(egsas)){
           egsastab<-egsas %>% 
