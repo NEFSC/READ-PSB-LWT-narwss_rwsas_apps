@@ -28,7 +28,6 @@ observeEvent(input$query,{
                 order by ID;") 
       
       dailyeg<-sqlQuery(cnxn,datesql)
-      DMAapp<-"vissig"
       #########################
       ## Acoustic Detections ##
       #########################           
@@ -41,7 +40,6 @@ observeEvent(input$query,{
                 order by datetime_utc;") 
       
       dailyeg<-sqlQuery(cnxn,datesql)
-      DMAapp<-"acoudet"
     }
       
       if(nrow(dailyeg) == 0){
@@ -127,16 +125,20 @@ observeEvent(input$eval,{
         
         egsas$DateTime<-strftime(egsas$DateTime,'%Y-%m-%d %H:%M:%S')
         
+        DMAapp<-"vissig"
+        
         } else if (input$sig_acou == 'Acoustic Detections'){
         
         egtable<-egtable%>%
           dplyr::rename("DateTime" = "DATETIME_UTC", "LATITUDE" = "LAT", "LONGITUDE" = "LON")%>%
-          mutate(ACTION_NEW = NA, GROUP_SIZE = 1)
+          mutate(ACTION_NEW = NA, GROUP_SIZE = 1, ID_RELIABILITY = 3)
         
         egsas<-egtable
         
         egsas$DateTime<-strftime(egsas$DateTime,'%Y-%m-%d %H:%M:%S')
-        print(egsas)
+        
+        DMAapp<-"acoudet"
+        
         }
       
       ##############
@@ -165,7 +167,7 @@ observeEvent(input$eval,{
      print(egsas)
         #this is for the user input for the observer in the dma letter
         triggrptrue<-TRUE
-      
+      print(DMAapp)
       source('./scripts/action & dma.R', local = TRUE)$value
       
       #############
