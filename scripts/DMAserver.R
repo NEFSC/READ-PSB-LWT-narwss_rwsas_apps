@@ -1,6 +1,7 @@
 disable("eval")
 disable("dmaup")
 disable("dmareport")
+disable("dmaletter")
 disable("kml")
 
 loc<-"Network"
@@ -17,14 +18,17 @@ observeEvent(input$query,{
       ######################
       ## VISUAL SIGHTINGS ##
       ######################
+      
+      #and LAT > 36.5
+
     if (input$sig_acou == 'Visual Sightings'){ 
       
       datesql<-paste0("select rightwhalesight.sas.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,rightwhalesight.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
                 from rightwhalesight.sas,rightwhalesight.action
                 where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD')
-                      and LAT > 36.5
+              
                       and SPECIES_CERT = 3
-                      and rightwhalesight.sas.action = rightwhalesight.action.ID
+                      and rightwhalesight.sas.action = rightwhalesight.action.ID   
                 order by ID;") 
       
       dailyeg<-sqlQuery(cnxn,datesql)
@@ -36,7 +40,6 @@ observeEvent(input$query,{
       datesql<-paste0("select *
                 from rightwhalesight.acoustic_detections
                 where trunc(DATETIME_UTC) = to_date('",dmaevaldate,"','YYYY-MM-DD')
-                      and LAT > 36.5
                 order by datetime_utc;") 
       
       dailyeg<-sqlQuery(cnxn,datesql)
@@ -131,7 +134,7 @@ observeEvent(input$eval,{
         
         egtable<-egtable%>%
           dplyr::rename("DateTime" = "DATETIME_UTC", "LATITUDE" = "LAT", "LONGITUDE" = "LON")%>%
-          mutate(ACTION_NEW = NA, GROUP_SIZE = 1, ID_RELIABILITY = 3)
+          mutate(ACTION_NEW = NA, GROUP_SIZE = 3, ID_RELIABILITY = 3)
         
         egsas<-egtable
         
