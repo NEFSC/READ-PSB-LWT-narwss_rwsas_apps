@@ -152,7 +152,13 @@ comboext<-lapply(fullextlist,function(x){
     comboext$GROUP_SIZE<-as.character(comboext$GROUP_SIZE)
     comboext$GROUP_SIZE<-as.numeric(comboext$GROUP_SIZE)
     ##calculates core area
-    setDT(comboext)[ ,corer:=round(sqrt(GROUP_SIZE/(pi*egden)),2)] 
+    
+    if (DMAapp == "acoudet"){ 
+      setDT(comboext)[ ,corer:=20]  
+    } else {
+      setDT(comboext)[ ,corer:=round(sqrt(GROUP_SIZE/(pi*egden)),2)]
+    }  
+    
     ##calculates distance between points in nautical miles
     setDT(comboext)[ ,dist_nm:=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
                                                                 matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
@@ -161,7 +167,7 @@ comboext<-lapply(fullextlist,function(x){
 print("comboext")
 print(comboext)
 names(comboext)<-DMAlist
-print(comboext)
+#print(comboext)
     #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
     #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
     #I don't remember why I named this dmacand -- maybe dma combo and... then some?
@@ -186,7 +192,9 @@ extdf_list<-lapply(comboext, function(x) {
                       TRIGGERORG = NA)
     
     if (nrow(dmaextsightID) > 0){
-      
+    
+    ## this section determines observer_organization for extended dma input into the dmainfo table in Oracle. 
+    ## For cases where sightings from multiple organizations are considered together, this code picks the organization that has the most sightings that contribute.
     if(triggrptrue == TRUE & DMAapp == "vissig"){
       
       obs_org<-left_join(dmaextsightID,egsas, by = "sightID")%>%
@@ -388,14 +396,30 @@ if (NA %in% egsas$ACTION_NEW) {
   #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
   #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
   #I don't remember why I named this dmacand -- maybe dma combo and... then some?
+  if (DMAapp == "acoudet"){
+    
+    dmacand<-combo%>%
+      mutate(dist_clust = case_when(
+        dist_nm <= 20 ~ 1,
+        dist_nm > 20 & dist_nm <= 40 ~ 2))%>%
+      group_by(dist_clust)%>%
+      arrange(DateTime)%>%
+      slice(1)%>%
+      ungroup()
+    
+  } else {
+    
   dmacand<-combo %>%
     dplyr::filter((combo$dist_nm != 0 & combo$dist_nm <= combo$corer) | (combo$GROUP_SIZE > 2 & combo$dist_nm == 0))
+
+  }
+  
   print("dmacand")
   print(dmacand)
   ##filters for distinct sightings that should be considered for DMA calculation
   dmasightID<-data.frame(sightID = c(dmacand$sightID,dmacand$sightID2)) %>%
     distinct()
-  #print(dmasightID)
+  
   ##############
   
   ##if not a dma animal, action == 1
@@ -405,15 +429,26 @@ if (NA %in% egsas$ACTION_NEW) {
   for (i in 1:nrow(egsas))
     if (egsas$sightID[i] %in% dmasightID$sightID) {
       egsas$ACTION_NEW[i] = 44
+    } else if (DMAapp == "acoudet" & is.na(egsas$ACTION_NEW[i])){
+      egsas$ACTION_NEW[i] = 12
     } else if (is.na(egsas$ACTION_NEW[i])){
       egsas$ACTION_NEW[i] = 1
     } else {
       egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
     }
 } #end na
+
 ######
 ##Create DMA
 ######
+# 
+# if (DMAapp == "acoudet"){
+#   egsas<-egsas%>%
+#     mutate(dist_clust = case_when(
+#       
+#     ))
+# }
+
 #only sightings with an action of 4 will be evaluated here for DMA
 print(egsas)
 if (44 %in% egsas$ACTION_NEW){
@@ -577,6 +612,7 @@ if (44 %in% egsas$ACTION_NEW){
     }
   
   if (4 %in% egsas$ACTION_NEW){
+    
   polycoorddf$id<-as.numeric(polycoorddf$id)
   corepoly<-right_join(polycoorddf, clusty, by=c('id'='PolyID'))%>%
     dplyr::select("long","lat","id","DateTime","GROUP_SIZE","corer","corer_m", "LONGITUDE","LATITUDE","cluster")
@@ -604,26 +640,32 @@ if (44 %in% egsas$ACTION_NEW){
   print(polymaxmin)
   print("515")
   
-  
-  ##spatialize the corners
-  corebounds_nw<-polymaxmin
-  coordinates(corebounds_nw)<-~minlon+maxlat
-  proj4string(corebounds_nw)<-CRS.latlon
-  
-  corebounds_sw<-polymaxmin
-  coordinates(corebounds_sw)<-~minlon+minlat
-  proj4string(corebounds_sw)<-CRS.latlon
-  
-  corebounds_ne<-polymaxmin
-  coordinates(corebounds_ne)<-~maxlon+maxlat
-  proj4string(corebounds_ne)<-CRS.latlon
-  
-  corebounds_se<-polymaxmin
-  coordinates(corebounds_se)<-~maxlon+minlat
-  proj4string(corebounds_se)<-CRS.latlon
-  
-  ##
+  if (DMAapp=="acoudet"){
+    #20 is the nm radius that we want for the acoustic buffer, but the acoustic positions are filled as group_size of 3 by default, which already gives a 4.79 buffer
+    buffnm<-20-round(sqrt(3/(pi*egden)),2)
+    print(buffnm)
+  } else {
+    
   buffnm<-15
+  
+  }    
+    ##spatialize the corners
+    corebounds_nw<-polymaxmin
+    coordinates(corebounds_nw)<-~minlon+maxlat
+    proj4string(corebounds_nw)<-CRS.latlon
+    
+    corebounds_sw<-polymaxmin
+    coordinates(corebounds_sw)<-~minlon+minlat
+    proj4string(corebounds_sw)<-CRS.latlon
+    
+    corebounds_ne<-polymaxmin
+    coordinates(corebounds_ne)<-~maxlon+maxlat
+    proj4string(corebounds_ne)<-CRS.latlon
+    
+    corebounds_se<-polymaxmin
+    coordinates(corebounds_se)<-~maxlon+minlat
+    proj4string(corebounds_se)<-CRS.latlon
+    
   ##the below calculates the distance that needs to be added to each corner (the hypotenuse) to add the 15nm buffer
   dmabuffnm<-buffnm/cos(45*pi/180)
   
@@ -646,6 +688,9 @@ if (44 %in% egsas$ACTION_NEW){
   sedf<-as.data.frame(cbind(corebounds_se,se_p))
   
   dma15<-rbind(nwdf,swdf,sedf,nedf,nwdf)
+  
+  ################
+  print(dma15)
   
   dma15<-dma15 %>% 
     dplyr::select(cluster, lon, lat)
@@ -683,7 +728,7 @@ if (44 %in% egsas$ACTION_NEW){
                                "Providence RI","New York NY","Atlantic City NJ", "Virginia Beach VA",
                                "Martha's Vineyard MA", "Nantucket MA", "Cape Cod MA", "Cape Cod Bay"),
                       lon = c(-66.9317,-70.2500,-70.7333,-71.0833,-71.4000,-73.9667,-74.4167,-75.9595,-70.6167,-70.0833,-69.9778,-70.27),
-                      lat = c(44.7533,43.6667,43.0833,42.3500,41.8333,40.7833,39.3500,36.8469, 41.4000,41.2833,41.8830,41.88),
+                      lat = c(44.7533,43.6667,43.0833,42.3500,41.8333,40.7833,39.3500,36.8469, 41.4000,41.2833,41.8830,41.86),
                       cardinal = NA)
   
   dmadist<-dmaname
@@ -745,6 +790,9 @@ if (44 %in% egsas$ACTION_NEW){
   print("with trigsize")
   print(dmanamedf)
   
+  ## this section determines observer_organization for dma input into the dmainfo table in Oracle. 
+  ## For cases where sightings from multiple organizations are considered together, this code picks the organization that has the most sightings that contribute.
+  
   if (triggrptrue == TRUE & DMAapp == "vissig"){
     
     obs_org2<-left_join(dmasightID,egsas, by = "sightID")%>%
@@ -753,36 +801,29 @@ if (44 %in% egsas$ACTION_NEW){
       filter(rank == 1)%>%
       ungroup()%>%
       distinct(OBSERVER_ORG)
-    print(obs_org2)
+    #print(obs_org2)
     
     if (nrow(obs_org2) != 1){
       obs_org2<-obs_org2%>%
-        filter(OBSERVER_ORG != 0)
-    }
-    print(obs_org2)
+        filter(OBSERVER_ORG != 0)}
+    #print(obs_org2)
     
     if (nrow(obs_org2) != 1){
       obs_org2<-obs_org2%>%
-        slice(1)
-    }
-    print(obs_org2)
+        slice(1)}
+    #print(obs_org2)
     
     dmanamedf<-dmanamedf%>%
       mutate(TRIGGERORG = obs_org2$OBSERVER_ORG)
     
   } else if (triggrptrue == TRUE & DMAapp == "acoudet"){
-    
     dmanamedf<-dmanamedf%>%
       mutate(TRIGGERORG = 82) #82 is Robots4Whales
-    
   } else {
-    
     dmanamedf<-dmanamedf%>%
       mutate(TRIGGERORG = 1) #1 is NEFSC
   }
-  
-  print(dmanamedf)
-  
+  #print(dmanamedf)
   } 
 } # end of 4
 
@@ -811,7 +852,7 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
   } else if (exists("dmanamedf") & !exists("extdfname")){
     alldmas<-dmanamedf
   }  
-  
+
   alldmas<-alldmas%>%
     mutate(ID = dense_rank(ID))
 
@@ -875,18 +916,31 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
   print(dmanameout)
   dmanameout$TRIGGERDATE<-as.character(dmanameout$TRIGGERDATE)
   dmanameout$GROUP_SIZE<-sprintf("%.0f",round(dmanameout$GROUP_SIZE, digits = 0))
+  
+  #don't display group size for acoustics
+  if (DMAapp == 'acoudet'){
+    dmanameout<-dmanameout%>%
+      dplyr::select(-GROUP_SIZE)
+  }
+  
   output$dmanameout<-renderTable({dmanameout})
   output$dmacoord<-renderTable({dmacoord})
+
 print("a&d 864")
 print(egsas)
-  if ("ID" %in% colnames(egsas) & DMAapp == "vissig"){
-    egsastab<-egsas %>% 
-      dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
-  } else if ("ID" %in% colnames(egsas) & DMAapp == "acoudet"){
+
+if ("ID" %in% colnames(egsas)){
+  if (DMAapp == "acoudet") {
     egsastab<-egsas %>% 
       dplyr::select(ID,PLATFORM,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
       mutate(CATEGORY = 7)
-  } else if (DMAapp == "acoudet"){
+  } else {
+    egsastab<-egsas %>% 
+      dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+  }
+  
+} else {
+  if (DMAapp == "acoudet") {
     egsastab<-egsas %>% 
       dplyr::select(PLATFORM,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
       mutate(CATEGORY = 7)
@@ -894,15 +948,21 @@ print(egsas)
     egsastab<-egsas %>% 
       dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
   }
-  
+}
+
   sasdma<-leaflet(data = egsas) %>% 
     addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
     addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
     addPolygons(data = polyclust_sp, weight = 2, color = "blue") %>%
-    addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
-    addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")%>%
     addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
-    addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area for sighting considered for DMA"), opacity = 0.4, position = "topleft")
+    addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Detected Right Whales"), opacity = 0.4, position = "topleft")
+  
+  ##display core areas for visual sightings
+  if (DMAapp == 'vissig' | DMAapp == 'rwsurv'){
+  sasdma<-sasdma%>%
+    addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
+    addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")
+  }
   
   if (loc == 'Network'){
   sasdma<-sasdma%>%
@@ -913,25 +973,27 @@ print(egsas)
 } else { ##4 in egsas$action_new
  
 
-  if (DMAapp == 'vissig' | DMAapp == 'rwsurv'){   
-  
-      if ("ID" %in% colnames(egsas)){
-          egsastab<-egsas %>% 
-              dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
-      } else {
-          egsastab<-egsas %>% 
-              dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
-      }
-  } else if (DMAapp == 'acoudet'){
-      
-      if ("ID" %in% colnames(egsas)){
-          egsastab<-egsas %>% 
-            dplyr::select(ID,PLATFORM,DateTime,LATITUDE,LONGITUDE,SPECIES,PRESENT_ABSENT,ANALYST,NOTES,ACTION_NEW,GROUP_SIZE)
-      } else {
-        egsastab<-egsas %>% 
-          dplyr::select(PLATFORM,DateTime,LATITUDE,LONGITUDE,SPECIES,PRESENT_ABSENT,ANALYST,NOTES,ACTION_NEW,GROUP_SIZE)
-      } 
-  }  
+  if ("ID" %in% colnames(egsas)){
+    if (DMAapp == "acoudet") {
+      egsastab<-egsas %>% 
+        dplyr::select(ID,PLATFORM,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
+        mutate(CATEGORY = 7)
+    } else {
+      egsastab<-egsas %>% 
+        dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+    }
+    
+  } else {
+    if (DMAapp == "acoudet") {
+      egsastab<-egsas %>% 
+        dplyr::select(PLATFORM,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
+        mutate(CATEGORY = 7)
+    } else {
+      egsastab<-egsas %>% 
+        dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+    }
+  }
+
   
   sasdma<-leaflet(data = egsas) %>% 
     addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
@@ -946,19 +1008,26 @@ print(egsas)
   } 
 }
 
-print(str(egsastab))
 egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
 
 ###egsas table for output
+
+
+if (DMAapp == 'acoudet'){
+  egsastab<-egsastab%>%
+    dplyr::select(-GROUP_SIZE)
+}
+
 egsastabout<-egsastab
 egsastabout$ACTION_NEW<-as.numeric(egsastabout$ACTION_NEW)
 output$sasdma = renderLeaflet({print(sasdma)})
-print(str(egsastabout))
+#print(str(egsastabout))
+
 if (loc == 'Network'){
 egsastabout<-egsastabout%>%
   left_join(actioncodedf, by = c("ACTION_NEW" = "ID"))%>%
   dplyr::rename("ACTION_NEW_TRANSLATION" = "ACTION")
-print(str(egsastabout))
+#print(str(egsastabout))
 egsastabout$ACTION_NEW<-sprintf("%.0f",round(egsastabout$ACTION_NEW, digits = 0))
 
 ##########
@@ -1060,15 +1129,16 @@ observeEvent(input$dmaup,{
   
   ##################################
   ##list of dmas being extended
-  print(extdfname)
+
+  if (exists("extdfname")){
   extended_dmainfo<-as.list(extdfname$ID)
   
   for (i in extended_dmainfo){
     print(i)
     sqlQuery(cnxn, paste0("UPDATE DMAINFO
                            SET CANCELLED = 'extended'
-                           WHERE ID = ",i,";"))
-    }
+                           WHERE ID = ",i,";"))}
+  }
   ##################################
   
   if (DMAapp == "acoudet"){
@@ -1209,6 +1279,9 @@ observeEvent(input$dmaup,{
   ############
   print(alldmas)
   letterdate<-format(Sys.Date(), '%B %d, %Y')
+  
+  if (DMAapp == "vissig"){
+  
   numberword<-alldmas%>%
     dplyr::select(-ID,-NAME)%>%
     distinct(INITOREXT, TRIGGER_GROUPSIZE, TRIGGERDATE, TRIGGERORG)%>%
@@ -1239,6 +1312,14 @@ observeEvent(input$dmaup,{
   landmark_ls<-as.list(unique(dmalandmark$landmark))
   landmark<-do.call("paste", c(landmark_ls, sep = ", "))
   landmark<-sub(",([^,]*)$", " and\\1", landmark)  
+  
+  } else if (DMAapp == "acoudet"){
+    
+    triggerword<-''
+    letterdirect<-'acoustically'
+    landmark<-''
+    
+  }
   
   letterbounds<-left_join(alldmas,dmacoord, by = "ID")
   print(letterbounds)
