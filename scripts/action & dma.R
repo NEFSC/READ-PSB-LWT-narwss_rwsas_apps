@@ -187,7 +187,7 @@ extdf_list<-lapply(comboext, function(x) {
     
     if (nrow(dmaextsightID) > 0){
       
-    if(triggrptrue == TRUE){
+    if(triggrptrue == TRUE & DMAapp == "vissig"){
       
       obs_org<-left_join(dmaextsightID,egsas, by = "sightID")%>%
         group_by(GROUP_SIZE)%>%
@@ -205,12 +205,22 @@ extdf_list<-lapply(comboext, function(x) {
         distinct()%>%
         arrange(sightID)%>%
         summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime), OBSERVER_ORG = obs_org$OBSERVER_ORG)
-    } else{
+      
+      } else if (triggrptrue == TRUE & DMAapp == "acoudet") {
+      
+        exttot<-left_join(dmaextsightID,egsas, by = "sightID")%>%
+          dplyr::select(sightID,DateTime,LATITUDE,LONGITUDE,GROUP_SIZE)%>%
+          distinct()%>%
+          arrange(sightID)%>%
+          summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime), OBSERVER_ORG = 82) #82 is Robots4Whales
+        
+      } else {
+      
       exttot<-left_join(dmaextsightID,egsas, by = "sightID")%>%
         dplyr::select(sightID,DateTime,LATITUDE,LONGITUDE,GROUP_SIZE)%>%
         distinct()%>%
         arrange(sightID)%>%
-        summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime), OBSERVER_ORG = 1)
+        summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime), OBSERVER_ORG = 1) #1 is NEFSC
     }
       #print(exttot)
     }
@@ -220,11 +230,11 @@ extdf_list<-lapply(comboext, function(x) {
     for (i in 1:nrow(egsas))
       if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
         print(i)
-        print("4")
+        #print("4")
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       } else if (egsas$sightID[i] %in% dmaextsightID$sightID) {
         print(i)
-        print("1")
+        #print("1")
         egsas$ACTION_NEW[i] = 5
         #print(head(egsas))
         df<-data.frame(extDMAs = DMAid,
@@ -236,11 +246,11 @@ extdf_list<-lapply(comboext, function(x) {
         #print(extdf)
       } else if (egsas$ACTION_NEW[i] == 55){
         print(i)
-        print("2")
+        #print("2")
         egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
       } else {
         print(i)
-        print("3")
+        #print("3")
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
 
@@ -735,7 +745,7 @@ if (44 %in% egsas$ACTION_NEW){
   print("with trigsize")
   print(dmanamedf)
   
-  if(triggrptrue == TRUE){
+  if (triggrptrue == TRUE & DMAapp == "vissig"){
     
     obs_org2<-left_join(dmasightID,egsas, by = "sightID")%>%
       group_by(GROUP_SIZE)%>%
@@ -760,10 +770,15 @@ if (44 %in% egsas$ACTION_NEW){
     dmanamedf<-dmanamedf%>%
       mutate(TRIGGERORG = obs_org2$OBSERVER_ORG)
     
-  } else{
+  } else if (triggrptrue == TRUE & DMAapp == "acoudet"){
     
     dmanamedf<-dmanamedf%>%
-      mutate(TRIGGERORG = 1)
+      mutate(TRIGGERORG = 82) #82 is Robots4Whales
+    
+  } else {
+    
+    dmanamedf<-dmanamedf%>%
+      mutate(TRIGGERORG = 1) #1 is NEFSC
   }
   
   print(dmanamedf)
@@ -799,7 +814,7 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
   
   alldmas<-alldmas%>%
     mutate(ID = dense_rank(ID))
-  
+
   print("do bounds exist?")
   if(exists("dmabounds") & exists("extdfbounds")){
     alldmabounds<-rbind(dmabounds,extdfbounds)
@@ -862,10 +877,19 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
   dmanameout$GROUP_SIZE<-sprintf("%.0f",round(dmanameout$GROUP_SIZE, digits = 0))
   output$dmanameout<-renderTable({dmanameout})
   output$dmacoord<-renderTable({dmacoord})
-print("a&d 864")  
-  if ("ID" %in% colnames(egsas)){
+print("a&d 864")
+print(egsas)
+  if ("ID" %in% colnames(egsas) & DMAapp == "vissig"){
     egsastab<-egsas %>% 
       dplyr::select(ID,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
+  } else if ("ID" %in% colnames(egsas) & DMAapp == "acoudet"){
+    egsastab<-egsas %>% 
+      dplyr::select(ID,PLATFORM,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
+      mutate(CATEGORY = 7)
+  } else if (DMAapp == "acoudet"){
+    egsastab<-egsas %>% 
+      dplyr::select(PLATFORM,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
+      mutate(CATEGORY = 7)
   } else {
     egsastab<-egsas %>% 
       dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
@@ -1034,6 +1058,27 @@ observeEvent(input$dmaup,{
            STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"))%>%
     dplyr::select(OLDID,ID,NAME,EXPDATE,TRIGGERDATE,INITOREXT,TRIGGERORG,STARTDATE,TRIGGER_GROUPSIZE)
   
+  ##################################
+  ##list of dmas being extended
+  print(extdfname)
+  extended_dmainfo<-as.list(extdfname$ID)
+  
+  for (i in extended_dmainfo){
+    print(i)
+    sqlQuery(cnxn, paste0("UPDATE DMAINFO
+                           SET CANCELLED = 'extended'
+                           WHERE ID = ",i,";"))
+    }
+  ##################################
+  
+  if (DMAapp == "acoudet"){
+    dmainfo<-dmainfo%>%
+      mutate(TRIGGERTYPE = 'a')
+  } else {
+    dmainfo<-dmainfo%>%
+      mutate(TRIGGERTYPE = 'v')
+  }
+  
   dmainfoinsert<-dmainfo%>%
     dplyr::select(-OLDID)
   print(dmainfoinsert)
@@ -1042,15 +1087,15 @@ observeEvent(input$dmaup,{
   dmanameselect<-sub(",([^,]*)$", " and\\1", dmanameselect)  
   
   for (i in 1:nrow(dmainfoinsert)){
-    
+
     dmainfovalues <- paste0(apply(dmainfoinsert[i,], 1, function(x) paste0("'", paste0(x, collapse = "', '"), "'")), collapse = ", ")
     dmainfovalues <- gsub("')'", "')", dmainfovalues)
     dmainfovalues <- gsub("'to_", "to_", dmainfovalues)
     dmainfovalues <- gsub("Martha's", "Martha''s", dmainfovalues)
     ##
     print(dmainfovalues)
-    
-    sqlQuery(cnxn, paste0("INSERT INTO DMAINFO(ID, NAME, EXPDATE, TRIGGERDATE, INITOREXT, TRIGGERORG, STARTDATE, TRIGGERGROUPSIZE)
+
+    sqlQuery(cnxn, paste0("INSERT INTO DMAINFO(ID, NAME, EXPDATE, TRIGGERDATE, INITOREXT, TRIGGERORG, STARTDATE, TRIGGERGROUPSIZE, TRIGGERTYPE)
                           VALUES(", dmainfovalues,");"))
   }
   
@@ -1063,11 +1108,12 @@ observeEvent(input$dmaup,{
     mutate(ROWNUMBER = 999999)
   
   for (i in 1:nrow(dmacoordinsert)){
-    
+
     dmacoordvalues <- paste0(apply(dmacoordinsert[i,], 1, function(x) paste0("'", paste0(x, collapse = "', '"), "'")), collapse = ", ")
     sqlQuery(cnxn, paste0("INSERT INTO DMACOORDS(ID, VERTEX, LAT, LON, ROWNUMBER)
-                          VALUES(", dmacoordvalues,");"))   
+                          VALUES(", dmacoordvalues,");"))
   }
+  
   print("dma end")
   disable("dmaup")
   enable("dmareport")
@@ -1202,7 +1248,7 @@ observeEvent(input$dmaup,{
   neworextlet<-NULL
   
   if ('e' %in% ie & 'i' %in% ie){
-    neworextlet<-"Since whales were sighted both in a region where there are no protections in place, as well as within a region where the protections are due to expire in a week or less,
+    neworextlet<-"Since whales were detected both in a region where there are no protections in place, as well as within a region where the protections are due to expire in a week or less,
     we recommend a DMA be initiated/extended at the following bounds:"
   } else if ('i' %in% ie){
     neworextlet<-"Since no protections are in place in this region at this time, we recommend a DMA be initiated that is bounded by the following:"
