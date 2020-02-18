@@ -15,7 +15,7 @@ fluidPage(
                            actionButton("dmaup","Upload DMA to database"),
                            downloadButton("dmareport", "Download DMA Report"),
                            downloadButton("kml", "Download KML"),
-                           textInput("triggrp", "Who reported/observed these sightings?", width = 600, placeholder = "example: New England Aquarium aerial survey team"),
+                           textInput("triggrp", "Who reported/observed these sightings? OR Which buoy collected these calls?", width = 600, placeholder = "example: New England Aquarium aerial survey team OR acoustic glider in the Gulf of Maine"),
                            downloadButton("dmaletter", "Download DMA Letter")
                            
                            )
