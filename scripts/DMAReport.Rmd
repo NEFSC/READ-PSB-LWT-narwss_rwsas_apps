@@ -11,7 +11,7 @@ output: pdf_document
 
 ---
 \vspace*{-10mm}
-\begin{center}\LARGE`r params$dmanameselect`\end{center}
+\begin{center}\LARGE `r params$dmanameselect`\end{center}
 \vspace*{-8mm}
 \begin{center}\LARGE Trigger date: `r params$date1`\end{center}
 \vspace*{-8mm}
@@ -32,11 +32,25 @@ knitr::kable(params$dmacoord, caption = "DMA Bounds")
 ```
 
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
-egtab<-params$egsastab%>%
-  dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
+egtab<-params$egsastab
+
+if("GROUP_SIZE" %in% colnames(egtab)){
+  egtab<-egtab%>%
+    dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)  
+} else {
+  egtab<-egtab%>%
+    dplyr::select(DateTime,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)
+}
+
+egtab<-egtab%>%
   dplyr::filter(ACTION_NEW == 4 | ACTION_NEW == 5)%>%
   dplyr::rename("LAT"="LATITUDE","LON"="LONGITUDE")
-knitr::kable(egtab, caption = "Right Whale Sighting(s)")
+
+if("GROUP_SIZE" %in% colnames(egtab)){  
+  knitr::kable(egtab, caption = "Right Whale sighting(s)")
+} else {
+  knitr::kable(egtab, caption = "Right Whale Acoustic Detection(s)")
+}  
 
 ```
 
