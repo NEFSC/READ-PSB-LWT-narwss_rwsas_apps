@@ -49,7 +49,7 @@ egtab<-egtab%>%
 if("GROUP_SIZE" %in% colnames(egtab)){  
   knitr::kable(egtab, caption = "Right Whale sighting(s)")
 } else {
-  knitr::kable(egtab, caption = "Right Whale Acoustic Detection(s)")
+  knitr::kable(egtab, caption = "Right Whale Acoustic Detection - DMA Trigger")
 }  
 
 ```
