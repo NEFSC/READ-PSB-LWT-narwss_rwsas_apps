@@ -39,10 +39,11 @@ observeEvent(input$query,{
       
       datesql<-paste0("select *
                 from rightwhalesight.acoustic_detections
-                where trunc(DATETIME_UTC) = to_date('",dmaevaldate,"','YYYY-MM-DD')
-                order by datetime_utc;") 
+                where trunc(DATETIME_ET) = to_date('",dmaevaldate,"','YYYY-MM-DD')
+                order by DATETIME_ET;") 
       
       dailyeg<-sqlQuery(cnxn,datesql)
+      
     }
       
       if(nrow(dailyeg) == 0){
@@ -76,7 +77,8 @@ observeEvent(input$query,{
         
         output$error1<-renderText({""})  
         
-        dailyeg$DATETIME_UTC<-ymd_hms(dailyeg$DATETIME_UTC, tz = "UTC")
+        dailyeg$DATETIME_ET<-ymd_hms(dailyeg$DATETIME_ET, tz = "America/New_York")
+
         dailyeg$LAT<-sprintf("%.5f",round(dailyeg$LAT, digits = 5))
         dailyeg$LON<-sprintf("%.5f",round(dailyeg$LON, digits = 5))
         dailyeg[] <- lapply(dailyeg, as.character)
@@ -87,7 +89,7 @@ observeEvent(input$query,{
         dailyeghot<-rhandsontable(dailyeg,readOnly = TRUE)%>%
           hot_table(highlightCol = TRUE, highlightRow = TRUE)%>%
           hot_cols(columnSorting = TRUE)%>%
-          hot_col("DATETIME_UTC", width = 150)%>%
+          hot_col("DATETIME_ET", width = 150)%>%
           hot_col("Select", readOnly = FALSE)
         
         output$dailyeghot = renderRHandsontable({dailyeghot})
@@ -133,7 +135,7 @@ observeEvent(input$eval,{
         } else if (input$sig_acou == 'Acoustic Detections'){
         
         egtable<-egtable%>%
-          dplyr::rename("DateTime" = "DATETIME_UTC", "LATITUDE" = "LAT", "LONGITUDE" = "LON")%>%
+          dplyr::rename("DateTime" = "DATETIME_ET", "LATITUDE" = "LAT", "LONGITUDE" = "LON")%>%
           mutate(ACTION_NEW = NA, GROUP_SIZE = 3, ID_RELIABILITY = 3)
         
         egsas<-egtable
