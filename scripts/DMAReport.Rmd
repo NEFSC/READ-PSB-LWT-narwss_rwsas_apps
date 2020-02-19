@@ -24,7 +24,7 @@ knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp
 ```
 \vspace*{-4mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
-knitr::kable(params$dmanameout, caption = "DMA Names")
+knitr::kable(params$dmanameout, caption = "DMA Name(s)")
 ```
 
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
