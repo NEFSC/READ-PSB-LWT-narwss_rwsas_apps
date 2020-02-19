@@ -972,7 +972,7 @@ if ("ID" %in% colnames(egsas)){
     sasdma<-sasdma%>%
       addCircleMarkers(lng = ~egsas_notdma$LONGITUDE, lat = ~egsas_notdma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "grey", popup = egsas_notdma$DateTime)%>%
       addCircleMarkers(lng = ~egsas_dma$LONGITUDE, lat = ~egsas_dma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas_dma$DateTime)%>%
-      addLegend(colors = c("red","yellow","orange","blue","black","grey"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Right whale acoustic detection - DMA trigger", "Other right whale acoustic detection"), opacity = 0.4, position = "topleft")
+      addLegend(colors = c("red","yellow","orange","blue","black","grey"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Right whale acoustic detection - DMA trigger", "Other right whale acoustic detection(s)"), opacity = 0.4, position = "topleft")
   
   }
   
