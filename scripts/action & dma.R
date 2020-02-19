@@ -726,9 +726,9 @@ if (44 %in% egsas$ACTION_NEW){
   ##port/landmark reference
   dmaname<-data.frame(port = c("Bay of Fundy Canada","Portland ME","Portsmouth NH","Boston MA",
                                "Providence RI","New York NY","Atlantic City NJ", "Virginia Beach VA",
-                               "Martha's Vineyard MA", "Nantucket MA", "Cape Cod MA", "Cape Cod Bay"),
-                      lon = c(-66.9317,-70.2500,-70.7333,-71.0833,-71.4000,-73.9667,-74.4167,-75.9595,-70.6167,-70.0833,-69.9778,-70.27),
-                      lat = c(44.7533,43.6667,43.0833,42.3500,41.8333,40.7833,39.3500,36.8469, 41.4000,41.2833,41.8830,41.86),
+                               "Martha's Vineyard MA", "Nantucket MA", "Cape Cod MA", "Cape Cod Bay", "Hyannis MA"),
+                      lon = c(-66.9317,-70.2500,-70.7333,-71.0833,-71.4000,-73.9667,-74.4167,-75.9595,-70.6167,-70.0833,-69.9778,-70.27,-70.27),
+                      lat = c(44.7533,43.6667,43.0833,42.3500,41.8333,40.7833,39.3500,36.8469, 41.4000,41.2833,41.8830,41.80,41.65),
                       cardinal = NA)
   
   dmadist<-dmaname
@@ -953,15 +953,27 @@ if ("ID" %in% colnames(egsas)){
   sasdma<-leaflet(data = egsas) %>% 
     addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
     addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-    addPolygons(data = polyclust_sp, weight = 2, color = "blue") %>%
-    addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
-    addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Detected Right Whales"), opacity = 0.4, position = "topleft")
+    addPolygons(data = polyclust_sp, weight = 2, color = "blue") 
   
   ##display core areas for visual sightings
   if (DMAapp == 'vissig' | DMAapp == 'rwsurv'){
-  sasdma<-sasdma%>%
+  
+    sasdma<-sasdma%>%
     addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
-    addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")
+    addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")%>%
+    addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
+    addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area of right whale sightings"), opacity = 0.4, position = "topleft")
+  
+  } else if (DMAapp == "acoudet") {
+    
+    egsas_dma<-egsas%>%filter(ACTION_NEW == 4)
+    egsas_notdma<-egsas%>%filter(ACTION_NEW != 4)
+    
+    sasdma<-sasdma%>%
+      addCircleMarkers(lng = ~egsas_notdma$LONGITUDE, lat = ~egsas_notdma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "grey", popup = egsas_notdma$DateTime)%>%
+      addCircleMarkers(lng = ~egsas_dma$LONGITUDE, lat = ~egsas_dma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas_dma$DateTime)%>%
+      addLegend(colors = c("red","yellow","orange","blue","black","grey"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Right whale acoustic detection - DMA trigger", "Other right whale acoustic detection"), opacity = 0.4, position = "topleft")
+  
   }
   
   if (loc == 'Network'){
