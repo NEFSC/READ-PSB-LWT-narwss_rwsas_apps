@@ -37,6 +37,8 @@ output: pdf_document
 
 knitr::include_graphics("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/scripts/dmaletter.png")
 
+#observer<-gsub("_","\\\\_",params$observer)
+
 ```
 
 \begin{flushleft}
