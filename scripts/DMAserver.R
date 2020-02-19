@@ -9,7 +9,14 @@ loc<-"Network"
     ###########
     
 observeEvent(input$query,{
-      
+      #clear anything that happened before
+      blank<-data.frame()
+      output$dmanameout<-renderTable({blank})
+      output$dmacoord<-renderTable({blank})
+      output$sasdma = renderLeaflet({print(blank)})
+      output$egsastabout<-renderTable({blank},  striped = TRUE)
+  
+  
       dmaevaldate<-input$sasdate    
       print(dmaevaldate)
       
@@ -26,7 +33,6 @@ observeEvent(input$query,{
       datesql<-paste0("select rightwhalesight.sas.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,rightwhalesight.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
                 from rightwhalesight.sas,rightwhalesight.action
                 where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD')
-              
                       and SPECIES_CERT = 3
                       and rightwhalesight.sas.action = rightwhalesight.action.ID   
                 order by ID;") 
