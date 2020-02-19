@@ -1126,6 +1126,7 @@ observeEvent(input$dmaup,{
   exp <- exp + days(16)
   
   expletter<-format(exp, "%H:%M:%S %Z %B %d, %Y")
+  print(expletter)
   ###
   
   alldmas$ID<-as.numeric(alldmas$ID) #a number to add to
@@ -1435,10 +1436,39 @@ observeEvent(input$dmaup,{
       file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
       
       ##choose group that saw the most to be the trigger org
-      if (triggrptrue == TRUE){ 
+      if (triggrptrue == TRUE){
+        if (DMAapp == "acoudet"){
+        print("egsas at observer for letter")
+        print(head(egsas))
+        acou_obs<-egsas%>%
+          distinct(PLATFORM_NAME,INSTITUTION,URL)%>%
+          mutate(URL = replace(URL, grepl('Woods Ho', INSTITUTION) == TRUE, 'robots4whales.whoi.edu'))
+        print(str(acou_obs))
+        
+        platform_name_ls<-as.list(unique(acou_obs$PLATFORM_NAME))
+        platform_obs<-do.call("paste", c(platform_name_ls, sep = ", "))
+        platform_obs<-sub(",([^,]*)$", " and\\1", platform_obs)
+        
+        institution_ls<-as.list(unique(acou_obs$INSTITUTION))
+        institution_obs<-do.call("paste", c(institution_ls, sep = ", "))
+        institution_obs<-sub(",([^,]*)$", " and\\1", institution_obs)
+        
+        url_ls<-as.list(unique(acou_obs$URL))
+        url_obs<-do.call("paste", c(url_ls, sep = ", "))
+        url_obs<-sub(",([^,]*)$", " and\\1", url_obs)
+        print(url_obs)
+        
+        #Stellwagen Slocum glider operated by the Woods Hole Oceanographic Institution (see robots4whales.whoi.edu for more information)
+        
+        observer<- paste0(platform_obs," operated by the ",institution_obs," (see ",url_obs," for more information)")
+        observer<-as.character(observer)
+        print(observer)
+        
+        } else {
         observer<-input$triggrp
         print(observer)
-      }else{
+        }
+      } else {
         observer<-"NOAA North Atlantic Right Whale Sighting Survey"
       }
       
