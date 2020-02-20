@@ -45,7 +45,7 @@ egsas<-cbind(egsas,inoutsma,Canada,SPM,sightID)
 egsas<-egsas%>%mutate(ACTION_NEW = NA)
 print(egsas)
 
-if (loc == 'Network'){
+if (criteria$loc == 'Network'){
 bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
 eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
 
@@ -64,7 +64,7 @@ for (i in 1:nrow(egsas))
   } else if (egsas$SPM[i] == TRUE){
     egsas$ACTION_NEW[i] = 6
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
-  } else if (loc == 'Network'){
+  } else if (criteria$loc == 'Network'){
     print("network if")
     if (egsas$eDMA[i] == TRUE) { #extension dma?
       egsas$ACTION_NEW[i] = 55 
@@ -966,7 +966,7 @@ if ("ID" %in% colnames(egsas)){
   
   }
   
-  if (loc == 'Network'){
+  if (criteria$loc == 'Network'){
   sasdma<-sasdma%>%
     addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
     addPolygons(data = extensiondma, weight = 2, color = "orange")
@@ -1003,7 +1003,7 @@ if ("ID" %in% colnames(egsas)){
     addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
     addLegend(colors = c("red","yellow","orange"), labels = c("SMA","Active DMA","Active DMA eligible for extension"), opacity = 0.4, position = "topleft")
  
-  if (loc == 'Network'){
+  if (criteria$loc == 'Network'){
     sasdma<-sasdma%>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
       addPolygons(data = extensiondma, weight = 2, color = "orange")
@@ -1027,7 +1027,7 @@ sas_react$egsastab<-egsastab
 ## On network ##
 ################
 
-if (loc == 'Network'){
+if (criteria$loc == 'Network'){
   ##########
   ###sas on network
   egsastabout<-sas_react$egsastab%>%
