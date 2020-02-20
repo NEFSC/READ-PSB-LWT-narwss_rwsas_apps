@@ -110,9 +110,9 @@ observeEvent(input$dmaup,{
     filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_PotentialDMA_Report.pdf"),
     content = function(file) {
       
-      if (loc == 'Network'){
+      if (criteria$loc == 'Network'){
         tempReport<-file.path("./scripts/DMAReport.Rmd")
-      } else if (loc == 'Local'){
+      } else if (criteria$loc == 'Local'){
         tempReport<-file.path(paste0(inputpath,"/DMAReport.Rmd"))
       } 
       
@@ -197,7 +197,7 @@ observeEvent(input$dmaup,{
   print(dma_react$alldmas)
   letterdate<-format(Sys.Date(), '%B %d, %Y')
   
-  if (criteria$DMAapp == "vissig"){
+  if (criteria$DMAapp != "acoudet"){
     
     numberword<-dma_react$alldmas%>%
       dplyr::select(-ID,-NAME)%>%
@@ -331,9 +331,9 @@ observeEvent(input$dmaup,{
     
     content = function(file) {
       
-      if (loc == 'Network'){
+      if (criteria$loc == 'Network'){
         tempReport<-file.path("./scripts/DMALetter.Rmd")
-      } else if (loc == 'Local'){
+      } else if (criteria$loc == 'Local'){
         tempReport<-file.path(paste0(inputpath,"/DMALetter.Rmd"))
       }        
       
