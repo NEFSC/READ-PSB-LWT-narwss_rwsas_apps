@@ -1,10 +1,10 @@
 observeEvent(input$dmaup,{
-  
+  disable("dmaup")
   print("dma button pressed")
   
-  dmareportmap<-fitBounds(sasdma,min(dmacoord$`Lon (Decimal Degrees)`)+0.5, min(dmacoord$`Lat (Decimal Degrees)`)-0.5, max(dmacoord$`Lon (Decimal Degrees)`)-0.5, max(dmacoord$`Lat (Decimal Degrees)`)+0.5)
+  dmareportmap<-fitBounds(dma_react$sasdma,min(dma_react$dmacoord$`Lon (Decimal Degrees)`)+0.5, min(dma_react$dmacoord$`Lat (Decimal Degrees)`)-0.5, max(dma_react$dmacoord$`Lon (Decimal Degrees)`)-0.5, max(dma_react$dmacoord$`Lat (Decimal Degrees)`)+0.5)
   htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
-  webshot::webshot("temp.html", file = paste0(date1,"_dmamap.png"))#,cliprect = bounds)
+  webshot::webshot("temp.html", file = paste0(date_formats$date1,"_dmamap.png"))#,cliprect = bounds)
   
   ###################  
   ##dma info upload##
@@ -15,15 +15,12 @@ observeEvent(input$dmaup,{
   
   maxid<-sqlQuery(cnxn,maxidsql)
   maxid<-as.integer(maxid)
+  print(maxid)
   
-  trigd<-alldmas%>%
-    dplyr::select(TRIGGERDATE)%>%
-    group_by(ymd(TRIGGERDATE))%>%
-    slice(1)
-  print(trigd)
-  trig<-lubridate::ymd_hms(trigd$TRIGGERDATE)
+  trig<-unique(date(dma_react$alldmas$TRIGGERDATE))
+  print(trig)
   trig<-force_tz(trig, tzone = "America/New_York")
-  triggerdateletter<-format(date(trig), "%B %d, %Y")
+  triggerdateletter<-format(trig, "%B %d, %Y")
   ##expiration date
   exp<-trig
   hour(exp)<-0
@@ -34,22 +31,23 @@ observeEvent(input$dmaup,{
   expletter<-format(exp, "%H:%M:%S %Z %B %d, %Y")
   
   ###
+  alldmas<-dma_react$alldmas
   alldmas$ID<-as.numeric(alldmas$ID) #a number to add to
-  #print(head(alldmas))
+  print(alldmas)
   #### this is where new dmas and extensions need to be together in alldmas
   dmainfo<-alldmas%>%
-    mutate(OLDID = ID,
+    dplyr::mutate(OLDID = ID,
            ID = ID + maxid,
            EXPDATE = paste0("to_timestamp('",exp,"', 'YYYY-MM-DD HH24:MI:SS')"),
            TRIGGERDATE = paste0("to_timestamp('",TRIGGERDATE,"', 'YYYY-MM-DD HH24:MI:SS')"),
            STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"))%>%
     dplyr::select(OLDID,ID,NAME,EXPDATE,TRIGGERDATE,INITOREXT,TRIGGERORG,STARTDATE,TRIGGER_GROUPSIZE)
-  
+  print("past dmainfo")
   ##################################
   ##list of dmas being extended
   
-  if (exists("extdfname")){
-    extended_dmainfo<-as.list(extdfname$ID)
+  if (dma_react$extdfname != ""){
+    extended_dmainfo<-as.list(dma_react$extdfname$ID)
     
     for (i in extended_dmainfo){
       #print(i)
@@ -59,7 +57,7 @@ observeEvent(input$dmaup,{
     }
   ##################################
   
-  if (DMAapp == "acoudet"){
+  if (criteria$DMAapp == "acoudet"){
     dmainfo<-dmainfo%>%
       mutate(TRIGGERTYPE = 'a')
   } else {
@@ -90,8 +88,8 @@ observeEvent(input$dmaup,{
   ####################
   ##dma coord upload##
   ####################
-  dmacoord$ID<-as.numeric(dmacoord$ID)
-  dmacoordinsert<-left_join(dmainfo,dmacoord, by = c("OLDID" = "ID"))%>%
+  dma_react$dmacoord$ID<-as.numeric(dma_react$dmacoord$ID)
+  dmacoordinsert<-left_join(dmainfo,dma_react$dmacoord, by = c("OLDID" = "ID"))%>%
     dplyr::select(ID,VERTEX,`Lat (Decimal Degrees)`,`Lon (Decimal Degrees)`)%>%
     mutate(ROWNUMBER = 999999)
   
@@ -103,13 +101,13 @@ observeEvent(input$dmaup,{
   }
   
   print("dma end")
-  disable("dmaup")
+
   enable("dmareport")
-  
-  if("i" %in% dmanameout$INITOREXT){enable("kml")}
+  if("i" %in% dma_react$dmanameout$INITOREXT){enable("kml")}
   enable("dmaletter")
+  
   output$dmareport<-downloadHandler(
-    filename = paste0(day1,month1,year1,"_PotentialDMA_Report.pdf"),
+    filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_PotentialDMA_Report.pdf"),
     content = function(file) {
       
       if (loc == 'Network'){
@@ -120,7 +118,7 @@ observeEvent(input$dmaup,{
       
       print(tempReport)
       file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
-      params<-list(dmanameselect = dmanameselect, date1 = date1, expletter = expletter, egsastab = egsastab, dmanameout = dmanameout, dmacoord = dmacoord)
+      params<-list(dmanameselect = dmanameselect, date1 = date_formats$date1, expletter = expletter, egsastab = sas_react$egsastab, dmanameout = dma_react$dmanameout, dmacoord = dma_react$dmacoord)
       
       rmarkdown::render(tempReport, output_file = file,
                         params = params,
@@ -196,12 +194,12 @@ observeEvent(input$dmaup,{
     )
   }
   ############
-  print(alldmas)
+  print(dma_react$alldmas)
   letterdate<-format(Sys.Date(), '%B %d, %Y')
   
-  if (DMAapp == "vissig"){
+  if (criteria$DMAapp == "vissig"){
     
-    numberword<-alldmas%>%
+    numberword<-dma_react$alldmas%>%
       dplyr::select(-ID,-NAME)%>%
       distinct(INITOREXT, TRIGGER_GROUPSIZE, TRIGGERDATE, TRIGGERORG)%>%
       mutate(triggerword = numbers2words(TRIGGER_GROUPSIZE))
@@ -212,7 +210,7 @@ observeEvent(input$dmaup,{
     
     letterdirect<-direction(dmanameselect)
     
-    dmalandmark<-alldmas%>%
+    dmalandmark<-dma_react$alldmas%>%
       mutate(landmark = dplyr::case_when(
         grepl('Bay of Fundy Canada',NAME) ~ 'Bay of Fundy Canada',
         grepl('Portland ME',NAME) ~ 'Portland ME',
@@ -232,7 +230,7 @@ observeEvent(input$dmaup,{
     landmark<-do.call("paste", c(landmark_ls, sep = ", "))
     landmark<-sub(",([^,]*)$", " and\\1", landmark)  
     
-  } else if (DMAapp == "acoudet"){
+  } else if (criteria$DMAapp == "acoudet"){
     
     triggerword<-''
     letterdirect<-'acoustically'
@@ -240,7 +238,7 @@ observeEvent(input$dmaup,{
     
   }
   
-  letterbounds<-left_join(alldmas,dmacoord, by = "ID")
+  letterbounds<-left_join(dma_react$alldmas,dma_react$dmacoord, by = "ID")
   print(letterbounds)
   #initial/extension
   ie<-as.list(unique(letterbounds$INITOREXT))
@@ -329,7 +327,7 @@ observeEvent(input$dmaup,{
   output$dmaletter <- downloadHandler(
     
     filename = function() {
-      paste0("DMA ",year1,month2,day1," ",dmanameselect,".pdf")},
+      paste0("DMA ",date_formats$year1,date_formats$month2,date_formats$day1," ",dmanameselect,".pdf")},
     
     content = function(file) {
       
@@ -342,11 +340,10 @@ observeEvent(input$dmaup,{
       file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
       
       ##choose group that saw the most to be the trigger org
-      if (triggrptrue == TRUE){
-        if (DMAapp == "acoudet"){
-          print("egsas at observer for letter")
-          print(head(egsas))
-          acou_obs<-egsas%>%
+      if (criteria$triggrptrue == TRUE){
+        if (criteria$DMAapp == "acoudet"){
+
+          acou_obs<-dma_react$egsas%>%
             distinct(PLATFORM_NAME,INSTITUTION,URL)%>%
             mutate(URL = replace(URL, grepl('Woods Ho', INSTITUTION) == TRUE, 'robots4whales.whoi.edu'))
           print(str(acou_obs))
@@ -378,7 +375,7 @@ observeEvent(input$dmaup,{
         observer<-"NOAA North Atlantic Right Whale Sighting Survey"
       }
       
-      params<-list(letterdate = letterdate, date1 = date1, triggerdateletter = triggerdateletter, triggerword = triggerword, 
+      params<-list(letterdate = letterdate, date1 = date_formats$date1, triggerdateletter = triggerdateletter, triggerword = triggerword, 
                    letterdirect = letterdirect, landmark = landmark, observer = observer, neworextlet = neworextlet, 
                    title1 = title1, NLat1 = NLat1, SLat1 = SLat1, WLon1 = WLon1, ELon1 = ELon1,
                    title2 = title2, NLat2 = NLat2, SLat2 = SLat2, WLon2 = WLon2, ELon2 = ELon2,
