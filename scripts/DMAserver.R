@@ -15,7 +15,9 @@ observeEvent(input$query,{
       output$dmacoord<-renderTable({blank})
       output$sasdma = renderLeaflet({print(blank)})
       output$egsastabout<-renderTable({blank},  striped = TRUE)
-  
+      dmainfovalues<-""
+      dmacoordvalues<-""
+      egvalues<-""
   
       dmaevaldate<-input$sasdate    
       print(dmaevaldate)
@@ -56,6 +58,7 @@ observeEvent(input$query,{
         ##if no Eg:
         output$error1<-renderText({"No right whales were reported for this day"})
         disable("eval")
+        output$dailyeghot = renderRHandsontable({blank})
       }
       else if (nrow(dailyeg) > 0 & input$sig_acou == 'Visual Sightings'){
         output$error1<-renderText({""})  
@@ -106,6 +109,15 @@ observeEvent(input$query,{
 })
       
 observeEvent(input$eval,{
+  
+  blank<-data.frame()
+  output$dmanameout<-renderTable({blank})
+  output$dmacoord<-renderTable({blank})
+  output$sasdma = renderLeaflet({print(blank)})
+  output$egsastabout<-renderTable({blank},  striped = TRUE)
+  dmainfovalues<-""
+  dmacoordvalues<-""
+  egvalues<-""
 
       dmaevaldate<-input$sasdate
       print(dmaevaldate)
