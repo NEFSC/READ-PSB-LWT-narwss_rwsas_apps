@@ -4,8 +4,9 @@ disable("dmareport")
 disable("dmaletter")
 disable("kml")
 
-loc<-"Network"
+
 source('./scripts/reactive.R', local = TRUE)$value
+criteria$loc<-"Network"
     ###########
     
 observeEvent(input$query,{
