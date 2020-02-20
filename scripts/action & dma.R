@@ -1114,7 +1114,9 @@ observeEvent(input$dmaup,{
   
   trigd<-alldmas%>%
     dplyr::select(TRIGGERDATE)%>%
-    distinct()
+    group_by(ymd(TRIGGERDATE))%>%
+    slice(1)
+  print(trigd)
   trig<-lubridate::ymd_hms(trigd$TRIGGERDATE)
   trig<-force_tz(trig, tzone = "America/New_York")
   triggerdateletter<-format(date(trig), "%B %d, %Y")
