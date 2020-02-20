@@ -16,9 +16,11 @@ observeEvent(input$sas,{
   } else {
     output$error5<-renderText({""})
     
-    if ("ID" %in% colnames(egsastab)){
-      egsastab<-egsastab%>%
+    if ("ID" %in% colnames(sas_react$egsastab)){
+      egsastab<-sas_react$egsastab%>%
         dplyr::select(-ID)
+    } else {
+      egsastab<-sas_react$egsastab
     }  
     
     egsastab<-egsastab%>%
