@@ -254,10 +254,10 @@ observeEvent(input$rawupload,{
       
       if (input$filepathway == 'Network'){
         path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
-        loc<-"Network"
+        criteria$loc<-"Network"
       } else if (input$filepathway == 'Local'){
         path<-input$filepathinput
-        loc<-"Local"
+        criteria$loc<-"Local"
       }
       
       write.csv(eff_sig2, paste0(path,survey_date,'/','effsig_',survey_date,'.csv'), na = '', row.names = FALSE)
@@ -929,10 +929,10 @@ observeEvent(input$rawupload,{
       survey_date<-input$sd
       yr<-substr(survey_date,1,2)
       
-      if (loc == 'Network'){
+      if (criteria$loc == 'Network'){
         path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
         enable("sas")
-      } else if (loc == 'Local'){
+      } else if (criteria$loc == 'Local'){
         path<-input$filepathinput
       }
  
@@ -1213,11 +1213,11 @@ observeEvent(input$rawupload,{
       ## REPORT ##
       ############
       
-      month1<-month.abb[month(as.character(final$DateTime[1]))]
-      month2<-format.Date(final$DateTime[1], "%m")
-      day1<-format.Date(final$DateTime[1], "%d")
-      year1<-year(final$DateTime[1])
-      date1<-paste0(day1,' ',month1,' ',year1)
+      date_formats$month1<-month.abb[month(as.character(final$DateTime[1]))]
+      date_formats$month2<-format.Date(final$DateTime[1], "%m")
+      date_formats$day1<-format.Date(final$DateTime[1], "%d")
+      date_formats$year1<-year(final$DateTime[1])
+      date_formats$date1<-paste0(date_formats$day1,' ',date_formats$month1,' ',date_formats$year1)
 
       leafpal <- colorFactor(palette = c("khaki1","cadetblue1","black","darkolivegreen3","royalblue1","firebrick2","mediumorchid3","antiquewhite3","chocolate4","darkorange","thistle1","darkolivegreen2"), 
                              domain = c("BEWH","BLWH","BOWH","FIWH","HUWH","KIWH","MIWH","NBWH","PIWH","RIWH","SEWH","SPWH"))
@@ -1273,11 +1273,11 @@ observeEvent(input$rawupload,{
       output$egreport<-renderTable({egreport})
       
       htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
-      webshot::webshot("temp.html", file = paste0(date1,"_map.png"))
+      webshot::webshot("temp.html", file = paste0(date_formats$date1,"_map.png"))
       print("webshot")
         
         output$report<-downloadHandler(
-          filename = paste0(day1,month1,year1,"_NOAA_NERW_Aerial_Report.pdf"),
+          filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_NOAA_NERW_Aerial_Report.pdf"),
           content = function(file) {
             
               print(tempdir())
@@ -1290,15 +1290,15 @@ observeEvent(input$rawupload,{
             
             rptnotes<-input$reportnotes
             
-            if (loc == 'Network'){
+            if (criteria$loc == 'Network'){
               tempReport<-file.path("./scripts/FlightReport_ntwk.Rmd")
               file.copy("FlightReport_ntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/",date1,"_map.png")
+              webshotpath<-paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/",date_formats$date1,"_map.png")
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
-            } else if (loc == 'Local'){
+            } else if (criteria$loc == 'Local'){
               tempReport<-file.path("./scripts/FlightReport_offntwk.Rmd")
               file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-paste0(path,date1,"_map.png")
+              webshotpath<-paste0(path,date_formats$date1,"_map.png")
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
               disable("dmaup")
               disable("dmareport")
@@ -1306,7 +1306,7 @@ observeEvent(input$rawupload,{
               disable("dmaletter")
             }
             
-              params<-list(date1 = date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
+              params<-list(date1 = date_formats$date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
               print(webshotpath)
               rmarkdown::render(tempReport, output_file = file,
                               params = params,
@@ -1316,5 +1316,7 @@ observeEvent(input$rawupload,{
     }) #OBSERVE EVENT SAVE   
   })  #OBSERVE EVENT EDITTABLE
   
-  
+  source('./scripts/oracleaccess.R', local = TRUE)$value
+  source('./scripts/input_sas.R', local = TRUE)$value
+  source('./scripts/input_dma.R', local = TRUE)$value
   
