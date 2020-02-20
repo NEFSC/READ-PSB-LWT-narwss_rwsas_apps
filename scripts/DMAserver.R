@@ -4,8 +4,9 @@ disable("dmareport")
 disable("dmaletter")
 disable("kml")
 
-loc<-"Network"
 
+source('./scripts/reactive.R', local = TRUE)$value
+criteria$loc<-"Network"
     ###########
     
 observeEvent(input$query,{
@@ -148,7 +149,7 @@ observeEvent(input$eval,{
         
         egsas$DateTime<-strftime(egsas$DateTime,'%Y-%m-%d %H:%M:%S')
         
-        DMAapp<-"vissig"
+        criteria$DMAapp<-"vissig"
         
         } else if (input$sig_acou == 'Acoustic Detections'){
         
@@ -160,7 +161,7 @@ observeEvent(input$eval,{
         
         egsas$DateTime<-strftime(egsas$DateTime,'%Y-%m-%d %H:%M:%S')
         
-        DMAapp<-"acoudet"
+        criteria$DMAapp<-"acoudet"
         
         }
       
@@ -174,7 +175,6 @@ observeEvent(input$eval,{
       fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
       ##############
       
-      source('./scripts/oracleaccess.R', local = TRUE)$value
       source('./scripts/sma.R', local = TRUE)$value
       source('./scripts/activedma.R', local = TRUE)$value
       
@@ -182,21 +182,26 @@ observeEvent(input$eval,{
       ##egtable for SAS
         output$error1<-renderText({""})
         
-        month1<-month.abb[month(as.character(egsas$DateTime[1]))]
-        month2<-format.Date(egsas$DateTime[1], "%m")
-        day1<-format.Date(egsas$DateTime[1], "%d")
-        year1<-year(egsas$DateTime[1])
-        date1<-paste0(day1,' ',month1,' ',year1)
-     print(egsas)
+        date_formats$month1<-month.abb[month(as.character(egsas$DateTime[1]))]
+        date_formats$month2<-format.Date(egsas$DateTime[1], "%m")
+        date_formats$day1<-format.Date(egsas$DateTime[1], "%d")
+        date_formats$year1<-year(egsas$DateTime[1])
+        date_formats$date1<-paste0(date_formats$day1,' ',date_formats$month1,' ',date_formats$year1)
+        
         #this is for the user input for the observer in the dma letter
-        triggrptrue<-TRUE
-      print(DMAapp)
+        criteria$triggrptrue<-TRUE
+        print(criteria$DMAapp)
+        
       source('./scripts/action & dma.R', local = TRUE)$value
       
       #############
       
       
 })  #24
+
+source('./scripts/oracleaccess.R', local = TRUE)$value
+source('./scripts/input_sas.R', local = TRUE)$value
+source('./scripts/input_dma.R', local = TRUE)$value
     
 
   
