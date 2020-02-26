@@ -86,6 +86,11 @@ m_nm<-1/1852
 ## eg density is 4 whales/100nm^2 (50 CFR Part 224)
 egden<-0.0416
 
+## these will get overwritten if there are DMAs to create or extend
+alldmas<-NULL
+dmacoord<-NULL
+dmanameout<-NULL
+
 #########################################
 ## animals potential for DMA extension ##
 #########################################
@@ -845,7 +850,7 @@ if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
 
   alldmas<-alldmas%>%
     mutate(ID = dense_rank(ID))
-
+  
   print("do bounds exist?")
   if(exists("dmabounds") & exists("extdfbounds")){
     alldmabounds<-rbind(dmabounds,extdfbounds)
