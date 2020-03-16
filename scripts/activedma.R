@@ -39,7 +39,8 @@ actioncodedf$ID<-as.numeric(actioncodedf$ID)
 activedmasql<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 7), 'YYYY-MM-DD') as ext
                   from rightwhalesight.dmainfo
                   where to_date('",MODAYR,"', 'YYYY-MM-DD') < to_date(to_char(EXPDATE, 'YYYY-MM-DD'),'YYYY-MM-DD') 
-                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(TRIGGERDATE, 'YYYY-MM-DD'),'YYYY-MM-DD');")
+                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(TRIGGERDATE, 'YYYY-MM-DD'),'YYYY-MM-DD')
+                     and cancelled is null;")
 
 actdma<-sqlQuery(cnxn,activedmasql)
 
