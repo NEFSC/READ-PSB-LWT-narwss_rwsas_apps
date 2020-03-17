@@ -315,6 +315,7 @@ observeEvent(input$rawupload,{
       
       f<-merge(eff_sig2, gpsfil, by=c("DateTime","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
       f<-f[order(f$DateTime, -f$EFFORT_COMMENTS),]
+      
       ##########
       #ALTITUDE#
       ##########
@@ -828,8 +829,9 @@ observeEvent(input$rawupload,{
       
       ##reordered final
       rf <- f%>%
-        mutate(SST_C = NA)%>%
-        dplyr::select(DateTime,EVENT_NUMBER,LATITUDE,LONGITUDE,FLIGHT_TYPE,LEGTYPE,LEGSTAGE,PSB_LEGSTAGE,
+        mutate(SST_C = NA,
+               PLANE = paste0("TWIN OTTER NOAA ",input$tn))%>%
+        dplyr::select(PLANE,DateTime,EVENT_NUMBER,LATITUDE,LONGITUDE,FLIGHT_TYPE,LEGTYPE,LEGSTAGE,PSB_LEGSTAGE,
                                 ALTITUDE,HEADING,SPEED,SST_C,VISIBILTY,BEAUFORT,CLOUD_CODE,GLARE_L,GLARE_R,
                                 QUALITY_L,QUALITY_R,SIGHTING_NUMBER,SPCODE,ID_RELIABILITY,GROUP_SIZE,CALVES,
                                 ACTUAL_HEADING,OBSERVER,OBS_POSITION,ANGLE,CUE,B1_FINAL_CODE,B2_FINAL_CODE,
@@ -1271,8 +1273,9 @@ observeEvent(input$rawupload,{
       output$reportmap = renderLeaflet({print(reportmap)})
       output$netable<-renderTable({netable}, digits = 0)
       output$egreport<-renderTable({egreport})
-      
+      print("html1")
       htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
+      print("html2")
       webshot::webshot("temp.html", file = paste0(date_formats$date1,"_map.png"))
       print("webshot")
         
