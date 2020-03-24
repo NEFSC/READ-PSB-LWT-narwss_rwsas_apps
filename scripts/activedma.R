@@ -40,7 +40,7 @@ activedmasql<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesig
                   from rightwhalesight.dmainfo
                   where to_date('",MODAYR,"', 'YYYY-MM-DD') < to_date(to_char(EXPDATE, 'YYYY-MM-DD'),'YYYY-MM-DD') 
                     and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(TRIGGERDATE, 'YYYY-MM-DD'),'YYYY-MM-DD')
-                     and cancelled is null;")
+                     and (cancelled not like 'cancel%' or cancelled is null);")
 
 actdma<-sqlQuery(cnxn,activedmasql)
 
