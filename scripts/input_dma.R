@@ -21,15 +21,17 @@ observeEvent(input$dmaup,{
   print(trig)
   trig<-force_tz(trig, tzone = "America/New_York")
   triggerdateletter<-format(trig, "%B %d, %Y")
+  
   ##expiration date
   exp<-trig
   hour(exp)<-0
   minute(exp)<-0
   second(exp)<-01
   exp <- exp + days(16)
+  exp<-force_tz(exp, tzone = "America/New_York")
   
   expletter<-format(exp, "%H:%M:%S %Z %B %d, %Y")
-  
+
   ###
   alldmas<-dma_react$alldmas
   alldmas$ID<-as.numeric(alldmas$ID) #a number to add to
