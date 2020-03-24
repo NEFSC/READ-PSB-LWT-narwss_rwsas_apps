@@ -1,6 +1,83 @@
 ###Action & DMA analysis
 
 
+##############
+## FUNCTION ##
+##############
+
+##clustering overlapping sightings
+
+clustdf_fun<-function(x,y){
+  
+  ##############
+  if (length(names(x)) > 1){
+    ##Overlap of whale density core area analysis
+    polycomb<-data.frame(poly1=NA,poly2=NA,overlap=NA)
+    ##creates a list of 2 combinations to compare
+    #print(names(x))
+    combos<-combn(names(x),2)
+    ##compares the list
+    for(i in seq_along(combos[1,])){
+      poly1 <- combos[1,i]
+      poly2 <- combos[2,i]
+      #if they don't overlap, the result of the below "if statement" is NULL
+      if(!is.null(gIntersection(y[poly1], y[poly2], byid = TRUE))){
+        overlap = 'yes'
+      } else {
+        overlap = 'no'
+      }
+      df<-data.frame(poly1=poly1,poly2=poly2,overlap=overlap)
+      polycomb<-rbind(polycomb,df)
+    }
+    
+    polycomb$poly1<-as.numeric(polycomb$poly1)
+    polycomb$poly2<-as.numeric(polycomb$poly2)
+    polycluster<-polycomb%>%filter(!is.na(poly1))
+  } else if (length(names(x)) == 1) {
+    polycluster<-data.frame(poly1 = 1, poly2 = 1, overlap = 'no')
+  }
+  
+  ####clustering polygons that overlap
+  polycluster_yes<-polycluster%>%
+    filter(overlap=="yes")
+  
+  ###transitive property of oberlapping core areas
+  polymat = graph_from_edgelist(as.matrix(polycluster_yes[,1:2]), directed=FALSE)
+  #unique polygons
+  upoly = sort(unique(c(polycluster_yes$poly1, polycluster_yes$poly2)))
+  (cluster = components(polymat)$membership[upoly])
+  #final cluster assignment df for overlap = yes
+  (polyassign = data.frame(upoly, cluster, row.names=NULL))
+  
+  poly12<-rbind(unlist(polycluster$poly1),unlist(polycluster$poly2))
+  poly12 <- data.frame(upoly = c(polycluster$poly1,polycluster$poly2))
+  
+  ##these sightings are NOT triggering on their own (or are trigger by one sighting of 3+ without overlapping sightings) are assigned a cluster of -1
+  not<-poly12%>%
+    filter((!poly12$upoly %in% polyassign$upoly) | (!poly12$upoly %in% polyassign$upoly))%>%
+    distinct()%>%
+    mutate(cluster = -1)
+  
+  ##put together the trigger sightings that don't overlap with any other sightings, with those that do with assigned clusters
+  totpolyassign<-rbind(polyassign,not)
+  totpolyassign$cluster<-as.numeric(totpolyassign$cluster)
+  print(totpolyassign)
+  ##clustmin is for a totpolyassign df without any overlapping triggers
+  clustmin = 0
+  ##assigns consecutive cluster numbers to those sightings that don't overlap, but are triggering all on their own
+  for (i in 1:nrow(totpolyassign))
+    if (totpolyassign$cluster[i] == -1 & max(totpolyassign$cluster) > 0){
+      totpolyassign$cluster[i]<-max(totpolyassign$cluster)+1
+    } else if (totpolyassign$cluster[i] == -1 & max(totpolyassign$cluster) < 0 ){
+      totpolyassign$cluster[i]<-clustmin+1
+    } else { 
+    }
+  
+  
+  #########
+  totpolyassign
+}
+
 ########
 ##ACTION
 ########
@@ -175,9 +252,9 @@ names(comboext)<-DMAlist
     #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
     #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
     #I don't remember why I named this dmacand -- maybe dma combo and... then some?
-
+    # applied over the list of sightings that fall within each DMA
 extdf_list<-lapply(comboext, function(x) {
-    
+    print(x)
     dmacandext<-x %>%
       dplyr::filter((x$dist_nm != 0 & x$dist_nm <= x$corer) | (x$GROUP_SIZE > 2 & x$dist_nm == 0))
     print(dmacandext)
@@ -247,7 +324,7 @@ extdf_list<-lapply(comboext, function(x) {
       } else if (egsas$sightID[i] %in% dmaextsightID$sightID) {
         print(i)
         #print("1")
-        egsas$ACTION_NEW[i] = 5
+        egsas$ACTION_NEW[i] = 55
         #print(head(egsas))
         df<-data.frame(extDMAs = DMAid,
                        TRIGGER_GROUPSIZE = exttot$total,
@@ -265,6 +342,7 @@ extdf_list<-lapply(comboext, function(x) {
         #print("3")
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
+    
 
    extdf_list})
   print(extdf_list)
@@ -308,18 +386,6 @@ extdf_list<-lapply(comboext, function(x) {
   print(allcomboext)
   print(alldmaextsightID)
   
-  for (i in 1:nrow(egsas))
-    if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
-      egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
-    } else if (egsas$sightID[i] %in% alldmaextsightID$sightID) {
-      egsas$ACTION_NEW[i] = 5
-      #print(head(egsas))
-    } else if (egsas$ACTION_NEW[i] == 55){
-      egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
-    } else {
-      egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
-    }
-  print(egsas)
   #################  
   
   dmaextsig<-inner_join(allcomboext,alldmaextsightID, by = "sightID")
@@ -356,7 +422,11 @@ extdf_list<-lapply(comboext, function(x) {
   
   ##gbuffer needs utm to calculate radius in meters
   dmaextbuff<-gBuffer(dmaextdf.tr, byid=TRUE, width = dmaextdf$extcorer_m, capStyle = "ROUND")
-  
+  ##data back to latlon dataframe
+  ##this will be used later when sightings are clustered by overlapping core radiis
+  extclustdf<-spTransform(dmaextdf.tr, CRS.latlon)
+  extclustdf<-as.data.frame(extclustdf)
+  print(extclustdf)
   ##creates a dataframe from the density buffers put around sightings considered for DMA analysis
   extpolycoord<-dmaextbuff %>% fortify() %>% dplyr::select("long","lat","id")
   ##poly coordinates out of utm
@@ -374,6 +444,40 @@ extdf_list<-lapply(comboext, function(x) {
   extpcoord_<-lapply(seq_along(extpcoord), function(i) Polygons(list(extpcoord[[i]]), ID = names(extidpoly)[i]))
   extpolycoorddf_sp<-SpatialPolygons(extpcoord_, proj4string = CRS.latlon)
 
+  ext_clustdf_fun_out<-clustdf_fun(extidpoly,extpolycoorddf_sp)
+  extclustdf$extPolyID<-as.numeric(extclustdf$extPolyID)
+  
+  extclustdf<-full_join(ext_clustdf_fun_out,extclustdf,by=c("upoly"="extPolyID"))
+  
+  #################################
+  extclusty<-extclustdf%>%
+    group_by(cluster)%>%
+    mutate(totes = sum(GROUP_SIZE))%>%
+    filter(totes >= 3)
+  extclustn<-extclustdf%>%
+    group_by(cluster)%>%
+    mutate(totes = sum(GROUP_SIZE))%>%
+    filter(totes < 3)
+  
+  print("yes")
+  print(extclusty)
+  #print(extclustn)
+  print(egsas)
+  
+  
+  for (i in 1:nrow(egsas))
+    if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
+      egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
+    } else if (egsas$sightID[i] %in% alldmaextsightID$sightID & (egsas$sightID[i] %in% extclusty$sightID)) {
+      egsas$ACTION_NEW[i] = 5
+      #print(head(egsas))
+    } else if (egsas$ACTION_NEW[i] == 55){
+      egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
+    } else {
+      egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
+    }
+  print(egsas)
+  
   } #276
 } #end 55 in action_new
 
@@ -504,85 +608,19 @@ if (44 %in% egsas$ACTION_NEW){
   #############           
   ## the circular core areas are the polygons in the below section
   idpoly<-split(polycoorddf, polycoorddf$id)
-  
   idpoly<-lapply(idpoly, function(x) { x["id"] <- NULL; x })
-  
   pcoord<-lapply(idpoly, Polygon)
-  
   pcoord_<-lapply(seq_along(pcoord), function(i) Polygons(list(pcoord[[i]]), ID = names(idpoly)[i]))
   
   polycoorddf_sp<-SpatialPolygons(pcoord_, proj4string = CRS.latlon)
   print(polycoorddf_sp)
   print(str(polycoorddf_sp))
   ##############
-  if (length(names(idpoly)) > 1){
-    ##Overlap of whale density core area analysis
-    polycomb<-data.frame(poly1=NA,poly2=NA,overlap=NA)
-    ##creates a list of 2 combinations to compare
-    #print(names(idpoly))
-    combos<-combn(names(idpoly),2)
-    ##compares the list
-    for(i in seq_along(combos[1,])){
-      poly1 <- combos[1,i]
-      poly2 <- combos[2,i]
-      #if they don't overlap, the result of the below "if statement" is NULL
-      if(!is.null(gIntersection(polycoorddf_sp[poly1], polycoorddf_sp[poly2], byid = TRUE))){
-        overlap = 'yes'
-      } else {
-        overlap = 'no'
-      }
-      df<-data.frame(poly1=poly1,poly2=poly2,overlap=overlap)
-      polycomb<-rbind(polycomb,df)
-    }
-    
-    polycomb$poly1<-as.numeric(polycomb$poly1)
-    polycomb$poly2<-as.numeric(polycomb$poly2)
-    polycluster<-polycomb%>%filter(!is.na(poly1))
-  } else if (length(names(idpoly)) == 1) {
-    polycluster<-data.frame(poly1 = 1, poly2 = 1, overlap = 'no')
-  }
-  
-  ####clustering polygons that overlap
-  polycluster_yes<-polycluster%>%
-    filter(overlap=="yes")
-  
-  ###transitive property of oberlapping core areas
-  polymat = graph_from_edgelist(as.matrix(polycluster_yes[,1:2]), directed=FALSE)
-  #unique polygons
-  upoly = sort(unique(c(polycluster_yes$poly1, polycluster_yes$poly2)))
-  (cluster = components(polymat)$membership[upoly])
-  #final cluster assignment df for overlap = yes
-  (polyassign = data.frame(upoly, cluster, row.names=NULL))
-  
-  poly12<-rbind(unlist(polycluster$poly1),unlist(polycluster$poly2))
-  poly12 <- data.frame(upoly = c(polycluster$poly1,polycluster$poly2))
-  
-  ##these sightings are NOT triggering on their own (or are trigger by one sighting of 3+ without overlapping sightings) are assigned a cluster of -1
-  not<-poly12%>%
-    filter((!poly12$upoly %in% polyassign$upoly) | (!poly12$upoly %in% polyassign$upoly))%>%
-    distinct()%>%
-    mutate(cluster = -1)
-  
-  ##put together the trigger sightings that don't overlap with any other sightings, with those that do with assigned clusters
-  totpolyassign<-rbind(polyassign,not)
-  totpolyassign$cluster<-as.numeric(totpolyassign$cluster)
-  print(totpolyassign)
-  ##clustmin is for a totpolyassign df without any overlapping triggers
-  clustmin = 0
-  ##assigns consecutive cluster numbers to those sightings that don't overlap, but are triggering all on their own
-  for (i in 1:nrow(totpolyassign))
-    if (totpolyassign$cluster[i] == -1 & max(totpolyassign$cluster) > 0){
-      totpolyassign$cluster[i]<-max(totpolyassign$cluster)+1
-    } else if (totpolyassign$cluster[i] == -1 & max(totpolyassign$cluster) < 0 ){
-      totpolyassign$cluster[i]<-clustmin+1
-    } else { 
-    }
-  
-  
-  #########
+ 
+  clustdf_fun_out<-clustdf_fun(idpoly,polycoorddf_sp)
   clustdf$PolyID<-as.numeric(clustdf$PolyID)
-  clustdf<-full_join(clustdf,totpolyassign,by=c("PolyID"="upoly"))
-  print(clustdf)
+  
+  clustdf<-full_join(clustdf_fun_out,clustdf,by=c("upoly"="PolyID"))
   
   clusty<-clustdf%>%
     group_by(cluster)%>%
@@ -593,10 +631,6 @@ if (44 %in% egsas$ACTION_NEW){
     mutate(totes = sum(GROUP_SIZE))%>%
     filter(totes < 3)
   
-  print(clusty)
-  print(clustn)
-  print(egsas)
-  
   for (i in 1:nrow(egsas))
     if (egsas$ACTION_NEW[i] == 44 & (egsas$sightID[i] %in% clusty$sightID)) {
       egsas$ACTION_NEW[i] = 4
@@ -605,6 +639,9 @@ if (44 %in% egsas$ACTION_NEW){
     } else {
       egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
     }
+  
+  clusty<-clusty%>%
+    dplyr::rename('PolyID' = 'upoly')
   
   if (4 %in% egsas$ACTION_NEW){
     
@@ -822,7 +859,7 @@ if (44 %in% egsas$ACTION_NEW){
   } 
 } # end of 4
 
-if (4 %in% egsas$ACTION_NEW | 5 %in% egsas$ACTION_NEW){
+if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
   print("4 or 5")
   if(!exists("polyclust_sp")){
     polyclust_sp<-SpatialPolygons(list(fakedma))
