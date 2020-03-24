@@ -998,8 +998,8 @@ if ("ID" %in% colnames(egsas)){
   
   } else if (criteria$DMAapp == "acoudet") {
     
-    egsas_dma<-egsas%>%filter(ACTION_NEW == 4)
-    egsas_notdma<-egsas%>%filter(ACTION_NEW != 4)
+    egsas_dma<-egsas%>%filter(ACTION_NEW == 4 | ACTION_NEW == 5)
+    egsas_notdma<-egsas%>%filter(ACTION_NEW != 4 & ACTION_NEW != 5)
     
     sasdma<-sasdma%>%
       addCircleMarkers(lng = ~egsas_notdma$LONGITUDE, lat = ~egsas_notdma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "grey", popup = egsas_notdma$DateTime)%>%
