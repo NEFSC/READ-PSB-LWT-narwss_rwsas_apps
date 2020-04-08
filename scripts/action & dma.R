@@ -315,36 +315,59 @@ extdf_list<-lapply(comboext, function(x) {
     }
     
     ##DMAid will pass into the next for loop
+    ##the below doesn't mean anything going forward for egsas
+    ##this is all part of the lapply to make the extdf_list
     
     for (i in 1:nrow(egsas))
-      if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
+      if (egsas$sightID[i] %in% dmaextsightID$sightID) {
         print(i)
-        #print("4")
-        egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
-      } else if (egsas$sightID[i] %in% dmaextsightID$sightID) {
-        print(i)
-        #print("1")
+        print("1")
         egsas$ACTION_NEW[i] = 55
-        #print(head(egsas))
+        print(egsas)
         df<-data.frame(extDMAs = DMAid,
                        TRIGGER_GROUPSIZE = exttot$total,
                        TRIGGERDATE = exttot$TRIGGERDATE,
                        TRIGGERORG = exttot$OBSERVER_ORG)
-        #print(df)
+        print(df)
         extdf_list<-rbind(extdf_list,df)
-        #print(extdf)
-      } else if (egsas$ACTION_NEW[i] == 55){
-        print(i)
-        #print("2")
-        egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
+        print(extdf)
       } else {
         print(i)
-        #print("3")
+        print("3")
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
-    
 
    extdf_list})
+
+
+for (i in 1:nrow(egsas))
+  if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
+    print(i)
+    print("4")
+    egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
+  } else if (exists("dmaextsightID") && egsas$sightID[i] %in% dmaextsightID$sightID) {
+    print(i)
+    print("1")
+    egsas$ACTION_NEW[i] = 55
+    print(head(egsas))
+    df<-data.frame(extDMAs = DMAid,
+                   TRIGGER_GROUPSIZE = exttot$total,
+                   TRIGGERDATE = exttot$TRIGGERDATE,
+                   TRIGGERORG = exttot$OBSERVER_ORG)
+    print(df)
+    extdf_list<-rbind(extdf_list,df)
+    print(extdf)
+  } else if (egsas$ACTION_NEW[i] == 55){
+    print(i)
+    print("2")
+    egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
+    print(egsas)
+  } else {
+    print(i)
+    print("3")
+    egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
+  }
+
   print(extdf_list)
   
   extdf<-bind_rows(extdf_list, .id = "column_label")
@@ -1042,7 +1065,6 @@ if ("ID" %in% colnames(egsas)){
   sasdma<-leaflet(data = egsas) %>% 
     addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
     addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-    addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
     addLegend(colors = c("red","yellow","orange"), labels = c("SMA","Active DMA","Active DMA eligible for extension"), opacity = 0.4, position = "topleft")
  
   if (criteria$loc == 'Network'){
@@ -1050,7 +1072,11 @@ if ("ID" %in% colnames(egsas)){
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
       addPolygons(data = extensiondma, weight = 2, color = "orange")
   } 
-}
+
+  sasdma<-sasdma%>%
+    addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))
+  
+  }
 
 egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
 
