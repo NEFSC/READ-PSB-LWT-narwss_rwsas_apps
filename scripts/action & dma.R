@@ -78,6 +78,14 @@ clustdf_fun<-function(x,y){
   totpolyassign
 }
 
+##################
+## LEAFLET BASE ##
+##################
+
+sasdma<-leaflet(data = egsas) %>% 
+  addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
+  addPolygons(data = smapresent.sp, weight = 2, color = "red")
+
 ########
 ##ACTION
 ########
@@ -330,7 +338,7 @@ extdf_list<-lapply(comboext, function(x) {
                        TRIGGERORG = exttot$OBSERVER_ORG)
         print(df)
         extdf_list<-rbind(extdf_list,df)
-        print(extdf)
+
       } else {
         print(i)
         print("3")
@@ -1005,37 +1013,25 @@ if ("ID" %in% colnames(egsas)){
   }
 }
 
-  sasdma<-leaflet(data = egsas) %>% 
-    addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
-    addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
+  sasdma<- sasdma%>%
     addPolygons(data = polyclust_sp, weight = 2, color = "blue") 
+  
+  if (criteria$loc == 'Network'){
+    sasdma<-sasdma%>%
+      addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+      addPolygons(data = extensiondma, weight = 2, color = "orange")
+  }
   
   ##display core areas for visual sightings
   if (criteria$DMAapp == 'vissig' | criteria$DMAapp == 'rwsurv'){
   
     sasdma<-sasdma%>%
     addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
-    addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")%>%
-    addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
-    addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area of right whale sightings"), opacity = 0.4, position = "topleft")
-  
-  } else if (criteria$DMAapp == "acoudet") {
+    addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")
     
-    egsas_dma<-egsas%>%filter(ACTION_NEW == 4 | ACTION_NEW == 5)
-    egsas_notdma<-egsas%>%filter(ACTION_NEW != 4 & ACTION_NEW != 5)
-    
-    sasdma<-sasdma%>%
-      addCircleMarkers(lng = ~egsas_notdma$LONGITUDE, lat = ~egsas_notdma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "grey", popup = egsas_notdma$DateTime)%>%
-      addCircleMarkers(lng = ~egsas_dma$LONGITUDE, lat = ~egsas_dma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas_dma$DateTime)%>%
-      addLegend(colors = c("red","yellow","orange","blue","black","grey"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Right whale acoustic detection - DMA trigger", "Other right whale acoustic detection(s)"), opacity = 0.4, position = "topleft")
+  } 
   
-  }
-  
-  if (criteria$loc == 'Network'){
-  sasdma<-sasdma%>%
-    addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-    addPolygons(data = extensiondma, weight = 2, color = "orange")
-  }
+
   
 } else { ##4 in egsas$action_new
  
@@ -1062,21 +1058,42 @@ if ("ID" %in% colnames(egsas)){
   }
 
   
-  sasdma<-leaflet(data = egsas) %>% 
-    addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
-    addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-    addLegend(colors = c("red","yellow","orange"), labels = c("SMA","Active DMA","Active DMA eligible for extension"), opacity = 0.4, position = "topleft")
- 
+  
   if (criteria$loc == 'Network'){
     sasdma<-sasdma%>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
       addPolygons(data = extensiondma, weight = 2, color = "orange")
   } 
 
-  sasdma<-sasdma%>%
-    addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))
+}
+
+###################
+## LEAFLET FINAL ##
+###################
+
+##visual
+if (criteria$DMAapp == 'vissig' | criteria$DMAapp == 'rwsurv'){
   
-  }
+  sasdma<-sasdma%>%
+    addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
+    addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area of right whale sightings"), opacity = 0.4, position = "topleft")
+
+
+##acoustic
+} else if (criteria$DMAapp == "acoudet") {
+  
+  egsas_dma<-egsas%>%filter(ACTION_NEW == 4 | ACTION_NEW == 5)
+  egsas_notdma<-egsas%>%filter(ACTION_NEW != 4 & ACTION_NEW != 5)
+  
+  sasdma<-sasdma%>%
+    addCircleMarkers(lng = ~egsas_notdma$LONGITUDE, lat = ~egsas_notdma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "grey", popup = egsas_notdma$DateTime)%>%
+    addCircleMarkers(lng = ~egsas_dma$LONGITUDE, lat = ~egsas_dma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas_dma$DateTime)%>%
+    addLegend(colors = c("red","yellow","orange","blue","black","grey"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Right whale acoustic detection - DMA trigger", "Other right whale acoustic detection(s)"), opacity = 0.4, position = "topleft")
+  
+}
+
+####################
+
 
 egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
 
