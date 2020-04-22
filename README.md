@@ -44,7 +44,7 @@ Finally, if you do not get TRUE when you run `tinytex:::is_tinytex()`, then you 
 ## Running the App
 The app can be launched by running
 
-`shiny::runGitHub("narwss_rwsas_apps", username = "leeyuhc", ref = "master")`
+`shiny::runGitHub("narwss_rwsas_apps", username = "leahcrowe", ref = "master")`
 
 in your RStudio environment. Click 'Run App' to get started. In the window that pops up, click "Open in Browser".
 
