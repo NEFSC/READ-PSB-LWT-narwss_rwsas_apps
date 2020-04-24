@@ -1319,7 +1319,7 @@ observeEvent(input$rawupload,{
     }) #OBSERVE EVENT SAVE   
   })  #OBSERVE EVENT EDITTABLE
   
-  source('./scripts/oracleaccess.R', local = TRUE)$value
+  #source('./scripts/oracleaccess.R', local = TRUE)$value
   source('./scripts/input_sas.R', local = TRUE)$value
   source('./scripts/input_dma.R', local = TRUE)$value
   
