@@ -1268,6 +1268,7 @@ observeEvent(input$rawupload,{
       reportmap<-fitBounds(reportleaf,min(final$LONGITUDE), min(final$LATITUDE), max(final$LONGITUDE), max(final$LATITUDE))
 
       print(getwd())
+      unlink("./*_map.png")
       
       enable("report")
       output$reportmap = renderLeaflet({print(reportmap)})
@@ -1276,7 +1277,7 @@ observeEvent(input$rawupload,{
       print("html1")
       htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
       print("html2")
-      webshot::webshot("temp.html", file = paste0(date_formats$date1,"_map.png"))
+      webshot::webshot("temp.html", file = paste0("map.png"))
       print("webshot")
         
         output$report<-downloadHandler(
@@ -1296,12 +1297,12 @@ observeEvent(input$rawupload,{
             if (criteria$loc == 'Network'){
               tempReport<-file.path("./scripts/FlightReport_ntwk.Rmd")
               file.copy("FlightReport_ntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/",date_formats$date1,"_map.png")
+              webshotpath<-"//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/map.png"
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
             } else if (criteria$loc == 'Local'){
               tempReport<-file.path("./scripts/FlightReport_offntwk.Rmd")
               file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-paste0(path,date_formats$date1,"_map.png")
+              webshotpath<-paste0(path,"map.png")
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
               disable("dmaup")
               disable("dmareport")
