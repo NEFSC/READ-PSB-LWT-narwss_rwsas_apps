@@ -19,7 +19,7 @@ output: pdf_document
 \vspace*{-8mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
-knitr::include_graphics(paste0("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/",params$date1,"_dmamap.png"))
+knitr::include_graphics("./dmamap.png")
 
 ```
 \vspace*{-4mm}
