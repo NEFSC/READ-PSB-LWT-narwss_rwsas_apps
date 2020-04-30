@@ -2,6 +2,7 @@ observeEvent(input$dmaup,{
   disable("dmaup")
   print("dma button pressed")
   
+  print(getwd())
   unlink("./*dmamap.png")
   dmareportmap<-fitBounds(dma_react$sasdma,min(dma_react$dmacoord$`Lon (Decimal Degrees)`)+0.5, min(dma_react$dmacoord$`Lat (Decimal Degrees)`)-0.5, max(dma_react$dmacoord$`Lon (Decimal Degrees)`)-0.5, max(dma_react$dmacoord$`Lat (Decimal Degrees)`)+0.5)
   htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
