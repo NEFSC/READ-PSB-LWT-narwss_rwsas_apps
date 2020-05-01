@@ -7,6 +7,7 @@ params:
   egsastab: NA
   dmanameout: NA
   dmacoord: NA
+  webshotpath: NA
 output: pdf_document
 
 ---
@@ -19,7 +20,7 @@ output: pdf_document
 \vspace*{-8mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
-knitr::include_graphics("./dmamap.png")
+knitr::include_graphics(params$webshotpath)
 
 ```
 \vspace*{-4mm}
