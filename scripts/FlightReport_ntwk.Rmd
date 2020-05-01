@@ -12,21 +12,22 @@ params:
 output: pdf_document
 
 ---
-\vspace*{-10mm}
+<!-- \vspace*{-10mm} -->
+\vspace*{-7mm}
 \begin{center}\LARGE`r params$date1`\end{center}
-\vspace*{-4mm}
+<!-- \vspace*{-4mm} -->
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
 knitr::include_graphics(params$webshotpath)
 
 ```
-\vspace*{-8mm}
+<!-- \vspace*{-8mm} -->
 \begin{center}\normalsize `r params$rptnotes`\end{center}
-\vspace*{-7mm}
+<!-- \vspace*{-7mm} -->
 \begin{center}\normalsize `r params$dmanamesexpsent`\end{center}
-\vspace*{-7mm}
+<!-- \vspace*{-7mm} -->
 \begin{center}\normalsize `r params$ftypesent`\end{center}
-\vspace*{-4mm}
+<!-- \vspace*{-4mm} -->
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
 knitr::kable(params$netable, caption = "Species Sighted")
 ```
