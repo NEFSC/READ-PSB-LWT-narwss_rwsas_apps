@@ -315,7 +315,6 @@ observeEvent(input$rawupload,{
       
       f<-merge(eff_sig2, gpsfil, by=c("DateTime","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
       f<-f[order(f$DateTime, -f$EFFORT_COMMENTS),]
-      
       ##########
       #ALTITUDE#
       ##########
@@ -1277,7 +1276,7 @@ observeEvent(input$rawupload,{
       print("html1")
       htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
       print("html2")
-      webshot::webshot("temp.html", file = paste0("surveymap.png"))
+      webshot::webshot("temp.html", file = "surveymap.png")
       print("webshot")
         
         output$report<-downloadHandler(
@@ -1297,12 +1296,12 @@ observeEvent(input$rawupload,{
             if (criteria$loc == 'Network'){
               tempReport<-file.path("./scripts/FlightReport_ntwk.Rmd")
               file.copy("FlightReport_ntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-"./surveymap.png"
+              webshotpath<-paste0(getwd(),"/surveymap.png")
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
             } else if (criteria$loc == 'Local'){
               tempReport<-file.path("./scripts/FlightReport_offntwk.Rmd")
               file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-paste0(path,"surveymap.png")
+              webshotpath<-paste0(path,"/surveymap.png")
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
               disable("dmaup")
               disable("dmareport")
