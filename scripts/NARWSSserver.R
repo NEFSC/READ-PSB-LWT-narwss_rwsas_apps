@@ -1289,6 +1289,8 @@ observeEvent(input$rawupload,{
               ftypesent<-"Only large whale sightings were recorded on this survey."
             } else if (ftype == 21){
               ftypesent<-"Only large whale sightings (excluding live minke whales) were recorded on this survey."
+            } else {
+              ftypesent<-""
             }
             
             rptnotes<-input$reportnotes
