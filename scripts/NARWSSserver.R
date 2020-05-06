@@ -1268,6 +1268,7 @@ observeEvent(input$rawupload,{
 
       print(getwd())
       unlink("./*surveymap.png")
+      unlink("./scripts/*.log")
       
       enable("report")
       output$reportmap = renderLeaflet({print(reportmap)})
@@ -1276,9 +1277,7 @@ observeEvent(input$rawupload,{
       print("html1")
       htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
       print("html2")
-      webshot::webshot("temp.html", file = "surveymap.png")
-      print("webshot")
-        
+
         output$report<-downloadHandler(
           filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_NOAA_NERW_Aerial_Report.pdf"),
           content = function(file) {
@@ -1296,19 +1295,28 @@ observeEvent(input$rawupload,{
             rptnotes<-input$reportnotes
             
             if (criteria$loc == 'Network'){
+              
+              webshotpath<-paste0(getwd(),"/surveymap.png")
+              webshot::webshot("temp.html", file = webshotpath)
+              print("webshot")
               tempReport<-file.path("./scripts/FlightReport_ntwk.Rmd")
               file.copy("FlightReport_ntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-paste0(getwd(),"/surveymap.png")
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
+              
             } else if (criteria$loc == 'Local'){
-              tempReport<-file.path("./scripts/FlightReport_offntwk.Rmd")
-              file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-paste0(tempdir(),"\\surveymap.png")
-              dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
+              
               disable("dmaup")
               disable("dmareport")
               disable("kml")
               disable("dmaletter")
+              
+              webshotpath<-paste0(path,"surveymap.png")
+              webshot::webshot("temp.html", file = webshotpath)
+              print("webshot")
+              tempReport<-file.path("./scripts/FlightReport_offntwk.Rmd")
+              file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
+              dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
+              
             }
             
               params<-list(date1 = date_formats$date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
