@@ -1301,7 +1301,7 @@ observeEvent(input$rawupload,{
             } else if (criteria$loc == 'Local'){
               tempReport<-file.path("./scripts/FlightReport_offntwk.Rmd")
               file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-paste0(path,"/surveymap.png")
+              webshotpath<-paste0(path,"surveymap.png")
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
               disable("dmaup")
               disable("dmareport")
