@@ -315,7 +315,6 @@ observeEvent(input$rawupload,{
       
       f<-merge(eff_sig2, gpsfil, by=c("DateTime","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
       f<-f[order(f$DateTime, -f$EFFORT_COMMENTS),]
-      
       ##########
       #ALTITUDE#
       ##########
@@ -1269,6 +1268,8 @@ observeEvent(input$rawupload,{
 
       print(getwd())
       unlink("./*surveymap.png")
+      unlink("./scripts/*.log")
+     # unlink(paste0(path,survey_date,"/surveymap.png"))
       
       enable("report")
       output$reportmap = renderLeaflet({print(reportmap)})
@@ -1277,9 +1278,7 @@ observeEvent(input$rawupload,{
       print("html1")
       htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
       print("html2")
-      webshot::webshot("temp.html", file = paste0("surveymap.png"))
-      print("webshot")
-        
+
         output$report<-downloadHandler(
           filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_NOAA_NERW_Aerial_Report.pdf"),
           content = function(file) {
@@ -1290,25 +1289,33 @@ observeEvent(input$rawupload,{
               ftypesent<-"Only large whale sightings were recorded on this survey."
             } else if (ftype == 21){
               ftypesent<-"Only large whale sightings (excluding live minke whales) were recorded on this survey."
+            } else {
+              ftypesent<-""
             }
             
             rptnotes<-input$reportnotes
             
             if (criteria$loc == 'Network'){
-              tempReport<-file.path("./scripts/FlightReport_ntwk.Rmd")
-              file.copy("FlightReport_ntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-"//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/surveymap.png"
-              dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
+              
+              webshotpath<-paste0(getwd(),"/surveymap.png")
+              
             } else if (criteria$loc == 'Local'){
-              tempReport<-file.path("./scripts/FlightReport_offntwk.Rmd")
-              file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
-              webshotpath<-paste0(path,"surveymap.png")
-              dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
+              
               disable("dmaup")
               disable("dmareport")
               disable("kml")
               disable("dmaletter")
+              
+              webshotpath<-paste0(path,"surveymap.png")
+              
             }
+              
+              webshot::webshot("temp.html", file = webshotpath)
+              print("webshot")
+              
+              tempReport<-file.path("./scripts/FlightReport.Rmd")
+              file.copy("FlightReport.Rmd", tempReport, overwrite = FALSE)
+              dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
             
               params<-list(date1 = date_formats$date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
               print(webshotpath)
