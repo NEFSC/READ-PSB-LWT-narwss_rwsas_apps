@@ -1,6 +1,6 @@
 # narwss_rwsas_apps
 
-To compiling the report while off the network, including while working in Canada, follow the directions below:
+To compile the aerial survey report while off the network, including while working in Canada, follow the directions below:
 
 ## Getting Started
 
