@@ -1296,13 +1296,8 @@ observeEvent(input$rawupload,{
             rptnotes<-input$reportnotes
             
             if (criteria$loc == 'Network'){
-              webshotpath<-paste0(getwd(),"/surveymap.png")
-              webshot::webshot("temp.html", file = webshotpath)
-              print("webshot")
               
-              tempReport<-file.path("./scripts/FlightReport_ntwk.Rmd")
-              file.copy("FlightReport_ntwk.Rmd", tempReport, overwrite = FALSE)
-              dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
+              webshotpath<-paste0(getwd(),"/surveymap.png")
               
             } else if (criteria$loc == 'Local'){
               
@@ -1312,14 +1307,15 @@ observeEvent(input$rawupload,{
               disable("dmaletter")
               
               webshotpath<-paste0(path,"surveymap.png")
+              
+            }
+              
               webshot::webshot("temp.html", file = webshotpath)
               print("webshot")
               
-              tempReport<-file.path("./scripts/FlightReport_offntwk.Rmd")
-              file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
-              dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
-              
-            }
+              tempReport<-file.path("./scripts/FlightReport.Rmd")
+              file.copy("FlightReport.Rmd", tempReport, overwrite = FALSE)
+              dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
             
               params<-list(date1 = date_formats$date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
               print(webshotpath)
