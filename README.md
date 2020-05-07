@@ -54,7 +54,7 @@ in your RStudio environment. Click 'Run App' to get started. In the window that 
 
 ## Script Flow Chart
 
-![](Script flow.png)
+![](www/scriptflow.png)
 
 
 
