@@ -1297,6 +1297,7 @@ observeEvent(input$rawupload,{
             
             if (criteria$loc == 'Network'){
               
+              dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
               webshotpath<-paste0(getwd(),"/surveymap.png")
               
             } else if (criteria$loc == 'Local'){
@@ -1306,6 +1307,7 @@ observeEvent(input$rawupload,{
               disable("kml")
               disable("dmaletter")
               
+              dmanamesexpsent<-""
               webshotpath<-paste0(path,"surveymap.png")
               
             }
@@ -1315,8 +1317,7 @@ observeEvent(input$rawupload,{
               
               tempReport<-file.path("./scripts/FlightReport.Rmd")
               file.copy("FlightReport.Rmd", tempReport, overwrite = FALSE)
-              dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
-            
+                          
               params<-list(date1 = date_formats$date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
               print(webshotpath)
               rmarkdown::render(tempReport, output_file = file,
