@@ -1269,6 +1269,7 @@ observeEvent(input$rawupload,{
       print(getwd())
       unlink("./*surveymap.png")
       unlink("./scripts/*.log")
+     # unlink(paste0(path,survey_date,"/surveymap.png"))
       
       enable("report")
       output$reportmap = renderLeaflet({print(reportmap)})
@@ -1295,10 +1296,10 @@ observeEvent(input$rawupload,{
             rptnotes<-input$reportnotes
             
             if (criteria$loc == 'Network'){
-              
               webshotpath<-paste0(getwd(),"/surveymap.png")
               webshot::webshot("temp.html", file = webshotpath)
               print("webshot")
+              
               tempReport<-file.path("./scripts/FlightReport_ntwk.Rmd")
               file.copy("FlightReport_ntwk.Rmd", tempReport, overwrite = FALSE)
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
@@ -1313,6 +1314,7 @@ observeEvent(input$rawupload,{
               webshotpath<-paste0(path,"surveymap.png")
               webshot::webshot("temp.html", file = webshotpath)
               print("webshot")
+              
               tempReport<-file.path("./scripts/FlightReport_offntwk.Rmd")
               file.copy("FlightReport_offntwk.Rmd", tempReport, overwrite = FALSE)
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s) in the United States were not included in this report.")
