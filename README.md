@@ -1,6 +1,6 @@
 # narwss_rwsas_apps
 
-For processing flight data and compiling the report while off the network including while in Canada
+To compiling the report while off the network, including while working in Canada, follow the directions below:
 
 ## Getting Started
 
@@ -50,6 +50,11 @@ The app can be launched by running
 `shiny::runGitHub("narwss_rwsas_apps", username = "leahcrowe", ref = "master")`
 
 in your RStudio environment. Click 'Run App' to get started. In the window that pops up, click "Open in Browser".
+
+
+## Script Flow Chart
+
+![](Script flow.PNG)
 
 
 
