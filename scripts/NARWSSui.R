@@ -5,6 +5,7 @@ fluidPage(
               conditionalPanel(
                 condition = "input$filepathway == Local",
                 textInput("filepathinput", (HTML(paste("Local pathway", '<br/>', "Example: C:/2018/Flights/edit_data/"))))),
+              #a("Instructions",target="_blank",href="ASP.pdf"),
               width = 3),
       tabsetPanel(type = "tabs",
                   tabPanel("Aerial Survey",

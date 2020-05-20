@@ -2,11 +2,12 @@ observeEvent(input$dmaup,{
   disable("dmaup")
   print("dma button pressed")
   
-  print(getwd())
   unlink("./*dmamap.png")
+  webshotpath<-paste0(getwd(),"/dmamap.png")
+  
   dmareportmap<-fitBounds(dma_react$sasdma,min(dma_react$dmacoord$`Lon (Decimal Degrees)`)+0.5, min(dma_react$dmacoord$`Lat (Decimal Degrees)`)-0.5, max(dma_react$dmacoord$`Lon (Decimal Degrees)`)-0.5, max(dma_react$dmacoord$`Lat (Decimal Degrees)`)+0.5)
   htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
-  webshot::webshot("temp.html", file = "dmamap.png")#,cliprect = bounds)
+  webshot::webshot("temp.html", file = "dmamap.png")
   
   ###################  
   ##dma info upload##
@@ -122,7 +123,7 @@ observeEvent(input$dmaup,{
       
       print(tempReport)
       file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
-      params<-list(dmanameselect = dmanameselect, date1 = date_formats$date1, expletter = expletter, egsastab = sas_react$egsastab, dmanameout = dma_react$dmanameout, dmacoord = dma_react$dmacoord)
+      params<-list(dmanameselect = dmanameselect, date1 = date_formats$date1, expletter = expletter, egsastab = sas_react$egsastab, dmanameout = dma_react$dmanameout, dmacoord = dma_react$dmacoord, webshotpath = webshotpath)
       
       rmarkdown::render(tempReport, output_file = file,
                         params = params,
