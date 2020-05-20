@@ -20,7 +20,8 @@ output: pdf_document
 \vspace*{-8mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
-knitr::include_graphics(params$webshotpath)
+#knitr::include_graphics(params$webshotpath)
+knitr::include_graphics("//net.nefsc.noaa.gov/shiny1/lcrowe/narwss_rwsas_apps/dmamap.png")
 
 ```
 \vspace*{-4mm}
