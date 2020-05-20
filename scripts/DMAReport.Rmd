@@ -11,20 +11,19 @@ params:
 output: pdf_document
 
 ---
-\vspace*{-10mm}
+\vspace*{-7mm}
 \begin{center}\LARGE `r params$dmanameselect`\end{center}
-\vspace*{-8mm}
+\vspace*{-2mm}
 \begin{center}\LARGE Trigger date: `r params$date1`\end{center}
-\vspace*{-8mm}
+\vspace*{-2mm}
 \begin{center}\LARGE Expiration: `r params$expletter`\end{center}
-\vspace*{-8mm}
+
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
-#knitr::include_graphics(params$webshotpath)
-knitr::include_graphics("//net.nefsc.noaa.gov/shiny1/lcrowe/narwss_rwsas_apps/dmamap.png")
+knitr::include_graphics(params$webshotpath)
 
 ```
-\vspace*{-4mm}
+
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
 knitr::kable(params$dmanameout, caption = "DMA Name(s)")
 ```
