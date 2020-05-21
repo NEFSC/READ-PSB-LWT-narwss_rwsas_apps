@@ -35,6 +35,8 @@ CRS.latlon<-CRS("+init=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_def
 
 smapath<-"./SMA ind shp"
 
+##Boston <-> NYC shiplane
+NEUS_shiplane<-readOGR(smapath, layer = 'Main traffic Lanes with new TSS')
 ##cape cod bay 01 Jan - 15 May
 ccb<-readOGR(smapath, layer = "sma_ccb")
 ##race point 01 March - 30 April
@@ -51,13 +53,15 @@ maso<-readOGR(smapath, layer = "MA_SMA_south_po")
 seshore<-readOGR(smapath, layer = "SE_SMA2shore2_po")
 ##canada
 ecanada<-readOGR(smapath, layer = "ecanada")
-dyna_ship<-readOGR(smapath, layer = "Dynamic_Shipping_Section")
-crab_grid<-readOGR(smapath, layer = "Snow_Crab_Grids")
-stat_fish<-readOGR(smapath, layer = "Static_Fishing_Closure")
+#
+dyna_ship<-readOGR(smapath, layer = "NARW_RZs_2020_02_07")
+GSL_shiplane<-readOGR(smapath, layer = "shiplane")
 ##france
 spm<-readOGR(smapath, layer = "spm")
-print('line 57')
+print('line 62')
+
 ##sma projected properly
+NEUS_shiplane.tr<-sp::spTransform(NEUS_shiplane, CRS.new)
 ccb.tr<-sp::spTransform(ccb, CRS.new)
 race.tr<-sp::spTransform(race, CRS.new)
 gsc.tr<-sp::spTransform(gsc, CRS.new)
@@ -67,10 +71,10 @@ maso.tr<-sp::spTransform(maso, CRS.new)
 seshore.tr<-sp::spTransform(seshore, CRS.new)
 ecanada<-sp::spTransform(ecanada, CRS.new)
 dyna_ship.tr<-sp::spTransform(dyna_ship, CRS.new)
-crab_grid.tr<-sp::spTransform(crab_grid, CRS.new)
-stat_fish.tr<-sp::spTransform(stat_fish, CRS.new)
-spm<-sp::spTransform(spm, CRS.new)
-print('line 71')
+GSL_shiplane.tr<-sp::spTransform(GSL_shiplane, CRS.new)
+spm.tr<-sp::spTransform(spm, CRS.new)
+print('line 78')
+
 ##no SEUS
 ##01Jan - 29Feb CCB, MANO, BI
 sma1<-rgeos::union(ccb.tr, mano.tr)
@@ -130,7 +134,8 @@ smafort<-cbind(smafort,MA)
 smafort$MA<-as.factor(smafort$MA)
 
 ######  
-print('line124')
+print('line139')
+NEUS_shiplane.sp<-sp::spTransform(NEUS_shiplane.tr,CRS.latlon)
+spm.sp<-sp::spTransform(spm.tr,CRS.latlon)
 dyna_ship.sp<-sp::spTransform(dyna_ship.tr,CRS.latlon)
-crab_grid.sp<-sp::spTransform(crab_grid.tr,CRS.latlon)
-stat_fish.sp<-sp::spTransform(stat_fish.tr,CRS.latlon)
+GSL_shiplane.sp<-sp::spTransform(GSL_shiplane.tr,CRS.latlon)
