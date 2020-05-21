@@ -1292,6 +1292,7 @@ observeEvent(input$rawupload,{
 
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
               webshotpath<-paste0(getwd(),"/surveymap.png")
+              source('./scripts/oracleaccess.R', local = TRUE)$value
               
             } else if (criteria$loc == 'Local'){
               
@@ -1320,10 +1321,7 @@ observeEvent(input$rawupload,{
             )})
     }) #OBSERVE EVENT SAVE   
   })  #OBSERVE EVENT EDITTABLE
-  #need this in both places
-  if (criteria$loc == 'Network'){
-    source('./scripts/oracleaccess.R', local = TRUE)$value
-  }
+
   source('./scripts/input_sas.R', local = TRUE)$value
   source('./scripts/input_dma.R', local = TRUE)$value
   
