@@ -12,11 +12,11 @@ fluidPage(
                            leafletOutput("sasdma"),    
                            tableOutput("dmanameout"), 
                            tableOutput("dmacoord"),    
-                           actionButton("dmaup","Upload DMA to database"),
-                           downloadButton("dmareport", "Download DMA Report"),
+                           actionButton("dmaup","Upload to database"),
+                           downloadButton("dmareport", "Download Report"),
                            downloadButton("kml", "Download KML"),
                            textInput("triggrp", "Who reported/observed these sightings?", width = 600, placeholder = "example: New England Aquarium aerial survey team"),
-                           downloadButton("dmaletter", "Download DMA Letter")
+                           downloadButton("dmaletter", "Download Letter")
                            
                            )
                            
