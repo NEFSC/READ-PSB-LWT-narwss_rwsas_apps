@@ -1321,7 +1321,9 @@ observeEvent(input$rawupload,{
     }) #OBSERVE EVENT SAVE   
   })  #OBSERVE EVENT EDITTABLE
   #need this in both places
-  source('./scripts/oracleaccess.R', local = TRUE)$value
+  if (criteria$loc == 'Network'){
+    source('./scripts/oracleaccess.R', local = TRUE)$value
+  }
   source('./scripts/input_sas.R', local = TRUE)$value
   source('./scripts/input_dma.R', local = TRUE)$value
   
