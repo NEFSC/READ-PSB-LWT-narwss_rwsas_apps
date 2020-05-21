@@ -8,6 +8,7 @@ disable("kml")
 source('./scripts/reactive.R', local = TRUE)$value
 criteria$loc<-"Network"
     ###########
+if (criteria$loc == 'Network'){
     
 observeEvent(input$query,{
       #clear anything that happened before
@@ -203,5 +204,5 @@ source('./scripts/oracleaccess.R', local = TRUE)$value
 source('./scripts/input_sas.R', local = TRUE)$value
 source('./scripts/input_dma.R', local = TRUE)$value
     
-
+}
   
