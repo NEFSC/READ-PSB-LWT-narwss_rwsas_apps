@@ -84,7 +84,9 @@ clustdf_fun<-function(x,y){
 
 sasdma<-leaflet(data = egsas) %>% 
   addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
-  addPolygons(data = smapresent.sp, weight = 2, color = "red")
+  addPolygons(data = smapresent.sp, weight = 2, color = "red")%>%
+  addPolylines(data = NEUS_shiplane.sp, weight = 2, color = "green", fill = F)
+  
 
 ########
 ##ACTION
@@ -124,7 +126,7 @@ for (i in 1:nrow(egsas))
   }
 
 Canada<-!is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons")))
-SPM<-!is.na(sp::over(eg.tr, as(spm, "SpatialPolygons")))
+SPM<-!is.na(sp::over(eg.tr, as(spm.tr, "SpatialPolygons")))
 sightID<-1:nrow(egsas)
 egsas<-cbind(egsas,inoutsma,Canada,SPM,sightID)
 egsas<-egsas%>%mutate(ACTION_NEW = NA)
@@ -1031,8 +1033,6 @@ if ("ID" %in% colnames(egsas)){
     
   } 
   
-
-  
 } else { ##4 in egsas$action_new
  
 
@@ -1058,7 +1058,6 @@ if ("ID" %in% colnames(egsas)){
   }
 
   
-  
   if (criteria$loc == 'Network'){
     sasdma<-sasdma%>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
@@ -1076,7 +1075,7 @@ if (criteria$DMAapp == 'vissig' | criteria$DMAapp == 'rwsurv'){
   
   sasdma<-sasdma%>%
     addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
-    addLegend(colors = c("red","yellow","orange","blue","black"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area of right whale sightings"), opacity = 0.4, position = "topleft")
+    addLegend(colors = c("green","red","yellow","orange","blue","black"), labels = c("Shipping Lanes","SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area of right whale sightings"), opacity = 0.4, position = "topleft")
 
 
 ##acoustic
@@ -1088,7 +1087,7 @@ if (criteria$DMAapp == 'vissig' | criteria$DMAapp == 'rwsurv'){
   sasdma<-sasdma%>%
     addCircleMarkers(lng = ~egsas_notdma$LONGITUDE, lat = ~egsas_notdma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "grey", popup = egsas_notdma$DateTime)%>%
     addCircleMarkers(lng = ~egsas_dma$LONGITUDE, lat = ~egsas_dma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas_dma$DateTime)%>%
-    addLegend(colors = c("red","yellow","orange","blue","black","grey"), labels = c("SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Right whale acoustic detection - trigger", "Other right whale acoustic detection(s)"), opacity = 0.4, position = "topleft")
+    addLegend(colors = c("green","red","yellow","orange","blue","black","grey"), labels = c("Shipping Lanes","SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Right whale acoustic detection - trigger", "Other right whale acoustic detection(s)"), opacity = 0.4, position = "topleft")
   
 }
 
