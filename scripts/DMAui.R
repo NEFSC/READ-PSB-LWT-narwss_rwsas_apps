@@ -15,7 +15,7 @@ fluidPage(
                            actionButton("dmaup","Upload to database"),
                            downloadButton("dmareport", "Download Report"),
                            downloadButton("kml", "Download KML"),
-                           textInput("triggrp", "Who reported/observed these sightings?", width = 600, placeholder = "example: New England Aquarium aerial survey team"),
+                           textInput("triggrp", "Who reported/observed these sightings?", width = 600, placeholder = "e.g.: 'New England Aquarium aerial survey team' or 'public'"),
                            downloadButton("dmaletter", "Download Letter")
                            
                            )
