@@ -45,5 +45,5 @@ observeEvent(input$sas,{
       
     }}
   
-  
+  enable("dmaup")
 }) #input sas
