@@ -249,14 +249,20 @@ observeEvent(input$dmaup,{
   ie<-as.list(unique(letterbounds$INITOREXT))
   
   neworextlet<-NULL
+  if (criteria$DMAapp != "acoudet"){
+    #protection zone type
+    pztype<-"DMA"
+  } else {
+    pztype<-"protection zone"
+  }  
   
   if ('e' %in% ie & 'i' %in% ie){
-    neworextlet<-"Since whales were detected both in a region where there are no protections in place, as well as within a region where the protections are due to expire in a week or less,
-    we recommend a DMA be initiated/extended at the following bounds:"
+    neworextlet<-paste0("Since whales were detected both in a region where there are no protections in place, as well as within a region where the protections are due to expire in a week or less,
+    we recommend a ",pztype," be initiated/extended at the following bounds:")
   } else if ('i' %in% ie){
-    neworextlet<-"Since no protections are in place in this region at this time, we recommend a DMA be initiated that is bounded by the following:"
+    neworextlet<-paste0("Since no protections are in place in this region at this time, we recommend a ",pztype," be initiated that is bounded by the following:")
   } else if ('e' %in% ie){
-    neworextlet<-"Since the current protections in this region are due to expire in a week or less, we recommend an extension of the DMA(s) that is/are bounded by the following:"
+    neworextlet<-paste0("Since the current protections in this region are due to expire in a week or less, we recommend an extension of the ",pztype,"(s) that is/are bounded by the following:")
   }  
   
   if(1 %in% letterbounds$ID){

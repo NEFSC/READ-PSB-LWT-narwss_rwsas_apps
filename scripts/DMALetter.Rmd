@@ -35,9 +35,7 @@ output: pdf_document
 
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '100%', fig.align="left"}
 
-knitr::include_graphics("//net/mmi/Fieldwrk/Aerials/Shiny/NARWSS_shinyapp/git/narwss_rwsas_apps/scripts/dmaletter.png")
-
-#observer<-gsub("_","\\\\_",params$observer)
+knitr::include_graphics("dmaletter.png")
 
 ```
 

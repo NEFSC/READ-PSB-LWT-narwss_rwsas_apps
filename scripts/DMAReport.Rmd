@@ -1,5 +1,5 @@
 ---
-title:  "Potential DMA Report"
+title:  "Potential Preotection Zone Report"
 params:
   dmanameselect: NA
   date1: NA
@@ -21,19 +21,31 @@ output: pdf_document
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
 
 knitr::include_graphics(params$webshotpath)
-
 ```
 
-```{r echo = FALSE, warning = FALSE, results = 'asis'}
-knitr::kable(params$dmanameout, caption = "DMA Name(s)")
-```
-
-```{r echo = FALSE, warning = FALSE, results = 'asis'}
-knitr::kable(params$dmacoord, caption = "DMA Bounds")
-```
-
-```{r echo = FALSE, warning = FALSE, results = 'asis'}
+```{r echo = FALSE, warning = FALSE, results = 'asis', fig.align="center"}
 egtab<-params$egsastab
+if("GROUP_SIZE" %in% colnames(egtab)){
+  cap <- "DMA Name(s)"
+} else {
+  cap <- "Protection Zone Name(s)"
+}
+
+knitr::kable(params$dmanameout, caption = cap)
+```
+
+```{r echo = FALSE, warning = FALSE, results = 'asis', fig.align="center"}
+
+if("GROUP_SIZE" %in% colnames(egtab)){
+  cap2 <- "DMA Bounds"
+} else {
+  cap2 <- "Protection Zone Bounds"
+}
+
+knitr::kable(params$dmacoord, caption = cap2)
+```
+
+```{r echo = FALSE, warning = FALSE, results = 'asis'}
 
 if("GROUP_SIZE" %in% colnames(egtab)){
   egtab<-egtab%>%
@@ -50,7 +62,7 @@ egtab<-egtab%>%
 if("GROUP_SIZE" %in% colnames(egtab)){  
   knitr::kable(egtab, caption = "Right Whale sighting(s)")
 } else {
-  knitr::kable(egtab, caption = "Right Whale Acoustic Detection - DMA Trigger")
+  knitr::kable(egtab, caption = "Right Whale Acoustic Detection(s)")
 }  
 
 ```
