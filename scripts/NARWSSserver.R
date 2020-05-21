@@ -1207,6 +1207,7 @@ observeEvent(input$rawupload,{
       criteria$triggrptrue <- FALSE
       criteria$DMAapp<-"rwsurv"
       source('./scripts/action & dma.R', local = TRUE)$value
+      disable("dmaup")
         }
       
         
@@ -1228,7 +1229,6 @@ observeEvent(input$rawupload,{
         reportleaf<-leaflet(data = spectab, options = leafletOptions(zoomControl = FALSE)) %>% 
           addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
           addPolylines(lng=~maplon, lat = ~maplat, weight = 2, color = "black") %>%
-          addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
           addCircleMarkers(lng = ~LONGITUDE, lat = ~LATITUDE, color = ~leafpal(SPCODE), stroke = FALSE, fillOpacity = 2, radius = 5) %>%
           addLegend(pal = leafpal, values = spectab$SPCODE, opacity = 0.9)%>%
           addWMSTiles(
@@ -1241,27 +1241,20 @@ observeEvent(input$rawupload,{
           reportleaf<-reportleaf %>%
             addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
             addPolygons(data = extensiondma, weight = 2, color = "yellow")
-            
-          if (nrow(sightings19) >= nrow(sightings20)){ #US
-            reportleaf<-reportleaf %>% 
-              addLegend(colors = c("yellow","red"), labels = c("Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)
+        }  
+          
+        if (nrow(sightings19) >= nrow(sightings20)){ #US
+            reportleaf<-reportleaf %>%
+              addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
+              addPolylines(data = NEUS_shiplane.sp, weight = 2, color = "green", fill = F)%>%
+              addLegend(colors = c("green","yellow","red"), labels = c("Shipping Lanes","Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)
           } else if (nrow(sightings19) < nrow(sightings20)){
             reportleaf<-reportleaf %>%
-              addPolygons(data = dyna_ship.sp, weight = 2, color = "green") %>%
-              addPolygons(data = crab_grid.sp, weight = 2, color = "grey", fill = F, opacity = 0.2) %>%
-              addPolygons(data = stat_fish.sp, weight = 2, color = "yellow")%>%
-              addLegend(colors = c("green","grey","yellow"), labels = c("Dynamic Shipping Section","Fishing Grid","Static Fishing Closure"), opacity = 0.3) 
-            }
-        } else if (nrow(sightings19) < nrow(sightings20)){ #Canada on/off network?
-          reportleaf<-reportleaf %>%
-            addPolygons(data = dyna_ship.sp, weight = 2, color = "green") %>%
-            addPolygons(data = crab_grid.sp, weight = 2, color = "grey", fill = F, opacity = 0.2) %>%
-            addPolygons(data = stat_fish.sp, weight = 2, color = "yellow")%>%
-            addLegend(colors = c("green","grey","yellow"), labels = c("Dynamic Shipping Section","Fishing Grid","Static Fishing Closure"), opacity = 0.3)  
-        } else if (nrow(sightings19) >= nrow(sightings20)){ #US off network
-          reportleaf<-reportleaf %>%
-            addLegend(colors = c("yellow","red"), labels = c("Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)
-        }
+              addPolygons(data = dyna_ship.sp, weight = 2, color = "green", fill = F) %>%
+              addPolygons(data = GSL_shiplane.sp, weight = 2, color = "green")%>%
+              addPolygons(data = spm.sp, weight = 2, color = "white")%>%
+              addLegend(colors = c("green"), labels = c("Dynamic Shipping Section"), opacity = 0.3) 
+          }
 
       
       reportmap<-fitBounds(reportleaf,min(final$LONGITUDE), min(final$LATITUDE), max(final$LONGITUDE), max(final$LATITUDE))
@@ -1327,8 +1320,8 @@ observeEvent(input$rawupload,{
             )})
     }) #OBSERVE EVENT SAVE   
   })  #OBSERVE EVENT EDITTABLE
-  
-  #source('./scripts/oracleaccess.R', local = TRUE)$value
+  #need this in both places
+  source('./scripts/oracleaccess.R', local = TRUE)$value
   source('./scripts/input_sas.R', local = TRUE)$value
   source('./scripts/input_dma.R', local = TRUE)$value
   
