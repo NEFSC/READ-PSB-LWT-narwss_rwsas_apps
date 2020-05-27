@@ -132,7 +132,7 @@ egsas<-cbind(egsas,inoutsma,Canada,SPM,sightID)
 egsas<-egsas%>%mutate(ACTION_NEW = NA)
 print(egsas)
 
-if (criteria$loc == 'Network'){
+if (isolate(criteria$loc) == 'Network'){
 bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
 eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
 
@@ -151,7 +151,7 @@ for (i in 1:nrow(egsas))
   } else if (egsas$SPM[i] == TRUE){
     egsas$ACTION_NEW[i] = 6
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
-  } else if (criteria$loc == 'Network'){
+  } else if (isolate(criteria$loc) == 'Network'){
     print("network if")
     if (egsas$eDMA[i] == TRUE) { #extension dma?
       egsas$ACTION_NEW[i] = 55 
@@ -244,7 +244,7 @@ comboext<-lapply(fullextlist,function(x){
     comboext$GROUP_SIZE<-as.numeric(comboext$GROUP_SIZE)
     ##calculates core area
     
-    if (criteria$DMAapp == "acoudet"){ 
+    if (isolate(criteria$DMAapp) == "acoudet"){ 
       setDT(comboext)[ ,corer:=20]  
     } else {
       setDT(comboext)[ ,corer:=round(sqrt(GROUP_SIZE/(pi*egden)),2)]
@@ -286,7 +286,7 @@ extdf_list<-lapply(comboext, function(x) {
     
     ## this section determines observer_organization for extended dma input into the dmainfo table in Oracle. 
     ## For cases where sightings from multiple organizations are considered together, this code picks the organization that has the most sightings that contribute.
-    if(criteria$triggrptrue == TRUE & criteria$DMAapp == "vissig"){
+    if(isolate(criteria$triggrptrue) == TRUE & isolate(criteria$DMAapp) == "vissig"){
       
       obs_org<-left_join(dmaextsightID,egsas, by = "sightID")%>%
         group_by(GROUP_SIZE)%>%
@@ -305,7 +305,7 @@ extdf_list<-lapply(comboext, function(x) {
         arrange(sightID)%>%
         summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime), OBSERVER_ORG = obs_org$OBSERVER_ORG)
       
-      } else if (criteria$triggrptrue == TRUE & criteria$DMAapp == "acoudet") {
+      } else if (isolate(criteria$triggrptrue) == TRUE & isolate(criteria$DMAapp) == "acoudet") {
       
         exttot<-left_join(dmaextsightID,egsas, by = "sightID")%>%
           dplyr::select(sightID,DateTime,LATITUDE,LONGITUDE,GROUP_SIZE)%>%
@@ -536,7 +536,7 @@ if (NA %in% egsas$ACTION_NEW) {
   #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
   #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
   #I don't remember why I named this dmacand -- maybe dma combo and... then some?
-  if (criteria$DMAapp == "acoudet"){
+  if (isolate(criteria$DMAapp) == "acoudet"){
     
     dmacand<-combo%>%
       mutate(dist_clust = case_when(
@@ -569,7 +569,7 @@ if (NA %in% egsas$ACTION_NEW) {
   for (i in 1:nrow(egsas))
     if (egsas$sightID[i] %in% dmasightID$sightID) {
       egsas$ACTION_NEW[i] = 44
-    } else if (criteria$DMAapp == "acoudet" & is.na(egsas$ACTION_NEW[i])){
+    } else if (isolate(criteria$DMAapp) == "acoudet" & is.na(egsas$ACTION_NEW[i])){
       egsas$ACTION_NEW[i] = 12
     } else if (is.na(egsas$ACTION_NEW[i])){
       egsas$ACTION_NEW[i] = 1
@@ -705,7 +705,7 @@ if (44 %in% egsas$ACTION_NEW){
   print(polymaxmin)
   print("515")
   
-  if (criteria$DMAapp=="acoudet"){
+  if (isolate(criteria$DMAapp) == "acoudet"){
     #20 is the nm radius that we want for the acoustic buffer, but the acoustic positions are filled as group_size of 3 by default, which already gives a 4.79 buffer
     buffnm<-20-round(sqrt(3/(pi*egden)),2)
     print(buffnm)
@@ -858,7 +858,7 @@ if (44 %in% egsas$ACTION_NEW){
   ## this section determines observer_organization for dma input into the dmainfo table in Oracle. 
   ## For cases where sightings from multiple organizations are considered together, this code picks the organization that has the most sightings that contribute.
   
-  if (criteria$triggrptrue == TRUE & criteria$DMAapp == "vissig"){
+  if (isolate(criteria$triggrptrue) == TRUE & isolate(criteria$DMAapp) == "vissig"){
     
     obs_org2<-left_join(dmasightID,egsas, by = "sightID")%>%
       group_by(GROUP_SIZE)%>%
@@ -881,7 +881,7 @@ if (44 %in% egsas$ACTION_NEW){
     dmanamedf<-dmanamedf%>%
       mutate(TRIGGERORG = obs_org2$OBSERVER_ORG)
     
-  } else if (criteria$triggrptrue == TRUE & criteria$DMAapp == "acoudet"){
+  } else if (isolate(criteria$triggrptrue) == TRUE & isolate(criteria$DMAapp) == "acoudet"){
     dmanamedf<-dmanamedf%>%
       mutate(TRIGGERORG = 82) #82 is Robots4Whales
   } else {
@@ -983,7 +983,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
   dmanameout$GROUP_SIZE<-sprintf("%.0f",round(dmanameout$GROUP_SIZE, digits = 0))
   
   #don't display group size for acoustics
-  if (criteria$DMAapp == 'acoudet'){
+  if (isolate(criteria$DMAapp) == 'acoudet'){
     dmanameout<-dmanameout%>%
       dplyr::select(-GROUP_SIZE)
   }
@@ -995,7 +995,7 @@ print("a&d 864")
 print(egsas)
 
 if ("ID" %in% colnames(egsas)){
-  if (criteria$DMAapp == "acoudet") {
+  if (isolate(criteria$DMAapp) == "acoudet") {
     egsastab<-egsas %>% 
       dplyr::select(ID,PLATFORM,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
       mutate(CATEGORY = 7)
@@ -1005,7 +1005,7 @@ if ("ID" %in% colnames(egsas)){
   }
   
 } else {
-  if (criteria$DMAapp == "acoudet") {
+  if (isolate(criteria$DMAapp) == "acoudet") {
     egsastab<-egsas %>% 
       dplyr::select(PLATFORM,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
       mutate(CATEGORY = 7)
@@ -1018,14 +1018,14 @@ if ("ID" %in% colnames(egsas)){
   sasdma<- sasdma%>%
     addPolygons(data = polyclust_sp, weight = 2, color = "blue") 
   
-  if (criteria$loc == 'Network'){
+  if (isolate(criteria$loc) == 'Network'){
     sasdma<-sasdma%>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
       addPolygons(data = extensiondma, weight = 2, color = "orange")
   }
   
   ##display core areas for visual sightings
-  if (criteria$DMAapp == 'vissig' | criteria$DMAapp == 'rwsurv'){
+  if (isolate(criteria$DMAapp) == 'vissig' | isolate(criteria$DMAapp) == 'rwsurv'){
   
     sasdma<-sasdma%>%
     addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
@@ -1037,7 +1037,7 @@ if ("ID" %in% colnames(egsas)){
  
 
   if ("ID" %in% colnames(egsas)){
-    if (criteria$DMAapp == "acoudet") {
+    if (isolate(criteria$DMAapp) == "acoudet") {
       egsastab<-egsas %>% 
         dplyr::select(ID,PLATFORM,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
         mutate(CATEGORY = 7)
@@ -1047,7 +1047,7 @@ if ("ID" %in% colnames(egsas)){
     }
     
   } else {
-    if (criteria$DMAapp == "acoudet") {
+    if (isolate(criteria$DMAapp) == "acoudet") {
       egsastab<-egsas %>% 
         dplyr::select(PLATFORM,DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)%>%
         mutate(CATEGORY = 7)
@@ -1058,7 +1058,7 @@ if ("ID" %in% colnames(egsas)){
   }
 
   
-  if (criteria$loc == 'Network'){
+  if (isolate(criteria$loc) == 'Network'){
     sasdma<-sasdma%>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
       addPolygons(data = extensiondma, weight = 2, color = "orange")
@@ -1071,7 +1071,7 @@ if ("ID" %in% colnames(egsas)){
 ###################
 
 ##visual
-if (criteria$DMAapp == 'vissig' | criteria$DMAapp == 'rwsurv'){
+if (isolate(criteria$DMAapp) == 'vissig' | isolate(criteria$DMAapp) == 'rwsurv'){
   
   sasdma<-sasdma%>%
     addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
@@ -1079,7 +1079,7 @@ if (criteria$DMAapp == 'vissig' | criteria$DMAapp == 'rwsurv'){
 
 
 ##acoustic
-} else if (criteria$DMAapp == "acoudet") {
+} else if (isolate(criteria$DMAapp) == "acoudet") {
   
   egsas_dma<-egsas%>%filter(ACTION_NEW == 4 | ACTION_NEW == 5)
   egsas_notdma<-egsas%>%filter(ACTION_NEW != 4 & ACTION_NEW != 5)
@@ -1098,7 +1098,7 @@ egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
 
 ### egsas table for output
 
-if (criteria$DMAapp == 'acoudet'){
+if (isolate(criteria$DMAapp) == 'acoudet'){
   egsastab<-egsastab%>%
     dplyr::select(-GROUP_SIZE)
 }
@@ -1111,7 +1111,7 @@ sas_react$egsastab<-egsastab
 ## On network ##
 ################
 
-if (criteria$loc == 'Network'){
+if (isolate(criteria$loc) == 'Network'){
   ##########
   ###sas on network
   egsastabout<-sas_react$egsastab%>%

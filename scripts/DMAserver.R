@@ -4,12 +4,9 @@ disable("dmareport")
 disable("dmaletter")
 disable("kml")
 
-
 source('./scripts/reactive.R', local = TRUE)$value
-criteria$loc<-"Network"
-    ###########
-if (criteria$loc == 'Network'){
-    
+criteria$loc<-'Network'
+   
 observeEvent(input$query,{
       #clear anything that happened before
       blank<-data.frame()
@@ -29,8 +26,6 @@ observeEvent(input$query,{
       ######################
       ## VISUAL SIGHTINGS ##
       ######################
-      
-      #and LAT > 36.5
 
     if (input$sig_acou == 'Visual Sightings'){ 
       
@@ -175,7 +170,7 @@ observeEvent(input$eval,{
       
       fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
       ##############
-      
+      source('./scripts/oracleaccess.R', local = TRUE)$value
       source('./scripts/sma.R', local = TRUE)$value
       source('./scripts/activedma.R', local = TRUE)$value
       
@@ -200,9 +195,8 @@ observeEvent(input$eval,{
       
 })  #24
 
-source('./scripts/oracleaccess.R', local = TRUE)$value
+#source('./scripts/oracleaccess.R', local = TRUE)$value
 source('./scripts/input_sas.R', local = TRUE)$value
 source('./scripts/input_dma.R', local = TRUE)$value
-    
-}
+
   
