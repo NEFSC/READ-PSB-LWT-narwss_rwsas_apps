@@ -5,6 +5,8 @@ disable("dmaletter")
 disable("kml")
 
 source('./scripts/reactive.R', local = TRUE)$value
+source('./scripts/oracleaccess.R', local = TRUE)$value
+#need for action & dma even though you can only do DMA stuff on the server. It separates it from the NARWSS app. 
 criteria$loc<-'Network'
    
 observeEvent(input$query,{
@@ -20,8 +22,6 @@ observeEvent(input$query,{
   
       dmaevaldate<-input$sasdate    
       print(dmaevaldate)
-      
-      source('./scripts/oracleaccess.R', local = TRUE)$value
       
       ######################
       ## VISUAL SIGHTINGS ##
@@ -170,7 +170,6 @@ observeEvent(input$eval,{
       
       fakedma<-Polygons(list(Polygon(fakedma, hole=as.logical(NA))), ID = 1)
       ##############
-      source('./scripts/oracleaccess.R', local = TRUE)$value
       source('./scripts/sma.R', local = TRUE)$value
       source('./scripts/activedma.R', local = TRUE)$value
       
@@ -195,8 +194,9 @@ observeEvent(input$eval,{
       
 })  #24
 
-#source('./scripts/oracleaccess.R', local = TRUE)$value
 source('./scripts/input_sas.R', local = TRUE)$value
 source('./scripts/input_dma.R', local = TRUE)$value
 
-  
+
+
+
