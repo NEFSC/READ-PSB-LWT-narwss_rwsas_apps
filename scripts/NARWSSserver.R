@@ -9,6 +9,8 @@ disable("kml")
 disable("dmaletter")
 
 source('./scripts/reactive.R', local = TRUE)$value
+criteria$triggrptrue <- FALSE
+criteria$DMAapp<-"rwsurv"
 
 observeEvent(input$rawupload,{
   
@@ -1204,8 +1206,6 @@ observeEvent(input$rawupload,{
           egsas<-egsas%>%
             dplyr::select(-CALVES, -Behavior)
       
-      criteria$triggrptrue <- FALSE
-      criteria$DMAapp<-"rwsurv"
       source('./scripts/action & dma.R', local = TRUE)$value
       disable("dmaup")
         }
@@ -1255,7 +1255,6 @@ observeEvent(input$rawupload,{
               addPolygons(data = spm.sp, weight = 2, color = "white")%>%
               addLegend(colors = c("green"), labels = c("Dynamic Shipping Section"), opacity = 0.3) 
           }
-
       
       reportmap<-fitBounds(reportleaf,min(final$LONGITUDE), min(final$LATITUDE), max(final$LONGITUDE), max(final$LATITUDE))
 
@@ -1293,6 +1292,8 @@ observeEvent(input$rawupload,{
               dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
               webshotpath<-paste0(getwd(),"/surveymap.png")
               source('./scripts/oracleaccess.R', local = TRUE)$value
+              source('./scripts/input_sas.R', local = TRUE)$value
+              source('./scripts/input_dma.R', local = TRUE)$value
               
             } else if (criteria$loc == 'Local'){
               
@@ -1322,6 +1323,5 @@ observeEvent(input$rawupload,{
     }) #OBSERVE EVENT SAVE   
   })  #OBSERVE EVENT EDITTABLE
 
-  source('./scripts/input_sas.R', local = TRUE)$value
-  source('./scripts/input_dma.R', local = TRUE)$value
+
   
