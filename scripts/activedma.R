@@ -1,7 +1,7 @@
 #################
 ## ACTIVE DMAs ##
 #################
-
+#queries for active dmas/acoustic protection zones and their bounds. Also identifies if zones are within time period where they could be extended.
 #################
 ## declare function
 #################
@@ -27,6 +27,14 @@ SpatialPolygons(DMAcoord_)
 }
 
 #################
+#specify which triggertype is being analyzed, visual or acoustic?
+if (isolate(criteria$DMAapp) == "acoudet"){
+  trigtype<-'a'
+} else {
+  trigtype<-'v'
+}
+
+#################
 ##action code dataframe to join with results of dma evaluation later
 actioncode<-"select *
             from rightwhalesight.action"
@@ -36,7 +44,7 @@ actioncodedf$ID<-as.numeric(actioncodedf$ID)
 #################
 #query all relevant DMAs
 ##the to_date(to_char) for the expdate is necessary, otherwise, the modayr seconds default to 00:00:00 and dmas that expire on the same day are still included
-activedmasql<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 7), 'YYYY-MM-DD') as ext
+activedmasql<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 7), 'YYYY-MM-DD') as ext, rightwhalesight.dmainfo.triggertype
                   from rightwhalesight.dmainfo
                   where to_date('",MODAYR,"', 'YYYY-MM-DD') < to_date(to_char(EXPDATE, 'YYYY-MM-DD'),'YYYY-MM-DD') 
                     and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(TRIGGERDATE, 'YYYY-MM-DD'),'YYYY-MM-DD')
@@ -60,7 +68,6 @@ if (nrow(actdma) == 0){
   extensiondma<-SpatialPolygons(list(fakedma))
   dmanamesexp<-"None"
   
-
 } else {
 
   ############
@@ -86,57 +93,48 @@ if (nrow(actdma) == 0){
                     and to_date('",MODAYR,"', 'YYYY-MM-DD') > TRIGGERDATE
                     and rightwhalesight.dmacoords.ID = RIGHTWHALESIGHT.DMAINFO.ID;")
   
-  
   actdma_bounds<-sqlQuery(cnxn,actdma_boundssql)
   
   actdmadf<-inner_join(actdma,actdma_bounds,by = "ID")
     
+  actdmadf$EXPDATE<-ymd(actdmadf$EXPDATE)
+  actdmadf$EXT<-ymd(actdmadf$EXT)
+
 ## dmas not up for extension
 ##nothing happens = noth
-actdmadf$EXPDATE<-ymd(actdmadf$EXPDATE)
-actdmadf$EXT<-ymd(actdmadf$EXT)
-  
 dmanoth<-actdmadf%>%
-  filter(EXT > MODAYR)%>%
+  filter((EXT > MODAYR & TRIGGERTYPE == trigtype) | TRIGGERTYPE != trigtype)%>%
   dplyr::select(ID,VERTEX,LAT,LON)
 
 ###########
 ##dmas up for extension
-
 dmaext<-actdmadf%>%
-  filter(EXT <= MODAYR)%>%
+  filter((EXT <= MODAYR & TRIGGERTYPE == trigtype))%>%
   dplyr::select(ID,VERTEX,LAT,LON)
 
+print(dmaext)
 ############
 #evaluate benign DMAs
-    if (nrow(dmanoth) == 0){
-      
-      benigndma<-SpatialPolygons(list(fakedma))
-      
-    } else {
-      
-      benigndma<-querytoshape(dmanoth)
-      
-    }
 
+    if (nrow(dmanoth) == 0){
+      benigndma<-SpatialPolygons(list(fakedma))
+    } else {
+      benigndma<-querytoshape(dmanoth)
+    }
 
 ############
 #evaluate extension triggers DMAs
-    if (nrow(dmaext) == 0){
-  
-      extensiondma<-SpatialPolygons(list(fakedma))
-  
-    } else {
 
+    if (nrow(dmaext) == 0){
+      extensiondma<-SpatialPolygons(list(fakedma))
+    } else {
       ##all polys together
       extensiondma<-querytoshape(dmaext)
-   
   ######################
   
   ##distinct polys for extension
   IDlist<-as.list(unique(dmaext$ID))
   names(IDlist)<-unique(dmaext$ID)
-  
   
   for (i in names(IDlist)){
     a<-dmaext%>%
@@ -168,11 +166,8 @@ dmaext<-actdmadf%>%
   
   ##change projection
   extdma.tr<-lapply(extdma.sp, function (x) {spTransform(x, CRS.new)})
-  
 }
-
 }
-
 
 ##change projection
 extensiondma.sp<-extensiondma
@@ -193,7 +188,3 @@ benigndma.tr<-spTransform(benigndma.sp, CRS.new)
 
 print("benign dma")
 print(benigndma)
-
-
-
-
