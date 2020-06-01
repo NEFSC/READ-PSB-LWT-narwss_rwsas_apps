@@ -1,7 +1,9 @@
 #################
-## ACTIVE DMAs ##
+## ACTIVE DMAs and acoustic protection zones ##
 #################
 #queries for active dmas/acoustic protection zones and their bounds. Also identifies if zones are within time period where they could be extended.
+##a lot of variables are named with "dma" even if they refer to both kinds of protection zones (acoustic vs. visual) because the original code for DMAs was modifed in 2020 to accomodate the new acoustic protection zone program
+
 #################
 ## declare function
 #################
@@ -28,6 +30,7 @@ SpatialPolygons(DMAcoord_)
 
 #################
 #specify which triggertype is being analyzed, visual or acoustic?
+
 if (isolate(criteria$DMAapp) == "acoudet"){
   trigtype<-'a'
 } else {
@@ -66,6 +69,8 @@ if (nrow(actdma) == 0){
   
   benigndma<-SpatialPolygons(list(fakedma))
   extensiondma<-SpatialPolygons(list(fakedma))
+  benignapz<-SpatialPolygons(list(fakedma))
+  extensionapz<-SpatialPolygons(list(fakedma))
   dmanamesexp<-"None"
   
 } else {
@@ -100,21 +105,37 @@ if (nrow(actdma) == 0){
   actdmadf$EXPDATE<-ymd(actdmadf$EXPDATE)
   actdmadf$EXT<-ymd(actdmadf$EXT)
 
-## dmas not up for extension
-##nothing happens = noth
+###########################################
+## Categorizing current protection zones ##
+###########################################
+
+## DMA ## For visual sightings  
+## dmas not up for extension, nothing happens = noth
 dmanoth<-actdmadf%>%
-  filter((EXT > MODAYR & TRIGGERTYPE == trigtype) | TRIGGERTYPE != trigtype)%>%
+  filter(EXT > MODAYR & TRIGGERTYPE == "v")%>%
   dplyr::select(ID,VERTEX,LAT,LON)
 
-###########
 ##dmas up for extension
 dmaext<-actdmadf%>%
-  filter((EXT <= MODAYR & TRIGGERTYPE == trigtype))%>%
+  filter(EXT <= MODAYR & TRIGGERTYPE == "v")%>%
   dplyr::select(ID,VERTEX,LAT,LON)
 
-print(dmaext)
-############
-#evaluate benign DMAs
+################################
+
+## Acoustic Protection Zones (APZ)
+  ##apz not up for extension, nothing (noth) happens
+  apznoth<-actdmadf%>%
+    filter(EXT > MODAYR & TRIGGERTYPE == "a")%>%
+    dplyr::select(ID,VERTEX,LAT,LON)
+  
+## apz up for extension
+  apzext<-actdmadf%>%
+    filter(EXT <= MODAYR & TRIGGERTYPE == "a")%>%
+    dplyr::select(ID,VERTEX,LAT,LON)
+
+#####################################################
+#evaluate DMAs
+  #benign
 
     if (nrow(dmanoth) == 0){
       benigndma<-SpatialPolygons(list(fakedma))
@@ -122,7 +143,6 @@ print(dmaext)
       benigndma<-querytoshape(dmanoth)
     }
 
-############
 #evaluate extension triggers DMAs
 
     if (nrow(dmaext) == 0){
@@ -130,9 +150,11 @@ print(dmaext)
     } else {
       ##all polys together
       extensiondma<-querytoshape(dmaext)
-  ######################
-  
-  ##distinct polys for extension
+
+############################
+##change projection, extension
+
+  ##distinct polys for DMA extension
   IDlist<-as.list(unique(dmaext$ID))
   names(IDlist)<-unique(dmaext$ID)
   
@@ -166,25 +188,90 @@ print(dmaext)
   
   ##change projection
   extdma.tr<-lapply(extdma.sp, function (x) {spTransform(x, CRS.new)})
-}
-}
+    }
+  
+#evaluate APZs  
+  #benign 
+  
+  if (nrow(apznoth) == 0){
+    benignapz<-SpatialPolygons(list(fakedma))
+  } else {
+    benignapz<-querytoshape(apznoth)
+  }
+  
+  #evaluate extension triggers APZs
+  
+  if (nrow(apzext) == 0){
+    extensionapz<-SpatialPolygons(list(fakedma))
+  } else {
+    ##all polys together
+    extensionapz<-querytoshape(apzext)
+    
+    ##distinct polys for APZ extension
+    IDlist<-as.list(unique(apzext$ID))
+    names(IDlist)<-unique(apzext$ID)
+    
+    for (i in names(IDlist)){
+      a<-apzext%>%
+        filter(ID == i)
+      
+      b<-querytoshape(a)
+      
+      if(exists("extapz_name") == FALSE & exists("extapz_list") == FALSE){
+        extapz_name<-list(a)
+        extapz_list<-list(b)
+        
+      } else if (length(extapz_name) > 0 & length(extapz_list) > 0){
+        extapz_name<-list.append(extapz_name,a)
+        extapz_list<-list.append(extapz_list,b) #rlist::list.append
+      }
+    }
+    
+    names(extapz_name)<-names(IDlist)
+    names(extapz_list)<-names(IDlist)
+    
+    ## declare projection
+    extapz.sp<-extapz_list
+    print("ext apz")
+    print(extapz.sp)
+    #made this a loop because I could not figure out how to apply it over a list 3/21
+    for (i in names(IDlist)){
+      proj4string(extapz.sp[[i]])<-CRS.latlon
+    }
+    
+    ##change projection
+    extapz.tr<-lapply(extapz.sp, function (x) {spTransform(x, CRS.new)})
+  }  
+} # 73
 
-##change projection
-extensiondma.sp<-extensiondma
-##declare what kind of projection thy are in
-proj4string(extensiondma.sp)<-CRS.latlon
-##change projection
-extensiondma.tr<-spTransform(extensiondma.sp, CRS.new)
+#####################
+##change projection##
+#####################
 
-print("ext dma")
-print(extensiondma)
+#DMA 
 
-##change projection
 benigndma.sp<-benigndma
 ##declare what kind of projection thy are in
 proj4string(benigndma.sp)<-CRS.latlon
 ##change projection
 benigndma.tr<-spTransform(benigndma.sp, CRS.new)  
 
-print("benign dma")
-print(benigndma)
+extensiondma.sp<-extensiondma
+##declare what kind of projection thy are in
+proj4string(extensiondma.sp)<-CRS.latlon
+##change projection
+extensiondma.tr<-spTransform(extensiondma.sp, CRS.new)
+
+#APZ
+
+benignapz.sp<-benignapz
+##declare what kind of projection thy are in
+proj4string(benignapz.sp)<-CRS.latlon
+##change projection
+benignapz.tr<-spTransform(benignapz.sp, CRS.new)  
+
+extensionapz.sp<-extensionapz
+##declare what kind of projection thy are in
+proj4string(extensionapz.sp)<-CRS.latlon
+##change projection
+extensionapz.tr<-spTransform(extensionapz.sp, CRS.new)
