@@ -62,14 +62,6 @@ observeEvent(input$dmaup,{
     }
   ##################################
   
-  if (criteria$DMAapp == "acoudet"){
-    dmainfo<-dmainfo%>%
-      mutate(TRIGGERTYPE = 'a')
-  } else {
-    dmainfo<-dmainfo%>%
-      mutate(TRIGGERTYPE = 'v')
-  }
-  
   dmainfoinsert<-dmainfo%>%
     dplyr::select(-OLDID)
   print(dmainfoinsert)
@@ -112,7 +104,8 @@ observeEvent(input$dmaup,{
   enable("dmaletter")
   
   output$dmareport<-downloadHandler(
-    filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_PotentialDMA_Report.pdf"),
+    
+    filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_PotentialProtectionZone_Report.pdf"),
     content = function(file) {
       
       if (criteria$loc == 'Network'){
@@ -338,7 +331,14 @@ observeEvent(input$dmaup,{
   output$dmaletter <- downloadHandler(
     
     filename = function() {
-      paste0("DMA ",date_formats$year1,date_formats$month2,date_formats$day1," ",dmanameselect,".pdf")},
+      
+      if (criteria$DMAapp == "acoudet"){
+        pzone = "Acoustic Protection Zone "
+      } else {
+        pzone = c("DMA ")
+      }
+      
+      paste0(pzone,date_formats$year1,date_formats$month2,date_formats$day1," ",dmanameselect,".pdf")},
     
     content = function(file) {
       
