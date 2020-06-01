@@ -1224,10 +1224,40 @@ observeEvent(input$rawupload,{
       leafpal <- colorFactor(palette = c("khaki1","cadetblue1","black","darkolivegreen3","royalblue1","firebrick2","mediumorchid3","antiquewhite3","chocolate4","darkorange","thistle1","darkolivegreen2"), 
                              domain = c("BEWH","BLWH","BOWH","FIWH","HUWH","KIWH","MIWH","NBWH","PIWH","RIWH","SEWH","SPWH"))
       
-      
+      ##leaflet map with US or Canadian shipping lanes and managament schemes
+      if (nrow(sightings19) >= nrow(sightings20)){ #US
         
         reportleaf<-leaflet(data = spectab, options = leafletOptions(zoomControl = FALSE)) %>% 
           addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
+          addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
+          addPolylines(data = NEUS_shiplane.sp, weight = 1, color = "green", fill = F)%>%
+          addLegend(colors = c("green","yellow","red"), labels = c("Shipping Lanes","Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)
+      
+      } else if (nrow(sightings19) < nrow(sightings20)){
+        
+        reportleaf<-leaflet(data = spectab, options = leafletOptions(zoomControl = FALSE)) %>% 
+          addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
+          addPolygons(data = dyna_ship.sp, weight = 2, color = "green", fill = F) %>%
+          addPolygons(data = GSL_shiplane.sp, weight = 2, color = "green")%>%
+          addPolygons(data = spm.sp, weight = 2, color = "white")%>%
+          addLegend(colors = c("green"), labels = c("Dynamic Shipping Section"), opacity = 0.3) 
+      
+      }
+      
+      #if on network, add in the current DMAs including the ones that are not up for extension (benign) and the ones eligible for extension
+      #these are the same color for the flight report, but won't be for the Potential Protection Area report (if applicable)
+      if (input$filepathway == 'Network'){ 
+        reportleaf<-reportleaf %>%
+          addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
+          addPolygons(data = extensiondma, weight = 2, color = "yellow")
+      
+        print("inside leaflet protection zones")
+        print(benigndma)
+        print(extensiondma)
+        } 
+      
+      #Add tracklines and sightings
+        reportleaf<-reportleaf %>%
           addPolylines(lng=~maplon, lat = ~maplat, weight = 2, color = "black") %>%
           addCircleMarkers(lng = ~LONGITUDE, lat = ~LATITUDE, color = ~leafpal(SPCODE), stroke = FALSE, fillOpacity = 2, radius = 5) %>%
           addLegend(pal = leafpal, values = spectab$SPCODE, opacity = 0.9)%>%
@@ -1236,33 +1266,14 @@ observeEvent(input$rawupload,{
             layers = c("1-degree grid", "5-degree grid"),
             options = WMSTileOptions(format = "image/png8", transparent = TRUE),
             attribution = NULL)
-        
-        if (input$filepathway == 'Network'){ #on network means DMAs queried
-          reportleaf<-reportleaf %>%
-            addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-            addPolygons(data = extensiondma, weight = 2, color = "yellow")
-        }  
-          
-        if (nrow(sightings19) >= nrow(sightings20)){ #US
-            reportleaf<-reportleaf %>%
-              addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
-              addPolylines(data = NEUS_shiplane.sp, weight = 2, color = "green", fill = F)%>%
-              addLegend(colors = c("green","yellow","red"), labels = c("Shipping Lanes","Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)
-          } else if (nrow(sightings19) < nrow(sightings20)){
-            reportleaf<-reportleaf %>%
-              addPolygons(data = dyna_ship.sp, weight = 2, color = "green", fill = F) %>%
-              addPolygons(data = GSL_shiplane.sp, weight = 2, color = "green")%>%
-              addPolygons(data = spm.sp, weight = 2, color = "white")%>%
-              addLegend(colors = c("green"), labels = c("Dynamic Shipping Section"), opacity = 0.3) 
-          }
       
+        #focus boundaries on the flight area
       reportmap<-fitBounds(reportleaf,min(final$LONGITUDE), min(final$LATITUDE), max(final$LONGITUDE), max(final$LATITUDE))
 
       print(getwd())
       unlink("./*surveymap.png")
       unlink("./scripts/*.log")
-     # unlink(paste0(path,survey_date,"/surveymap.png"))
-      
+
       enable("report")
       output$reportmap = renderLeaflet({print(reportmap)})
       output$netable<-renderTable({netable}, digits = 0)
