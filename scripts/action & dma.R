@@ -82,12 +82,11 @@ clustdf_fun<-function(x,y){
 ## LEAFLET BASE ##
 ##################
 
-sasdma<-leaflet(data = egsas) %>% 
+sasdma<-leaflet(data = egsas, options = leafletOptions(zoomControl = FALSE)) %>% 
   addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
   addPolygons(data = smapresent.sp, weight = 2, color = "red")%>%
-  addPolylines(data = NEUS_shiplane.sp, weight = 2, color = "green", fill = F)
+  addPolylines(data = NEUS_shiplane.sp, weight = 1, color = "green", fill = F)
   
-
 ########
 ##ACTION
 ########
@@ -95,7 +94,7 @@ sasdma<-leaflet(data = egsas) %>%
 egsas$GROUP_SIZE<-as.numeric(egsas$GROUP_SIZE)
 ##copy for spatializing
 eg<-egsas
-print(eg)
+#print(eg)
 ##declare which columns are coordinates
 coordinates(eg)<-~LONGITUDE+LATITUDE
 ##declare what kind of projection thy are in
@@ -130,16 +129,19 @@ SPM<-!is.na(sp::over(eg.tr, as(spm.tr, "SpatialPolygons")))
 sightID<-1:nrow(egsas)
 egsas<-cbind(egsas,inoutsma,Canada,SPM,sightID)
 egsas<-egsas%>%mutate(ACTION_NEW = NA)
-print(egsas)
+#print(egsas)
 
 if (isolate(criteria$loc) == 'Network'){
 bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
 eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
 
-egsas<-cbind(egsas,bDMA,eDMA)
+bAPZ<-!is.na(sp::over(eg.tr, as(benignapz.tr, "SpatialPolygons")))
+eAPZ<-!is.na(sp::over(eg.tr, as(extensionapz.tr, "SpatialPolygons")))
+
+egsas<-cbind(egsas,bDMA,eDMA,bAPZ,eAPZ)
 }
 
-print(egsas)
+#print(egsas)
 
 ######
 
@@ -152,7 +154,7 @@ for (i in 1:nrow(egsas))
     egsas$ACTION_NEW[i] = 6
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
   } else if (isolate(criteria$loc) == 'Network'){
-    print("network if")
+    #print("network if")
     if (egsas$eDMA[i] == TRUE) { #extension dma?
       egsas$ACTION_NEW[i] = 55 
     } else if (egsas$bDMA[i] == TRUE) { #benign dma
@@ -219,7 +221,7 @@ fullextlist<-lapply(actionext_indlist, function(x){
   #filter out the sightings that aren't in any of these DMAs up for extension
   actionext_ind %>% filter(!is.na(indDMA))
 })
-print(fullextlist)
+#print(fullextlist)
 
 uniqueextlist<-lapply(fullextlist,function(x){
   x%>%
@@ -227,16 +229,16 @@ uniqueextlist<-lapply(fullextlist,function(x){
 })
 # print(uniqueextlist)
 uniqueext<-bind_rows(uniqueextlist)
-print(uniqueext)
+#print(uniqueext)
 DMAlist<-as.list(uniqueext$indDMA)
 print(DMAlist)
 
   #test if the sightings in each DMA will trigger an extension (are there enough within the right distance to eachother)
 comboext<-lapply(fullextlist,function(x){
-  print(x)
+  #print(x)
   actionfil<-x#%>%
   #   dplyr::select(-indDMA)
-  print(actionfil)
+  #print(actionfil)
     ##distance between points matrix -- compares right whale sightings positions to each other
     comboext<-reshape::expand.grid.df(actionfil,actionfil)
     names(comboext)[7:12]<-c("DateTime2","LATITUDE2","LONGITUDE2","GROUP_SIZE2","sightID2","indDMA2")
@@ -264,12 +266,12 @@ names(comboext)<-DMAlist
     #I don't remember why I named this dmacand -- maybe dma combo and... then some?
     # applied over the list of sightings that fall within each DMA
 extdf_list<-lapply(comboext, function(x) {
-    print(x)
+    #print(x)
     dmacandext<-x %>%
       dplyr::filter((x$dist_nm != 0 & x$dist_nm <= x$corer) | (x$GROUP_SIZE > 2 & x$dist_nm == 0))
-    print(dmacandext)
+    #print(dmacandext)
     DMAid<-unique(x$indDMA)
-    print(DMAid)
+    #print(DMAid)
     ##filters for distinct sightings that should be considered for DMA calculation
     dmaextsightID<-data.frame(sightID = c(dmacandext$sightID,dmacandext$sightID2)) %>%
       distinct()
@@ -321,7 +323,8 @@ extdf_list<-lapply(comboext, function(x) {
         arrange(sightID)%>%
         summarise(total = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime), OBSERVER_ORG = 1) #1 is NEFSC
     }
-      #print(exttot)
+      print("extension total")
+      print(exttot)
     }
     
     ##DMAid will pass into the next for loop
@@ -330,20 +333,20 @@ extdf_list<-lapply(comboext, function(x) {
     
     for (i in 1:nrow(egsas))
       if (egsas$sightID[i] %in% dmaextsightID$sightID) {
-        print(i)
-        print("1")
+        #print(i)
+        #print("1")
         egsas$ACTION_NEW[i] = 55
-        print(egsas)
+        #print(egsas)
         df<-data.frame(extDMAs = DMAid,
                        TRIGGER_GROUPSIZE = exttot$total,
                        TRIGGERDATE = exttot$TRIGGERDATE,
                        TRIGGERORG = exttot$OBSERVER_ORG)
-        print(df)
+        #print(df)
         extdf_list<-rbind(extdf_list,df)
 
       } else {
-        print(i)
-        print("3")
+        #print(i)
+        #print("3")
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
 
@@ -352,42 +355,41 @@ extdf_list<-lapply(comboext, function(x) {
 
 for (i in 1:nrow(egsas))
   if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
-    print(i)
-    print("4")
+    #print(i)
+    #print("4")
     egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
   } else if (exists("dmaextsightID") && egsas$sightID[i] %in% dmaextsightID$sightID) {
-    print(i)
-    print("1")
+    #print(i)
+    #print("1")
     egsas$ACTION_NEW[i] = 55
-    print(head(egsas))
+    #print(head(egsas))
     df<-data.frame(extDMAs = DMAid,
                    TRIGGER_GROUPSIZE = exttot$total,
                    TRIGGERDATE = exttot$TRIGGERDATE,
                    TRIGGERORG = exttot$OBSERVER_ORG)
-    print(df)
+    #print(df)
     extdf_list<-rbind(extdf_list,df)
-    print(extdf)
+    #print(extdf)
   } else if (egsas$ACTION_NEW[i] == 55){
-    print(i)
-    print("2")
+    #print(i)
+    #print("2")
     egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
-    print(egsas)
+    #print(egsas)
   } else {
-    print(i)
-    print("3")
+    #print(i)
+    #print("3")
     egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
   }
 
-  print(extdf_list)
-  
+  #print(extdf_list)
   extdf<-bind_rows(extdf_list, .id = "column_label")
   print(extdf)
   #######
   extdf<-extdf%>%
     filter(!is.na(extDMAs))%>%
     distinct()
-  print(extdf)
-  print("extdfname")
+  #print(extdf)
+  #print("extdfname")
   extdf$extDMAs<-as.integer(extdf$extDMAs)
   extdfname<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
     mutate(INITOREXT = "e")%>%
@@ -427,11 +429,11 @@ for (i in 1:nrow(egsas))
     distinct()%>%
     mutate(corer=round(sqrt(GROUP_SIZE/(pi*egden)),2))%>%
     as.data.frame()
-  print(dmaextsights)
+  #print(dmaextsights)
   dmaextsights$GROUP_SIZE<-as.numeric(dmaextsights$GROUP_SIZE)
   
   extPolyID<-rownames(dmaextsights)
-  print(extPolyID)
+  #print(extPolyID)
   #core radius in meters
   extcorer_m<-dmaextsights$corer*1852
   dmaextsights<-cbind(dmaextsights,extcorer_m,extPolyID)
@@ -459,7 +461,7 @@ for (i in 1:nrow(egsas))
   ##this will be used later when sightings are clustered by overlapping core radiis
   extclustdf<-spTransform(dmaextdf.tr, CRS.latlon)
   extclustdf<-as.data.frame(extclustdf)
-  print(extclustdf)
+  #print(extclustdf)
   ##creates a dataframe from the density buffers put around sightings considered for DMA analysis
   extpolycoord<-dmaextbuff %>% fortify() %>% dplyr::select("long","lat","id")
   ##poly coordinates out of utm
@@ -495,7 +497,7 @@ for (i in 1:nrow(egsas))
   print("yes")
   print(extclusty)
   #print(extclustn)
-  print(egsas)
+  #print(egsas)
   
   
   for (i in 1:nrow(egsas))
@@ -509,7 +511,7 @@ for (i in 1:nrow(egsas))
     } else {
       egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
     }
-  print(egsas)
+  #print(egsas)
   
   } #276
 } #end 55 in action_new
@@ -554,8 +556,8 @@ if (NA %in% egsas$ACTION_NEW) {
 
   }
   
-  print("dmacand")
-  print(dmacand)
+  #print("dmacand")
+  #print(dmacand)
   ##filters for distinct sightings that should be considered for DMA calculation
   dmasightID<-data.frame(sightID = c(dmacand$sightID,dmacand$sightID2)) %>%
     distinct()
@@ -646,8 +648,8 @@ if (44 %in% egsas$ACTION_NEW){
   pcoord_<-lapply(seq_along(pcoord), function(i) Polygons(list(pcoord[[i]]), ID = names(idpoly)[i]))
   
   polycoorddf_sp<-SpatialPolygons(pcoord_, proj4string = CRS.latlon)
-  print(polycoorddf_sp)
-  print(str(polycoorddf_sp))
+  #print(polycoorddf_sp)
+  #print(str(polycoorddf_sp))
   ##############
  
   clustdf_fun_out<-clustdf_fun(idpoly,polycoorddf_sp)
@@ -681,7 +683,7 @@ if (44 %in% egsas$ACTION_NEW){
   polycoorddf$id<-as.numeric(polycoorddf$id)
   corepoly<-right_join(polycoorddf, clusty, by=c('id'='PolyID'))%>%
     dplyr::select("long","lat","id","DateTime","GROUP_SIZE","corer","corer_m", "LONGITUDE","LATITUDE","cluster")
-  print(corepoly)
+  #print(corepoly)
   
   #################
   ## for DMA insert
@@ -690,7 +692,7 @@ if (44 %in% egsas$ACTION_NEW){
     dplyr::select(PolyID,cluster,DateTime,GROUP_SIZE,sightID)
   
   clustersigs$DateTime<-ymd_hms(clustersigs$DateTime)
-  print(clustersigs)
+  #print(clustersigs)
   trigsize<-clustersigs %>% 
     group_by(cluster)%>%
     summarise(TRIGGER_GROUPSIZE = sum(GROUP_SIZE), TRIGGERDATE = min(DateTime))
@@ -708,7 +710,7 @@ if (44 %in% egsas$ACTION_NEW){
   if (isolate(criteria$DMAapp) == "acoudet"){
     #20 is the nm radius that we want for the acoustic buffer, but the acoustic positions are filled as group_size of 3 by default, which already gives a 4.79 buffer
     buffnm<-20-round(sqrt(3/(pi*egden)),2)
-    print(buffnm)
+    #print(buffnm)
   } else {
     
   buffnm<-15
@@ -992,7 +994,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
   output$dmacoord<-renderTable({dmacoord})
 
 print("a&d 864")
-print(egsas)
+#print(egsas)
 
 if ("ID" %in% colnames(egsas)){
   if (isolate(criteria$DMAapp) == "acoudet") {
@@ -1021,7 +1023,10 @@ if ("ID" %in% colnames(egsas)){
   if (isolate(criteria$loc) == 'Network'){
     sasdma<-sasdma%>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-      addPolygons(data = extensiondma, weight = 2, color = "orange")
+      addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
+      addPolygons(data = benignapz, weight = 2, color = "yellow", dashArray = "4 8") %>%
+      addPolygons(data = extensionapz, weight = 2, color = "orange", dashArray = "4 8")%>%
+      addLegend(title = "Dynamic Management: solid border = DMA, dashed border = Acoustic", colors = c("yellow","orange","blue"), labels = c("Active zone","Active zone eligible for extension","Potential zone"), opacity = 0.4, position = "topleft")
   }
   
   ##display core areas for visual sightings
@@ -1075,7 +1080,8 @@ if (isolate(criteria$DMAapp) == 'vissig' | isolate(criteria$DMAapp) == 'rwsurv')
   
   sasdma<-sasdma%>%
     addCircleMarkers(lng = ~egsas$LONGITUDE, lat = ~egsas$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = paste0(egsas$DateTime,", Group Size:", egsas$GROUP_SIZE))%>%
-    addLegend(colors = c("green","red","yellow","orange","blue","black"), labels = c("Shipping Lanes","SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Core area of right whale sightings"), opacity = 0.4, position = "topleft")
+    addLegend(colors = c("green","red","black"), labels = c("Shipping Lanes","SMA","Core area of right whale sightings"), opacity = 0.4, position = "topleft")
+    
 
 
 ##acoustic
@@ -1087,7 +1093,7 @@ if (isolate(criteria$DMAapp) == 'vissig' | isolate(criteria$DMAapp) == 'rwsurv')
   sasdma<-sasdma%>%
     addCircleMarkers(lng = ~egsas_notdma$LONGITUDE, lat = ~egsas_notdma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "grey", popup = egsas_notdma$DateTime)%>%
     addCircleMarkers(lng = ~egsas_dma$LONGITUDE, lat = ~egsas_dma$LATITUDE, radius = 5, stroke = FALSE, fillOpacity = 0.5 , color = "black", popup = egsas_dma$DateTime)%>%
-    addLegend(colors = c("green","red","yellow","orange","blue","black","grey"), labels = c("Shipping Lanes","SMA","Active DMA","Active DMA eligible for extension","Potential DMA","Right whale acoustic detection - trigger", "Other right whale acoustic detection(s)"), opacity = 0.4, position = "topleft")
+    addLegend(colors = c("green","red","black","grey"), labels = c("Shipping Lanes","SMA","Right whale acoustic detection - trigger", "Other right whale acoustic detection"), opacity = 0.4, position = "topleft")
   
 }
 
