@@ -155,9 +155,9 @@ for (i in 1:nrow(egsas))
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
   } else if (isolate(criteria$loc) == 'Network'){
     #print("network if")
-    if (egsas$eDMA[i] == TRUE) { #extension dma?
+    if (egsas$eDMA[i] == TRUE | egsas$eAPZ[i] == TRUE) { #extension dma?
       egsas$ACTION_NEW[i] = 55 
-    } else if (egsas$bDMA[i] == TRUE) { #benign dma
+    } else if (egsas$bDMA[i] == TRUE | egsas$bAPZ[i] == TRUE) { #benign dma
       egsas$ACTION_NEW[i] = 2   
     }
   } else if (egsas$inoutsma[i] == FALSE){
@@ -187,10 +187,16 @@ dmanameout<-NULL
 if (55 %in% egsas$ACTION_NEW) {
   print("beg 55")
   
+  if (isolate(criteria$DMAapp) == "acoudet"){
+    prot.tr<-extapz.tr
+  } else {
+    prot.tr<-extdma.tr  
+  }
+  
   ##assess which DMA they are in
-  for (i in names(extdma.tr)){
+  for (i in names(prot.tr)){
     if(exists("actionext_indlist") == FALSE){
-      indDMA<-sp::over(eg.tr, as(extdma.tr[[i]], "SpatialPolygons"))
+      indDMA<-sp::over(eg.tr, as(prot.tr[[i]], "SpatialPolygons"))
       indDMA[indDMA == 1] <- i
       actionext<-cbind(egsas,indDMA)
       actionext_sig<-actionext %>% 
@@ -198,7 +204,7 @@ if (55 %in% egsas$ACTION_NEW) {
         dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID","indDMA")
       actionext_indlist<-list(actionext_sig)
     } else {
-      indDMA<-sp::over(eg.tr, as(extdma.tr[[i]], "SpatialPolygons"))
+      indDMA<-sp::over(eg.tr, as(prot.tr[[i]], "SpatialPolygons"))
       indDMA[indDMA == 1] <- i
       actionext<-cbind(egsas,indDMA)
       actionext_sig<-actionext %>% 
@@ -398,7 +404,7 @@ for (i in 1:nrow(egsas))
     distinct()
   print(extdfname)
   
-  extdfbounds<-left_join(extdf, dmaext, by = c("extDMAs" = "ID"))%>%
+  extdfbounds<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
     dplyr::select(extDMAs,VERTEX,LAT,LON)%>%
     dplyr::rename("ID" = "extDMAs")%>%
     distinct()
@@ -1066,7 +1072,9 @@ if ("ID" %in% colnames(egsas)){
   if (isolate(criteria$loc) == 'Network'){
     sasdma<-sasdma%>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-      addPolygons(data = extensiondma, weight = 2, color = "orange")
+      addPolygons(data = extensiondma, weight = 2, color = "orange")%>%
+      addPolygons(data = benignapz, weight = 2, color = "yellow") %>%
+      addPolygons(data = extensionapz, weight = 2, color = "orange")
   } 
 
 }
