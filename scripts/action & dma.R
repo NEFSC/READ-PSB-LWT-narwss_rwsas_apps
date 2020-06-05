@@ -1022,11 +1022,14 @@ if ("ID" %in% colnames(egsas)){
       dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
   }
 }
-
-  sasdma<- sasdma%>%
-    addPolygons(data = polyclust_sp, weight = 2, color = "blue") 
+     
   
   if (isolate(criteria$loc) == 'Network'){
+    
+    #The shapes that get plotted are independent of the names
+    #print("label testing")
+    #print(fortify(benigndma))
+
     sasdma<-sasdma%>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
       addPolygons(data = extensiondma, weight = 2, color = "orange") %>%
@@ -1039,9 +1042,14 @@ if ("ID" %in% colnames(egsas)){
   if (isolate(criteria$DMAapp) == 'vissig' | isolate(criteria$DMAapp) == 'rwsurv'){
   
     sasdma<-sasdma%>%
-    addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
-    addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")
+      addPolygons(data = polyclust_sp, weight = 2, color = "blue")%>%
+      addPolygons(data = polycoorddf_sp, weight = 2, color = "black")%>%
+      addPolygons(data = extpolycoorddf_sp, weight = 2, color = "black")
     
+  } else {
+    
+    sasdma<- sasdma%>%
+      addPolygons(data = polyclust_sp, weight = 2, color = "blue", dashArray = "4 8")
   } 
   
 } else { ##4 in egsas$action_new
