@@ -47,6 +47,18 @@ observeEvent(input$dmaup,{
            TRIGGERDATE = paste0("to_timestamp('",TRIGGERDATE,"', 'YYYY-MM-DD HH24:MI:SS')"),
            STARTDATE = paste0("to_timestamp('",ymd_hms(Sys.time()),"', 'YYYY-MM-DD HH24:MI:SS')"))%>%
     dplyr::select(OLDID,ID,NAME,EXPDATE,TRIGGERDATE,INITOREXT,TRIGGERORG,STARTDATE,TRIGGER_GROUPSIZE)
+  
+  #specify which triggertype is being analyzed, visual or acoustic?
+  
+  if (isolate(criteria$DMAapp) == "acoudet"){
+    dmainfo<-dmainfo%>%
+      mutate(TRIGGERTYPE = 'a')
+  } else {
+    dmainfo<-dmainfo%>%
+      mutate(TRIGGERTYPE = 'v')
+  }
+  
+  
   print("past dmainfo")
   ##################################
   ##list of dmas being extended
