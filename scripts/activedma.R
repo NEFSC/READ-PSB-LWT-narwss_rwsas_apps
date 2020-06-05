@@ -29,15 +29,6 @@ SpatialPolygons(DMAcoord_)
 }
 
 #################
-#specify which triggertype is being analyzed, visual or acoustic?
-
-if (isolate(criteria$DMAapp) == "acoudet"){
-  trigtype<-'a'
-} else {
-  trigtype<-'v'
-}
-
-#################
 ##action code dataframe to join with results of dma evaluation later
 actioncode<-"select *
             from rightwhalesight.action"
