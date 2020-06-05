@@ -1329,8 +1329,9 @@ observeEvent(input$rawupload,{
               rmarkdown::render(tempReport, output_file = file,
                               params = params,
                               envir = new.env(parent = globalenv())
+                              )
                               
-            )})
+            })
     }) #OBSERVE EVENT SAVE   
   })  #OBSERVE EVENT EDITTABLE
 
