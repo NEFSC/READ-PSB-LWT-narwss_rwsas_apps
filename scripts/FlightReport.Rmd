@@ -16,10 +16,11 @@ output: pdf_document
 \vspace*{-7mm}
 \begin{center}\LARGE`r params$date1`\end{center}
 <!-- \vspace*{-4mm} -->
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
 ```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
-
 knitr::include_graphics(params$webshotpath)
-
 ```
 <!-- \vspace*{-8mm} -->
 \begin{center}\normalsize `r params$rptnotes`\end{center}
