@@ -578,7 +578,7 @@ if (NA %in% egsas$ACTION_NEW) {
     if (egsas$sightID[i] %in% dmasightID$sightID) {
       egsas$ACTION_NEW[i] = 44
     } else if (isolate(criteria$DMAapp) == "acoudet" & is.na(egsas$ACTION_NEW[i])){
-      egsas$ACTION_NEW[i] = 12
+      egsas$ACTION_NEW[i] = 22 #acoustic detection within existing protection zone
     } else if (is.na(egsas$ACTION_NEW[i])){
       egsas$ACTION_NEW[i] = 1
     } else {
@@ -989,6 +989,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
   print(dmanameout)
   dmanameout$TRIGGERDATE<-as.character(dmanameout$TRIGGERDATE)
   dmanameout$GROUP_SIZE<-sprintf("%.0f",round(dmanameout$GROUP_SIZE, digits = 0))
+  dmanameout$TRIGGERORG<-sprintf("%.0f",round(dmanameout$TRIGGERORG, digits = 0))
   
   #don't display group size for acoustics
   if (isolate(criteria$DMAapp) == 'acoudet'){
@@ -1115,18 +1116,22 @@ if (isolate(criteria$DMAapp) == 'vissig' | isolate(criteria$DMAapp) == 'rwsurv')
 
 ####################
 
-
 egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
+egsastab$CATEGORY<-sprintf("%.0f",round(egsastab$CATEGORY, digits = 0))
+egsastab$ID_RELIABILITY<-sprintf("%.0f",round(egsastab$ID_RELIABILITY, digits = 0))
+egsastab$ACTION_NEW<-as.numeric(egsastab$ACTION_NEW)
 
 ### egsas table for output
 
 if (isolate(criteria$DMAapp) == 'acoudet'){
   egsastab<-egsastab%>%
-    dplyr::select(-GROUP_SIZE)
+    dplyr::select(-GROUP_SIZE)%>%
+    mutate(ACTION_NEW=replace(ACTION_NEW, ACTION_NEW==4, 24),
+           ACTION_NEW=replace(ACTION_NEW, ACTION_NEW==5, 25))
 }
 
 ##############
-egsastab$ACTION_NEW<-as.numeric(egsastab$ACTION_NEW)
+
 sas_react$egsastab<-egsastab
 
 ################
