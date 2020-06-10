@@ -56,7 +56,7 @@ if("GROUP_SIZE" %in% colnames(egtab)){
 }
 
 egtab<-egtab%>%
-  dplyr::filter(ACTION_NEW == 4 | ACTION_NEW == 5)%>%
+  dplyr::filter(ACTION_NEW == 4 | ACTION_NEW == 5 | ACTION_NEW == 24 | ACTION_NEW == 25)%>%
   dplyr::rename("LAT"="LATITUDE","LON"="LONGITUDE")
 
 if("GROUP_SIZE" %in% colnames(egtab)){  
