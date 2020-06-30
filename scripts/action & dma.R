@@ -1115,9 +1115,10 @@ if (isolate(criteria$DMAapp) == 'vissig' | isolate(criteria$DMAapp) == 'rwsurv')
 }
 
 ####################
-
 egsastab$GROUP_SIZE<-sprintf("%.0f",round(egsastab$GROUP_SIZE, digits = 0))
+egsastab$CATEGORY<-as.numeric(egsastab$CATEGORY)
 egsastab$CATEGORY<-sprintf("%.0f",round(egsastab$CATEGORY, digits = 0))
+egsastab$ID_RELIABILITY<-as.numeric(egsastab$ID_RELIABILITY)
 egsastab$ID_RELIABILITY<-sprintf("%.0f",round(egsastab$ID_RELIABILITY, digits = 0))
 egsastab$ACTION_NEW<-as.numeric(egsastab$ACTION_NEW)
 
