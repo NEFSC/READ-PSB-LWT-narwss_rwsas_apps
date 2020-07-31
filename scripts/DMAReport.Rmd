@@ -28,7 +28,7 @@ egtab<-params$egsastab
 if("GROUP_SIZE" %in% colnames(egtab)){
   cap <- "DMA Name(s)"
 } else {
-  cap <- "Protection Zone Name(s)"
+  cap <- "Acoustic SLOW Zone Name(s)"
 }
 
 knitr::kable(params$dmanameout, caption = cap)
@@ -39,7 +39,7 @@ knitr::kable(params$dmanameout, caption = cap)
 if("GROUP_SIZE" %in% colnames(egtab)){
   cap2 <- "DMA Bounds"
 } else {
-  cap2 <- "Protection Zone Bounds"
+  cap2 <- "Acoustic SLOW Zone Bounds"
 }
 
 knitr::kable(params$dmacoord, caption = cap2)
