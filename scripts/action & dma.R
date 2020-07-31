@@ -978,7 +978,12 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
     }
   }
   
-  dma_date<-paste0("DMA_",year(egsas$DateTime[1]),"_",strftime(egsas$DateTime[1], "%m"),"_",strftime(egsas$DateTime[1], "%d"))
+  if (criteria$DMAapp == "acoudet"){
+    pzone_ = "ASZ_"
+  } else {
+    pzone_ = c("DMA_")
+  }
+  dma_date<-paste0(pzone_,year(egsas$DateTime[1]),"_",strftime(egsas$DateTime[1], "%m"),"_",strftime(egsas$DateTime[1], "%d"))
   ###############
   ##buttons
   enable("dmaup")
