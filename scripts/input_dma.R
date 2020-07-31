@@ -258,14 +258,14 @@ observeEvent(input$dmaup,{
     #protection zone type
     pztype<-"DMA"
   } else {
-    pztype<-"protection zone"
+    pztype<-"Acoustic SLOW Zone"
   }  
   
   if ('e' %in% ie & 'i' %in% ie){
     neworextlet<-paste0("Since whales were detected both in a region where there are no protections in place, as well as within a region where the protections are due to expire in a week or less,
     we recommend a ",pztype," be initiated/extended at the following bounds:")
   } else if ('i' %in% ie){
-    neworextlet<-paste0("Since no protections are in place in this region at this time, we recommend a ",pztype," be initiated that is bounded by the following:")
+    neworextlet<-paste0("Since no protections are in place in this region at this time, we recommend a(n) ",pztype," be initiated that is bounded by the following:")
   } else if ('e' %in% ie){
     neworextlet<-paste0("Since the current protections in this region are due to expire in a week or less, we recommend an extension of the ",pztype,"(s) that is/are bounded by the following:")
   }  
@@ -345,7 +345,7 @@ observeEvent(input$dmaup,{
     filename = function() {
       
       if (criteria$DMAapp == "acoudet"){
-        pzone = "Acoustic Protection Zone "
+        pzone = "Acoustic SLOW Zone "
       } else {
         pzone = c("DMA ")
       }
