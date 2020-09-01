@@ -993,8 +993,8 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
     dplyr::rename("GROUP_SIZE" = "TRIGGER_GROUPSIZE")
   print(dmanameout)
   dmanameout$TRIGGERDATE<-as.character(dmanameout$TRIGGERDATE)
-  dmanameout$GROUP_SIZE<-sprintf("%.0f",round(dmanameout$GROUP_SIZE, digits = 0))
-  dmanameout$TRIGGERORG<-sprintf("%.0f",round(dmanameout$TRIGGERORG, digits = 0))
+  dmanameout$GROUP_SIZE<-sprintf("%.0f",round(as.numeric(dmanameout$GROUP_SIZE), digits = 0))
+  dmanameout$TRIGGERORG<-sprintf("%.0f",round(as.numeric(dmanameout$TRIGGERORG), digits = 0))
   
   #don't display group size for acoustics
   if (isolate(criteria$DMAapp) == 'acoudet'){
