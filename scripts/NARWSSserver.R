@@ -59,14 +59,14 @@ observeEvent(input$rawupload,{
         ## gps ##
         
         gps<-as.data.frame(read.csv(paste0(path,survey_date,'/',survey_date,'.gps'), header=FALSE, stringsAsFactors = FALSE))
-        names(gps)<-c('DateTime','LATITUDE','LONGITUDE','SPEED','HEADING','ALTITUDE','T1')
+        names(gps)<-c('DATETIME_UTC','LATITUDE','LONGITUDE','SPEED','HEADING','ALTITUDE','T1')
         
         ## effort ##
         
         eff_list<-list.files(paste0(path,survey_date,'/'), "*\\.eff")
         eff_files<-lapply(eff_list, function (x) read.csv(paste0(path,survey_date,'/',x), header=FALSE, stringsAsFactors = FALSE))
         eff_all<-do.call(rbind, eff_files)
-        names(eff_all)<-c('Trans','Line','ABE','DateTime','BEAUFORT','VISIBILTY','CLOUD_CODE','GLARE_L','GLARE_R',
+        names(eff_all)<-c('Trans','Line','ABE','DATETIME_UTC','BEAUFORT','VISIBILTY_NM','CLOUD_CODE','GLARE_L','GLARE_R',
                        'QUALITY_L','QUALITY_R','EFFORT_COMMENTS')#,'EDIT1','EDIT2','EDIT3','T1') ##T1=trash
       
         ## sightings ##
@@ -83,7 +83,7 @@ observeEvent(input$rawupload,{
         })
         
         sig_all<-do.call(rbind, sig_files)
-        names(sig_all)<-c('Trans','Line','SIGHTING_NUMBER','DateTime','OBSERVER','ANGLE','SPCODE','GROUP_SIZE','CUE',
+        names(sig_all)<-c('Trans','Line','SIGHTING_NUMBER','DATETIME_UTC','OBSERVER','ANGLE','SPCODE','GROUP_SIZE','CUE',
                        'ACTUAL_HEADING','T1','T2','SIGHTING_COMMENTS','OBS_POSITION','LATITUDE','LONGITUDE','T3','CALVES',
                        'T4','B1_FINAL_CODE','T5') ##T1=trash
         sig_all$LATITUDE<-as.double(sig_all$LATITUDE)
@@ -109,9 +109,9 @@ observeEvent(input$rawupload,{
       sig$ACTUAL_HEADING<-as.numeric(sig$ACTUAL_HEADING)
       
       ##format DateTime
-      gps$DateTime<-dmy_hms(gps$DateTime)
-      eff$DateTime<-dmy_hms(eff$DateTime)
-      sig$DateTime<-dmy_hms(sig$DateTime)
+      gps$DATETIME_UTC<-dmy_hms(gps$DATETIME_UTC)
+      eff$DATETIME_UTC<-dmy_hms(eff$DATETIME_UTC)
+      sig$DATETIME_UTC<-dmy_hms(sig$DATETIME_UTC)
       
       ###############
       ###############
@@ -119,13 +119,13 @@ observeEvent(input$rawupload,{
       #package data.table documentation
       ######
       
-      setDT(eff)[,  LATITUDE := setDT(gps)[eff, LATITUDE, on = "DateTime", roll = "nearest"]]
-      setDT(eff)[,  LONGITUDE := setDT(gps)[eff, LONGITUDE, on = "DateTime", roll = "nearest"]]
-      setDT(eff)[,  SPEED := setDT(gps)[eff, SPEED, on = "DateTime", roll = "nearest"]]
-      setDT(eff)[,  HEADING := setDT(gps)[eff, HEADING, on = "DateTime", roll = "nearest"]]
+      setDT(eff)[,  LATITUDE := setDT(gps)[eff, LATITUDE, on = "DATETIME_UTC", roll = "nearest"]]
+      setDT(eff)[,  LONGITUDE := setDT(gps)[eff, LONGITUDE, on = "DATETIME_UTC", roll = "nearest"]]
+      setDT(eff)[,  SPEED := setDT(gps)[eff, SPEED, on = "DATETIME_UTC", roll = "nearest"]]
+      setDT(eff)[,  HEADING := setDT(gps)[eff, HEADING, on = "DATETIME_UTC", roll = "nearest"]]
       
-      setDT(sig)[,  SPEED := setDT(gps)[sig, SPEED, on = "DateTime", roll = "nearest"]]
-      setDT(sig)[,  HEADING := setDT(gps)[sig, HEADING, on = "DateTime", roll = "nearest"]]
+      setDT(sig)[,  SPEED := setDT(gps)[sig, SPEED, on = "DATETIME_UTC", roll = "nearest"]]
+      setDT(sig)[,  HEADING := setDT(gps)[sig, HEADING, on = "DATETIME_UTC", roll = "nearest"]]
       
       #merge effort and sighting files
       ######
@@ -134,9 +134,9 @@ observeEvent(input$rawupload,{
       eff$LATITUDE<-as.double(eff$LATITUDE)
       eff$LONGITUDE<-as.double(eff$LONGITUDE)
       
-      eff_sig<-merge(eff, sig, by=c("DateTime","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
+      eff_sig<-merge(eff, sig, by=c("DATETIME_UTC","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
       eff_sig<-eff_sig%>%
-        filter(!is.na(DateTime))
+        filter(!is.na(DATETIME_UTC))
       eff_sig<-data.frame(eff_sig,
                           ALTITUDE = NA,
                           B2_FINAL_CODE = NA,
@@ -151,7 +151,7 @@ observeEvent(input$rawupload,{
       #eff_sig<-cbind(eff_sig, ALTITUDE, B2_FINAL_CODE, B3_FINAL_CODE, B4_FINAL_CODE, B5_FINAL_CODE, PHOTOS, EDIT1, EDIT2, EDIT3)
       
       ##reorder for editing ease
-      eff_sig <- eff_sig %>% dplyr::select(DateTime, LATITUDE, LONGITUDE, ALTITUDE, HEADING, SPEED, VISIBILTY, BEAUFORT,
+      eff_sig <- eff_sig %>% dplyr::select(DATETIME_UTC, LATITUDE, LONGITUDE, ALTITUDE, HEADING, SPEED, VISIBILTY_NM, BEAUFORT,
                                            CLOUD_CODE, GLARE_L, GLARE_R, QUALITY_L, QUALITY_R, EFFORT_COMMENTS, SIGHTING_NUMBER, 
                                            SPCODE, GROUP_SIZE, CALVES, ACTUAL_HEADING, OBSERVER, OBS_POSITION, ANGLE, CUE, 
                                            B1_FINAL_CODE, B2_FINAL_CODE, B3_FINAL_CODE, B4_FINAL_CODE, B5_FINAL_CODE, 
@@ -164,11 +164,11 @@ observeEvent(input$rawupload,{
     }  
     ######
       
-      eff_sig$DateTime<-as.character.Date(eff_sig$DateTime)
+      eff_sig$DATETIME_UTC<-as.character.Date(eff_sig$DATETIME_UTC)
       eff_sig$LATITUDE<-as.character(eff_sig$LATITUDE)
       eff_sig$LONGITUDE<-as.character(eff_sig$LONGITUDE)
       eff_sig$ALTITUDE<-as.character(eff_sig$ALTITUDE)
-      eff_sig$VISIBILTY<-as.character(eff_sig$VISIBILTY)
+      eff_sig$VISIBILTY_NM<-as.character(eff_sig$VISIBILTY_NM)
       eff_sig$BEAUFORT<-as.character(eff_sig$BEAUFORT)
       eff_sig$CLOUD_CODE<-as.character(eff_sig$CLOUD_CODE)
       eff_sig$GLARE_L<-as.character(eff_sig$GLARE_L)
@@ -202,14 +202,14 @@ observeEvent(input$rawupload,{
       handsES<-rhandsontable(eff_sig,readOnly = TRUE)%>%
         hot_table(highlightCol = TRUE, highlightRow = TRUE)%>%
         hot_cols(columnSorting = TRUE)%>%
-        hot_col("DateTime", readOnly = FALSE, width = 150)%>%
+        hot_col("DATETIME_UTC", readOnly = FALSE, width = 150)%>%
         ##format only allows up to 4 decimal places
         hot_col("LATITUDE", format = "00.00000")%>% 
         hot_col("LONGITUDE", format = "00.00000")%>%
         hot_col("ALTITUDE", format = "0",readOnly = FALSE)%>%
         hot_col("HEADING", format = "000")%>%
         hot_col("SPEED", format = "000")%>%
-        hot_col("VISIBILTY",format = "0",readOnly = FALSE, type = "dropdown", source = vis)%>%
+        hot_col("VISIBILTY_NM",format = "0",readOnly = FALSE, type = "dropdown", source = vis)%>%
         hot_col("BEAUFORT",format = "0.0",readOnly = FALSE, type = "dropdown", source = beau)%>%
         hot_col("CLOUD_CODE",format = "0",readOnly = FALSE, type = "dropdown", source = cloud)%>%
         hot_col("GLARE_L",format = "0",readOnly = FALSE, type = "dropdown", source = glare)%>%
@@ -265,9 +265,9 @@ observeEvent(input$rawupload,{
       write.csv(eff_sig2, paste0(path,survey_date,'/','effsig_',survey_date,'.csv'), na = '', row.names = FALSE)
       ######
       ##reformat out of hot
-      eff_sig2$DateTime<-ymd_hms(eff_sig2$DateTime)
+      eff_sig2$DATETIME_UTC<-ymd_hms(eff_sig2$DATETIME_UTC)
       eff_sig2$ALTITUDE<-as.numeric(eff_sig2$ALTITUDE)
-      eff_sig2$VISIBILTY<-as.numeric(eff_sig2$VISIBILTY)
+      eff_sig2$VISIBILTY_NM<-as.numeric(eff_sig2$VISIBILTY_NM)
       eff_sig2$BEAUFORT<-as.numeric(eff_sig2$BEAUFORT)
       eff_sig2$CLOUD_CODE<-as.numeric(eff_sig2$CLOUD_CODE)
       eff_sig2$GLARE_L<-as.numeric(eff_sig2$GLARE_L)
@@ -288,35 +288,35 @@ observeEvent(input$rawupload,{
       eff_sig2$SPCODE[eff_sig2$SPCODE == ''] <- NA
       
       gps2<-as.data.frame(read.csv(paste0(path,survey_date,'/',survey_date,'.gps'), header=FALSE, stringsAsFactors = FALSE))
-      names(gps2)<-c('DateTime','LATITUDE','LONGITUDE','SPEED','HEADING','ALTITUDE','T1')
-      gps2$DateTime<-dmy_hms(gps2$DateTime)
+      names(gps2)<-c('DATETIME_UTC','LATITUDE','LONGITUDE','SPEED','HEADING','ALTITUDE','T1')
+      gps2$DATETIME_UTC<-dmy_hms(gps2$DATETIME_UTC)
       gps2$T1<-NULL
       gps2$ALTITUDE<-NULL
       
       #DATETIME link to position, spead, and heading data
       #package data.table documentation
       ######
-      setDT(eff_sig2)[,  LATITUDE := setDT(gps2)[eff_sig2, LATITUDE, on = "DateTime", roll = "nearest"]]
-      setDT(eff_sig2)[,  LONGITUDE := setDT(gps2)[eff_sig2, LONGITUDE, on = "DateTime", roll = "nearest"]]
-      setDT(eff_sig2)[,  SPEED := setDT(gps2)[eff_sig2, SPEED, on = "DateTime", roll = "nearest"]]
-      setDT(eff_sig2)[,  HEADING := setDT(gps2)[eff_sig2, HEADING, on = "DateTime", roll = "nearest"]]
+      setDT(eff_sig2)[,  LATITUDE := setDT(gps2)[eff_sig2, LATITUDE, on = "DATETIME_UTC", roll = "nearest"]]
+      setDT(eff_sig2)[,  LONGITUDE := setDT(gps2)[eff_sig2, LONGITUDE, on = "DATETIME_UTC", roll = "nearest"]]
+      setDT(eff_sig2)[,  SPEED := setDT(gps2)[eff_sig2, SPEED, on = "DATETIME_UTC", roll = "nearest"]]
+      setDT(eff_sig2)[,  HEADING := setDT(gps2)[eff_sig2, HEADING, on = "DATETIME_UTC", roll = "nearest"]]
       
       #############
       #GPS filter
       #############
       ##get bin list using seq for every 8 seconds
-      gpsbin <- cut(gps2$DateTime, breaks = c(seq(from = gps2$DateTime[1], to = gps2$DateTime[nrow(gps2)], by = 8)))
+      gpsbin <- cut(gps2$DATETIME_UTC, breaks = c(seq(from = gps2$DATETIME_UTC[1], to = gps2$DATETIME_UTC[nrow(gps2)], by = 8)))
       ##bind bin list to gps
       gpsplus<-cbind(gps2, gpsbin)
       ##order by DateTime and rank
-      gpsrank<- gpsplus %>% arrange(DateTime, gpsbin) %>% group_by(gpsbin) %>% mutate(rank=rank(DateTime, ties.method = "first"))
+      gpsrank<- gpsplus %>% arrange(DATETIME_UTC, gpsbin) %>% group_by(gpsbin) %>% mutate(rank=rank(DATETIME_UTC, ties.method = "first"))
       ##select for 1st in the bin
       gpsfil<-gpsrank %>% filter(rank == 1)
       
       #############
       
-      f<-merge(eff_sig2, gpsfil, by=c("DateTime","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
-      f<-f[order(f$DateTime, -f$EFFORT_COMMENTS),]
+      f<-merge(eff_sig2, gpsfil, by=c("DATETIME_UTC","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
+      f<-f[order(f$DATETIME_UTC, -f$EFFORT_COMMENTS),]
       ##########
       #ALTITUDE#
       ##########
@@ -382,7 +382,7 @@ observeEvent(input$rawupload,{
       f$QUALITY_R[which(f$QUALITY_R=='')]<-NA
       
       f$BEAUFORT<-na.locf(f$BEAUFORT, na.rm = FALSE)
-      f$VISIBILTY<-na.locf(f$VISIBILTY, na.rm = FALSE)
+      f$VISIBILTY_NM<-na.locf(f$VISIBILTY_NM, na.rm = FALSE)
       f$CLOUD_CODE<-na.locf(f$CLOUD_CODE, na.rm = FALSE)
       f$GLARE_L<-na.locf(f$GLARE_L, na.rm = FALSE)
       f$GLARE_R<-na.locf(f$GLARE_R, na.rm = FALSE)
@@ -529,7 +529,7 @@ observeEvent(input$rawupload,{
       ######
       #add event number column
       ######
-      f[order(as.Date(f$DateTime, format = dmy_hms)),]
+      f[order(as.Date(f$DATETIME_UTC, format = dmy_hms)),]
       EVENT_NUMBER<-1:nrow(f)
       f<-cbind(EVENT_NUMBER, f)
       
@@ -828,12 +828,15 @@ observeEvent(input$rawupload,{
       #add SST_C, drop and reorder columns
       #####
       
+      f$DATETIME_UTC<-ymd_hms(f$DATETIME_UTC, tz = "GMT")
+      
       ##reordered final
       rf <- f%>%
         mutate(SST_C = NA,
-               PLANE = paste0("TWIN OTTER NOAA ",input$tn))%>%
-        dplyr::select(PLANE,DateTime,EVENT_NUMBER,LATITUDE,LONGITUDE,FLIGHT_TYPE,LEGTYPE,LEGSTAGE,PSB_LEGSTAGE,
-                                ALTITUDE,HEADING,SPEED,SST_C,VISIBILTY,BEAUFORT,CLOUD_CODE,GLARE_L,GLARE_R,
+               PLANE = paste0("TWIN OTTER NOAA ",input$tn),
+               DATETIME_ET = format(DATETIME_UTC, tz = "America/New_York"))%>%
+        dplyr::select(PLANE,DATETIME_ET,EVENT_NUMBER,LATITUDE,LONGITUDE,FLIGHT_TYPE,LEGTYPE,LEGSTAGE,PSB_LEGSTAGE,
+                                ALTITUDE,HEADING,SPEED,SST_C,VISIBILTY_NM,BEAUFORT,CLOUD_CODE,GLARE_L,GLARE_R,
                                 QUALITY_L,QUALITY_R,SIGHTING_NUMBER,SPCODE,ID_RELIABILITY,GROUP_SIZE,CALVES,
                                 ACTUAL_HEADING,OBSERVER,OBS_POSITION,ANGLE,CUE,B1_FINAL_CODE,B2_FINAL_CODE,
                                 B3_FINAL_CODE,B4_FINAL_CODE,B5_FINAL_CODE,PHOTOS,EFFORT_COMMENTS,SIGHTING_COMMENTS,
@@ -844,8 +847,7 @@ observeEvent(input$rawupload,{
       print(str(rf))
       maplat<-rf$LATITUDE
       maplon<-rf$LONGITUDE
-      rf$DateTime<-ymd_hms(rf$DateTime, tz = "GMT")
-      rf$DateTime<-format(rf$DateTime, tz = "America/New_York")
+
       rf$LATITUDE<-sprintf("%.5f",round(rf$LATITUDE, digits = 5))
       rf$LONGITUDE<-sprintf("%.5f",round(rf$LONGITUDE, digits = 5))
       
@@ -859,7 +861,7 @@ observeEvent(input$rawupload,{
       handsrf<-rhandsontable(rf,readOnly = TRUE)%>%
         hot_cols(columnSorting = TRUE)%>%
         hot_table(highlightCol = TRUE, highlightRow = TRUE)%>%
-        hot_col("DateTime", width = 150)%>%
+        hot_col("DATETIME_ET", width = 150)%>%
         hot_col("LATITUDE", format = "00.00000")%>%
         hot_col("LONGITUDE", format = "00.00000")%>%
         hot_col("FLIGHT_TYPE",format = "0",readOnly = FALSE)%>%
@@ -869,7 +871,7 @@ observeEvent(input$rawupload,{
         hot_col("HEADING", format = "000")%>%
         hot_col("SPEED", format = "000")%>%
         hot_col("ALTITUDE", format = "0", readOnly = FALSE)%>%
-        hot_col("VISIBILTY",format = "0",readOnly = FALSE)%>%
+        hot_col("VISIBILTY_NM",format = "0",readOnly = FALSE)%>%
         hot_col("BEAUFORT",format = "0.0",readOnly = FALSE)%>%
         hot_col("CLOUD_CODE",format = "0",readOnly = FALSE)%>%
         hot_col("GLARE_L",format = "0",readOnly = FALSE)%>%
@@ -939,7 +941,8 @@ observeEvent(input$rawupload,{
         path<-input$filepathinput
       }
  
-      final<-final[order(f$DateTime),]
+      final<-final%>%
+        arrange(DATETIME_ET)
       
       final$LATITUDE<-as.numeric(final$LATITUDE)
       final$LONGITUDE<-as.numeric(final$LONGITUDE)
@@ -972,9 +975,10 @@ observeEvent(input$rawupload,{
       cond<-cond%>%
         distinct
       
+      ##DATETIME_ET for data export, but DateTime for all code that follows 9/2/20 LMC
       final<-final%>%
-        arrange(DateTime, desc(EFFORT_COMMENTS))
-      #final<-final[order(final$DateTime, -final$EFFORT_COMMENTS),]
+        arrange(DATETIME_ET, desc(EFFORT_COMMENTS))%>%
+        dplyr::rename('DateTime' = 'DATETIME_ET')
       
       ##confsig = other species
       confsig<-filter(final, final$SPCODE != '' & !grepl('UN',final$SPCODE) & !grepl('-',final$SPCODE) & !is.na(final$SPCODE))
@@ -988,7 +992,8 @@ observeEvent(input$rawupload,{
 
       ## eg table that goes to make the egreport table using 'ap's and the egsas table that is the 'fin est's
       egtable<-NULL
-      egtable<-filter(final, final$SPCODE == 'RIWH')
+      egtable<-final%>%
+        filter(final$SPCODE == 'RIWH')
       
       #for and if loops for behavior
       
