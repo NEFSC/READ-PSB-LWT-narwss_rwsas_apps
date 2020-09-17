@@ -1,5 +1,5 @@
 observeEvent(input$sas,{
-  
+  disable("sas")
   ######################
   ## upload to Oracle ##
   ######################  
@@ -41,7 +41,6 @@ observeEvent(input$sas,{
       egvalues <- gsub("')'", "')", egvalues)
       sqlQuery(cnxn, paste0("INSERT INTO SAS(SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD)
                             VALUES(", egvalues,");"))
-      disable("sas")
       
     }}
   
