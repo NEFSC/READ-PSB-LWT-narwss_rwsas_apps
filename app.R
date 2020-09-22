@@ -43,11 +43,6 @@ ui <- dashboardPage(
       # Third tab content
       tabItem(tabName = "Photo",
               source('./scripts/photo_app.R', local = TRUE)$value
-      ),
-      
-      # fourth tab content
-      tabItem(tabName = "Instructions",
-              source('./scripts/instructions_app.R', local = TRUE)$value
       )
     )
   )
