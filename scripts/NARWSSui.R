@@ -24,7 +24,7 @@ fluidPage(
                            br(),
                            splitLayout(textInput("sd", "Survey Date", width = "90", placeholder = "YYMMDD"),
                                        textInput("tn", "Tail number", width = "90", placeholder = "57"),
-                                       radioButtons("rawedits","Editted eff/sig files?", choices = c("Yes","No"), selected = "No", inline = FALSE)),
+                                       radioButtons("rawedits","Edited eff/sig files?", choices = c("Yes","No"), selected = "No", inline = FALSE)),
                            actionButton("rawupload", "Edit Raw Eff & Sig"),
                            br(),
                            textOutput("error"),
