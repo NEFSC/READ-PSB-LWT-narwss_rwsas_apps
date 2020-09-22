@@ -22,8 +22,7 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Aerial Survey Processing App", tabName = "NARWSS"),
       menuItem("Trigger Analysis", tabName = "DMA"),
-      menuItem("Photo Position Finder", tabName = "Photo"),
-      menuItem("Instructions for Apps", tabName = "Instructions")
+      menuItem("Photo Position Finder", tabName = "Photo")
     )
   ),
   ## Body content
