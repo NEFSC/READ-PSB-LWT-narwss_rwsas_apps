@@ -22,7 +22,8 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Aerial Survey Processing App", tabName = "NARWSS"),
       menuItem("Trigger Analysis", tabName = "DMA"),
-      menuItem("Photo Position Finder", tabName = "Photo")
+      menuItem("Photo Position Finder", tabName = "Photo"),
+      menuItem(text = "Instructions Wiki", href = "https://github.com/leahcrowe/narwss_rwsas_apps/wiki")
     )
   ),
   ## Body content
