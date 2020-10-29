@@ -1,7 +1,5 @@
 # narwss_rwsas_apps
 
-To compile the aerial survey report while off the network, including while working in Canada, follow the directions below:
-
 ## Getting Started
 
 Required packages include:
@@ -49,7 +47,7 @@ The app can be launched by running
 
 `shiny::runGitHub("narwss_rwsas_apps", username = "leahcrowe", ref = "master")`
 
-in your RStudio environment. Click 'Run App' to get started. In the window that pops up, click "Open in Browser".
+in your RStudio environment. Click 'Run App' to get started. In the window that pops up, click "Open in Browser". As of September 2020, the app is not supported for local use. 
 
 
 ## Script Flow Chart
