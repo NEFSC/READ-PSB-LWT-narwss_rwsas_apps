@@ -993,14 +993,15 @@ observeEvent(input$rawupload,{
       ## eg table that goes to make the egreport table using 'ap's and the egsas table that is the 'fin est's
       egtable<-NULL
       egtable<-final%>%
-        filter(final$SPCODE == 'RIWH')
-      
+        filter(final$SPCODE == 'RIWH')%>%
+        as.data.frame()
+      print(egtable)
       #for and if loops for behavior
       
       for (i in 1:seq_along(nrow(egtable)))
         if (nrow(egtable) == 0) {
           
-          egtable[1,]<-''
+          egtable[1,] <- ''
           egtable$DateTime = 'No right whales sighted'
           disable("sas")
           
