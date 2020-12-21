@@ -382,7 +382,7 @@ observeEvent(input$dmaup,{
           url_ls<-as.list(unique(acou_obs$URL))
           url_obs<-do.call("paste", c(url_ls, sep = ", "))
           url_obs<-sub(",([^,]*)$", " and\\1", url_obs)
-          print(url_obs)
+          url_obs<-stringr::str_replace_all(url_obs, stringr::fixed("_"), "\\_")
           
           #Stellwagen Slocum glider operated by the Woods Hole Oceanographic Institution (see robots4whales.whoi.edu for more information)
           
@@ -405,6 +405,8 @@ observeEvent(input$dmaup,{
                    title3 = title3, NLat3 = NLat3, SLat3 = SLat3, WLon3 = WLon3, ELon3 = ELon3,
                    title4 = title4, NLat4 = NLat4, SLat4 = SLat4, WLon4 = WLon4, ELon4 = ELon4,
                    expletter = expletter)
+      
+      print(params)
       
       rmarkdown::render(tempReport, output_file = file,
                         params = params,
