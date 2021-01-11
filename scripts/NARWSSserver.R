@@ -1164,19 +1164,11 @@ observeEvent(input$rawupload,{
           #########################
           ##eg sightings for SAS ##
           #########################
-        
+        print(egrep)
           egsas<-egrep%>%
-            dplyr::select(DateTime, GROUP_SIZE, CALVES, LATITUDE, LONGITUDE, ID_RELIABILITY, Behavior)
-          
-          MOMCALF<-NA
-          FEEDING<-NA
-          DEAD<-NA
-          SAG<-NA
-          ENTANGLED<-NA
-          CATEGORY<-'1'
-          ACTION<-NA
-          
-          egsas<-cbind(egsas, MOMCALF, FEEDING, DEAD, SAG, ENTANGLED, CATEGORY, ACTION)
+            dplyr::select(DateTime, GROUP_SIZE, CALVES, LATITUDE, LONGITUDE, ID_RELIABILITY, Behavior)%>%
+            mutate(MOMCALF=NA, FEEDING=NA, DEAD=NA, SAG=NA, ENTANGLED=NA, CATEGORY='1', ACTION=NA)
+          print(egsas)
           #####    
           for (i in 1:nrow(egsas))
             if (egsas$CALVES[i] > 0){
