@@ -981,11 +981,11 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
   if (criteria$DMAapp == "acoudet"){
     pzone_ = "ASZ_"
   } else {
-    pzone_ = c("DMA_")
-  }
+    pzone_ = c("DMA_")}
   dma_date<-paste0(pzone_,year(egsas$DateTime[1]),"_",strftime(egsas$DateTime[1], "%m"),"_",strftime(egsas$DateTime[1], "%d"))
   ###############
   ##buttons
+  print("enable")
   enable("dmaup")
   
   ###############
@@ -1060,7 +1060,6 @@ if ("ID" %in% colnames(egsas)){
   
 } else { ##4 in egsas$action_new
  
-
   if ("ID" %in% colnames(egsas)){
     if (isolate(criteria$DMAapp) == "acoudet") {
       egsastab<-egsas %>% 
@@ -1078,11 +1077,8 @@ if ("ID" %in% colnames(egsas)){
         mutate(CATEGORY = 7)
     } else {
       egsastab<-egsas %>% 
-        dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)
-    }
-  }
+        dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION_NEW)}}
 
-  
   if (isolate(criteria$loc) == 'Network'){
     sasdma<-sasdma%>%
       addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
