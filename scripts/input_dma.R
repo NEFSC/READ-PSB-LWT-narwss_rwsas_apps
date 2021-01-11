@@ -4,7 +4,7 @@ observeEvent(input$dmaup,{
   
   unlink("./*dmamap.png")
   webshotpath<-paste0(getwd(),"/dmamap.png")
-  
+
   dmareportmap<-fitBounds(dma_react$sasdma,min(dma_react$dmacoord$`Lon (Decimal Degrees)`)+0.5, min(dma_react$dmacoord$`Lat (Decimal Degrees)`)-0.5, max(dma_react$dmacoord$`Lon (Decimal Degrees)`)-0.5, max(dma_react$dmacoord$`Lat (Decimal Degrees)`)+0.5)
   htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
   webshot::webshot("temp.html", file = "dmamap.png")
@@ -19,7 +19,7 @@ observeEvent(input$dmaup,{
   maxid<-sqlQuery(cnxn,maxidsql)
   maxid<-as.integer(maxid)
   print(maxid)
-  
+
   trig<-unique(date(dma_react$alldmas$TRIGGERDATE))
   print(trig)
   trig<-force_tz(trig, tzone = "America/New_York")
