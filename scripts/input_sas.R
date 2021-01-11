@@ -11,6 +11,7 @@ observeEvent(input$sas,{
   
   if(is.null(input$obspeeps)){
     output$error5<-renderText({"Decide who you are."})
+    enable("sas")
   } else if(is.null(input$plane)){
     output$error5<-renderText({"Which plane were you in?"})
   } else {
@@ -40,9 +41,9 @@ observeEvent(input$sas,{
       egvalues <- gsub("'to_", "to_", egvalues)
       egvalues <- gsub("')'", "')", egvalues)
       sqlQuery(cnxn, paste0("INSERT INTO SAS(SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD)
-                            VALUES(", egvalues,");"))
-      
-    }}
+                            VALUES(", egvalues,");"))}
+    }
   
-  enable("dmaup")
+  if (5 %in% egsastab$ACTION_NEW | 4 %in% egsastab$ACTION_NEW){
+    enable("dmaup")}
 }) #input sas
