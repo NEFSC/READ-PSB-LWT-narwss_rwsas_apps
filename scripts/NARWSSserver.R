@@ -1298,7 +1298,7 @@ observeEvent(input$rawupload,{
             
             if (criteria$loc == 'Network'){
 
-              dmanamesexpsent<-paste0("Active Dynamic Management Area(s): ",dmanamesexp,".")
+              dmanamesexpsent<-paste0("Active right whale SLOW zone(s): ",dmanamesexp,".")
               webshotpath<-paste0(getwd(),"/surveymap.png")
               source('./scripts/oracleaccess.R', local = TRUE)$value
               source('./scripts/input_sas.R', local = TRUE)$value
