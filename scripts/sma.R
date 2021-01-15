@@ -76,19 +76,23 @@ spm.tr<-sp::spTransform(spm, CRS.new)
 print('line 78')
 
 ##no SEUS
-##01Jan - 29Feb CCB, MANO, BI
+##01Jan - 29Feb CCB, MANO, BI, MASO, seshore
 sma1<-rgeos::union(ccb.tr, mano.tr)
 sma1<-rgeos::union(sma1, block.tr)
-##01MAR - 31MAR CCB, MANO, BI, RACE
+sma1<-rgeos::union(sma1, maso.tr)
+sma1<-rgeos::union(sma1, seshore.tr)
+##01MAR - 31MAR CCB, MANO, BI, RACE, seshore
 sma2<-rgeos::union(sma1, race.tr)
-##01APR - 30APR CCB, MANO, BI, RACE, GSC
+##01APR - 30APR CCB, MANO, BI, RACE, GSC, seshore(but need to fix since this only goes until the 15th)
 sma3<-rgeos::union(sma2, gsc.tr)
 ##01MAY - 15MAY CCB, GSC
 sma4<-rgeos::union(ccb.tr, gsc.tr)
 ##16MAY-31JULY
 sma5<-gsc.tr
-##01NOv-31DEC
+##01NOv-31DEC seshore(but need to fix since this starts on nove 15th)
 sma6<-rgeos::union(mano.tr, block.tr)
+sma6<-rgeos::union(sma6, maso.tr)
+sma6<-rgeos::union(sma6, seshore.tr)
 ########
 
 smapresent<-NULL
