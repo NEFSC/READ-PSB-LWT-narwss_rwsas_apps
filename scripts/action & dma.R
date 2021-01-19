@@ -155,8 +155,14 @@ for (i in 1:nrow(egsas))
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
   } else if (isolate(criteria$loc) == 'Network'){
     #print("network if")
-    if (egsas$eDMA[i] == TRUE | egsas$eAPZ[i] == TRUE) { #extension dma?
-      egsas$ACTION_NEW[i] = 55 
+    if (egsas$eDMA[i] == TRUE & isolate(criteria$DMAapp) == "vissig"){ #visual detections in an extension eligible DMA 
+      egsas$ACTION_NEW[i] = 55
+    } else if (egsas$eAPZ[i] == TRUE & isolate(criteria$DMAapp) == "acoudet") { #acoustic detections in an extension eligible APZ 
+      egsas$ACTION_NEW[i] = 55
+    } else if (egsas$eDMA[i] == TRUE & isolate(criteria$DMAapp) == "acoudet") { #acoustic detections in an extension eligible DMA aka cannot extend 
+      egsas$ACTION_NEW[i] = 2  
+    } else if (egsas$eAPZ[i] == TRUE & isolate(criteria$DMAapp) == "vissag") { #visual detections in an extension eligible APZ aka cannot extend 
+      egsas$ACTION_NEW[i] = 2    
     } else if (egsas$bDMA[i] == TRUE | egsas$bAPZ[i] == TRUE) { #benign dma
       egsas$ACTION_NEW[i] = 2   
     }
