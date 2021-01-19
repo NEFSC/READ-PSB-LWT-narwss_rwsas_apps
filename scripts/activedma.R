@@ -36,7 +36,7 @@ actioncodedf<-sqlQuery(cnxn, actioncode)
 actioncodedf$ID<-as.numeric(actioncodedf$ID)
 
 #################
-#query all relevant DMAs
+#query all relevant DMAs & APZs
 ##the to_date(to_char) for the expdate is necessary, otherwise, the modayr seconds default to 00:00:00 and dmas that expire on the same day are still included
 activedmasql<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 7), 'YYYY-MM-DD') as ext, rightwhalesight.dmainfo.triggertype
                   from rightwhalesight.dmainfo
@@ -82,7 +82,7 @@ if (nrow(actdma) == 0){
 ## Extend or not? ##
 ####################
   
-  ##dma bounds
+  ##dma/apz bounds
   actdma_boundssql<-paste0("select rightwhalesight.dmacoords.ID, vertex, lat, lon
                   from rightwhalesight.dmacoords, rightwhalesight.dmainfo
                   where to_date('",MODAYR,"', 'YYYY-MM-DD') < EXPDATE
@@ -118,12 +118,14 @@ dmaext<-actdmadf%>%
   apznoth<-actdmadf%>%
     filter(EXT > MODAYR & TRIGGERTYPE == "a")%>%
     dplyr::select(ID,VERTEX,LAT,LON)
-  
+  print("apznoth")
+  print(apznoth)
 ## apz up for extension
   apzext<-actdmadf%>%
     filter(EXT <= MODAYR & TRIGGERTYPE == "a")%>%
     dplyr::select(ID,VERTEX,LAT,LON)
-
+  print("apzext")
+  print(apzext)
 #####################################################
 #evaluate DMAs
   #benign
@@ -136,9 +138,9 @@ dmaext<-actdmadf%>%
 
 #evaluate extension triggers DMAs
 
-    if (nrow(dmaext) == 0){
+  if (nrow(dmaext) == 0){
       extensiondma<-SpatialPolygons(list(fakedma))
-    } else {
+  } else {
       ##all polys together
       extensiondma<-querytoshape(dmaext)
 
@@ -187,10 +189,9 @@ dmaext<-actdmadf%>%
   if (nrow(apznoth) == 0){
     benignapz<-SpatialPolygons(list(fakedma))
   } else {
-    benignapz<-querytoshape(apznoth)
-  }
+    benignapz<-querytoshape(apznoth)}
   
-  #evaluate extension triggers APZs
+#evaluate extension triggers APZs
   
   if (nrow(apzext) == 0){
     extensionapz<-SpatialPolygons(list(fakedma))
@@ -233,6 +234,7 @@ dmaext<-actdmadf%>%
     ##change projection
     extapz.tr<-lapply(extapz.sp, function (x) {spTransform(x, CRS.new)})
   }  
+
 } # 73
 
 #####################
