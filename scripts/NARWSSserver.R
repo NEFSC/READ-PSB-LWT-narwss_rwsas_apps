@@ -41,8 +41,8 @@ observeEvent(input$rawupload,{
     #####
     if (input$sd == "") {
         output$error<-renderText({"Enter a survey date"})
-    } else if (!file.exists(paste0(path,survey_date,'/',survey_date,'.gps'))) { 
-        output$error2<-renderText({"Uh oh! Those files can't be found! Double check your connection to the network, the local network pathway, your data, and/or your survey date entry."})         
+    #} else if (!file.exists(paste0(path,survey_date,'/',survey_date,'*\\.gps'))) { 
+     #   output$error2<-renderText({"Uh oh! Those files can't be found! Double check your connection to the network, the local network pathway, your data, and/or your survey date entry."})         
     } else if (rawed == "Yes" && !file.exists(paste0(path,survey_date,'/','effsig_',survey_date,'.csv'))){
         output$error2<-renderText({"No initial eff/sig edits were saved."})    
     } else {
@@ -53,13 +53,14 @@ observeEvent(input$rawupload,{
         
 ########################        
 
-        #path<-"//net/mmi/Fieldwrk/Aerials/2019/Flights/edit_data/"
-        #survey_date<-199996
-        
+        #path<-"//net/mmi/Fieldwrk/Aerials/2021/Flights/edit_data/"
+        #survey_date<-210122
+
         ## gps ##
-        
-        gps<-as.data.frame(read.csv(paste0(path,survey_date,'/',survey_date,'.gps'), header=FALSE, stringsAsFactors = FALSE))
-        names(gps)<-c('DATETIME_UTC','LATITUDE','LONGITUDE','SPEED','HEADING','ALTITUDE','T1')
+        gps_list<-list.files(paste0(path,survey_date,'/'), "*\\.gps")
+        gps_files<-lapply(gps_list, function (x) read.csv(paste0(path,survey_date,'/',x), header=FALSE, stringsAsFactors = FALSE))
+        gps_all<-do.call(rbind, gps_files)
+        names(gps_all)<-c('DATETIME_UTC','LATITUDE','LONGITUDE','SPEED','HEADING','ALTITUDE','T1')
         
         ## effort ##
         
@@ -101,7 +102,7 @@ observeEvent(input$rawupload,{
         filter(!is.na(Trans))%>% ##remove rows with no sig data
         dplyr::select(-Trans,-Line,-T1,-T2,-T3,-T4,-T5)
 
-      gps<-gps%>%
+      gps<-gps_all%>%
         dplyr::select(-T1,-ALTITUDE)
       
       ######
@@ -252,6 +253,7 @@ observeEvent(input$rawupload,{
       eff_sig2 = hot_to_r(input$handsES)
       
       survey_date<-input$sd
+      #survey_date<-210125
       yr<-substr(survey_date,1,2)
       
       if (input$filepathway == 'Network'){
@@ -287,8 +289,12 @@ observeEvent(input$rawupload,{
       
       eff_sig2$SPCODE[eff_sig2$SPCODE == ''] <- NA
       
-      gps2<-as.data.frame(read.csv(paste0(path,survey_date,'/',survey_date,'.gps'), header=FALSE, stringsAsFactors = FALSE))
-      names(gps2)<-c('DATETIME_UTC','LATITUDE','LONGITUDE','SPEED','HEADING','ALTITUDE','T1')
+      gps_list2<-list.files(paste0(path,survey_date,'/'), "*\\.gps")
+      gps_files2<-lapply(gps_list2, function (x) read.csv(paste0(path,survey_date,'/',x), header=FALSE, stringsAsFactors = FALSE))
+      gps_all2<-do.call(rbind, gps_files2)
+      names(gps_all2)<-c('DATETIME_UTC','LATITUDE','LONGITUDE','SPEED','HEADING','ALTITUDE','T1')
+      gps2<-gps_all2
+  
       gps2$DATETIME_UTC<-dmy_hms(gps2$DATETIME_UTC)
       gps2$T1<-NULL
       gps2$ALTITUDE<-NULL
