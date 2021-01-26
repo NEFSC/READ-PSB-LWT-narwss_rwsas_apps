@@ -41,8 +41,8 @@ observeEvent(input$rawupload,{
     #####
     if (input$sd == "") {
         output$error<-renderText({"Enter a survey date"})
-    #} else if (!file.exists(paste0(path,survey_date,'/',survey_date,'*\\.gps'))) { 
-     #   output$error2<-renderText({"Uh oh! Those files can't be found! Double check your connection to the network, the local network pathway, your data, and/or your survey date entry."})         
+    } else if (length(list.files(paste0(path,survey_date,'/'), "*\\.gps")) == 0) { 
+        output$error2<-renderText({"Uh oh! Those files can't be found! Double check your connection to the network, the local network pathway, your data, and/or your survey date entry."})         
     } else if (rawed == "Yes" && !file.exists(paste0(path,survey_date,'/','effsig_',survey_date,'.csv'))){
         output$error2<-renderText({"No initial eff/sig edits were saved."})    
     } else {
@@ -1235,7 +1235,7 @@ observeEvent(input$rawupload,{
           addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
           addPolygons(data = smapresent.sp, weight = 2, color = "red") %>%
           addPolylines(data = NEUS_shiplane.sp, weight = 1, color = "green", fill = F)%>%
-          addLegend(colors = c("green","yellow","red"), labels = c("Shipping Lanes","Dynamic Management Area","Seasonal Management Area"), opacity = 0.3)
+          addLegend(colors = c("green","yellow","red"), labels = c("Shipping Lanes","Right Whale SLOW Zone","Seasonal Management Area"), opacity = 0.3)
       
       } else if (nrow(sightings19) < nrow(sightings20)){
         
@@ -1253,7 +1253,9 @@ observeEvent(input$rawupload,{
       if (input$filepathway == 'Network'){ 
         reportleaf<-reportleaf %>%
           addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
-          addPolygons(data = extensiondma, weight = 2, color = "yellow")
+          addPolygons(data = extensiondma, weight = 2, color = "yellow") %>%
+          addPolygons(data = benignapz, weight = 2, color = "yellow") %>%
+          addPolygons(data = extensionapz, weight = 2, color = "yellow")
       
         print("inside leaflet protection zones")
         print(benigndma)
