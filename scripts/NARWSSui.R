@@ -5,7 +5,6 @@ fluidPage(
               conditionalPanel(
                 condition = "input$filepathway == Local",
                 textInput("filepathinput", (HTML(paste("Local pathway", '<br/>', "Example: C:/2018/Flights/edit_data/"))))),
-              #a("Instructions",target="_blank",href="ASP.pdf"),
               width = 3),
       tabsetPanel(type = "tabs",
                   tabPanel("Aerial Survey",
@@ -18,7 +17,7 @@ fluidPage(
                                        "For <strong>MULTI</strong> flight days, files can be labeled according to this pattern:",'<br/>', 
                                        "[YYMMDD].gps, [YYMMDD] <strong>(1)</strong>.eff, [YYMMDD] <strong>(2)</strong>.eff, [YYMMDD] <strong>(1)</strong>.sig, [YYMMDD] <strong>(2)</strong>.sig",
                                        '<br/>','<br/>',
-                                       "You can have as many sig or eff files in a day as you want, but there must only be one GPS file.",
+                                       "You can have as many .gps, .sig, or .eff files in a day as you want. Go crazy.",
                                        '<br/>'))),
                            position = 'left',
                            br(),
