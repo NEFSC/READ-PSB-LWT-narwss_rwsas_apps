@@ -17,7 +17,7 @@ fluidPage(
                                        "For <strong>MULTI</strong> flight days, files can be labeled according to this pattern:",'<br/>', 
                                        "[YYMMDD].gps, [YYMMDD] <strong>(1)</strong>.eff, [YYMMDD] <strong>(2)</strong>.eff, [YYMMDD] <strong>(1)</strong>.sig, [YYMMDD] <strong>(2)</strong>.sig",
                                        '<br/>','<br/>',
-                                       "You can have as many .gps, .sig, or .eff files in a day as you want. Go crazy.",
+                                       "You can have as many .gps, .sig, or .eff files in a day as you want, but only include those with UNIQUE information. Only include one .gps file if it has all location data from all flights.",
                                        '<br/>'))),
                            position = 'left',
                            br(),
