@@ -77,22 +77,26 @@ print('line 78')
 
 ##no SEUS
 ##01Jan - 29Feb CCB, MANO, BI, MASO, seshore
-sma1<-rgeos::union(ccb.tr, mano.tr)
-sma1<-rgeos::union(sma1, block.tr)
-sma1<-rgeos::union(sma1, maso.tr)
-sma1<-rgeos::union(sma1, seshore.tr)
+sma1.1<-rgeos::union(ccb.tr, mano.tr)
+sma1.2<-rgeos::union(sma1.1, block.tr)
+sma1.3<-rgeos::union(sma1.2, maso.tr)
+sma1<-rgeos::union(sma1.3, seshore.tr)
 ##01MAR - 31MAR CCB, MANO, BI, RACE, seshore
 sma2<-rgeos::union(sma1, race.tr)
-##01APR - 30APR CCB, MANO, BI, RACE, GSC, seshore(but need to fix since this only goes until the 15th)
+##01APR - 15APR CCB, MANO, BI, RACE, GSC, seshore
 sma3<-rgeos::union(sma2, gsc.tr)
+##16Apr - 30Apr CCB, MANO, BI, RACE, GSC
+sma3.1<-rgeos::union(sma1.2, race.tr)
+sma3.2<-rgeos::union(sma3.1, gsc.tr)
 ##01MAY - 15MAY CCB, GSC
 sma4<-rgeos::union(ccb.tr, gsc.tr)
 ##16MAY-31JULY
 sma5<-gsc.tr
-##01NOv-31DEC seshore(but need to fix since this starts on nove 15th)
+##01NOv-14Nov
 sma6<-rgeos::union(mano.tr, block.tr)
 sma6<-rgeos::union(sma6, maso.tr)
-sma6<-rgeos::union(sma6, seshore.tr)
+##15Nov-31Dec
+sma7<-rgeos::union(sma6, seshore.tr)
 ########
 
 smapresent<-NULL
@@ -105,18 +109,24 @@ if (between(MODA,"01-01", "02-29")){
 } else if (between(MODA,"03-01","03-31")){
   smapresent<-sma2
   smaname<-"sma2"
-} else if (between(MODA,"04-01","04-30")){
+} else if (between(MODA,"04-01","04-15")){
   smapresent<-sma3
   smaname<-"sma3"
+} else if (between(MODA,"04-16","04-30")){
+  smapresent<-sma3.2
+  smaname<-"sma3.2"
 } else if (between(MODA,"05-01","05-15")){
   smapresent<-sma4
   smaname<-"sma4"
 } else if (between(MODA,"05-16","07-31")){
   smapresent<-sma5
   smaname<-"sma5"
-} else if (between(MODA,"11-01","12-31")){
+} else if (between(MODA,"11-01","11-14")){
   smapresent<-sma6
   smaname<-"sma6"
+} else if (between(MODA,"11-15","12-31")){
+  smapresent<-sma7
+  smaname<-"sma7"
 } else {
   smapresent<-smapresent
   smaname<-"none"
