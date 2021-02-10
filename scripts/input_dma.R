@@ -115,9 +115,16 @@ observeEvent(input$dmaup,{
   if("i" %in% dma_react$dmanameout$INITOREXT){enable("kml")}
   enable("dmaletter")
   
+  if (criteria$DMAapp == "acoudet"){
+    pzone = "ASZ "
+  } else {
+    pzone = c("DMA ")
+  }
+  
   output$dmareport<-downloadHandler(
     
-    filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_PotentialProtectionZone_Report.pdf"),
+    filename = paste0(pzone,date_formats$year1,date_formats$month2,date_formats$day1," ", "Potential SLOW Zone_Report.pdf"),
+    
     content = function(file) {
       
       if (criteria$loc == 'Network'){
@@ -256,7 +263,7 @@ observeEvent(input$dmaup,{
   neworextlet<-NULL
   if (criteria$DMAapp != "acoudet"){
     #protection zone type
-    pztype<-"DMA"
+    pztype<-"Dynamic Management Area"
   } else {
     pztype<-"Acoustic SLOW Zone"
   }  
@@ -343,14 +350,8 @@ observeEvent(input$dmaup,{
   output$dmaletter <- downloadHandler(
     
     filename = function() {
-      
-      if (criteria$DMAapp == "acoudet"){
-        pzone = "Acoustic SLOW Zone "
-      } else {
-        pzone = c("DMA ")
-      }
-      
-      paste0(pzone,date_formats$year1,date_formats$month2,date_formats$day1," ",dmanameselect,".pdf")},
+    
+    paste0(pzone,date_formats$year1,date_formats$month2,date_formats$day1," ",dmanameselect,".pdf")},
     
     content = function(file) {
       
