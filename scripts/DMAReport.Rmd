@@ -1,5 +1,5 @@
 ---
-title:  "Potential Protection Zone Report"
+title:  "Potential SLOW Zone Report"
 params:
   dmanameselect: NA
   date1: NA
@@ -26,7 +26,7 @@ knitr::include_graphics(params$webshotpath)
 ```{r echo = FALSE, warning = FALSE, results = 'asis', fig.align="center"}
 egtab<-params$egsastab
 if("GROUP_SIZE" %in% colnames(egtab)){
-  cap <- "DMA Name(s)"
+  cap <- "Dynamic Management Area Name(s)"
 } else {
   cap <- "Acoustic SLOW Zone Name(s)"
 }
@@ -37,7 +37,7 @@ knitr::kable(params$dmanameout, caption = cap)
 ```{r echo = FALSE, warning = FALSE, results = 'asis', fig.align="center"}
 
 if("GROUP_SIZE" %in% colnames(egtab)){
-  cap2 <- "DMA Bounds"
+  cap2 <- "Dynamic Management Area Bounds"
 } else {
   cap2 <- "Acoustic SLOW Zone Bounds"
 }
