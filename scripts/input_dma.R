@@ -367,6 +367,7 @@ observeEvent(input$dmaup,{
         if (criteria$DMAapp == "acoudet"){
 
           acou_obs<-dma_react$egsas%>%
+            filter(ACTION_NEW == 4 | ACTION_NEW == 5)%>%
             distinct(PLATFORM_NAME,INSTITUTION,URL)%>%
             mutate(URL = replace(URL, grepl('Woods Ho', INSTITUTION) == TRUE, 'robots4whales.whoi.edu'))
           print(str(acou_obs))
