@@ -10,6 +10,11 @@ source('./scripts/oracleaccess.R', local = TRUE)$value
 criteria$loc<-'Network'
    
 observeEvent(input$query,{
+  disable("eval")
+  disable("dmaup")
+  disable("dmareport")
+  disable("dmaletter")
+  disable("kml")
       #clear anything that happened before
       blank<-data.frame()
       output$dmanameout<-renderTable({blank})
