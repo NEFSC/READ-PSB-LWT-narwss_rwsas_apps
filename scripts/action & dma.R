@@ -155,13 +155,13 @@ for (i in 1:nrow(egsas))
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
   } else if (isolate(criteria$loc) == 'Network'){
     #print("network if")
-    if (egsas$eDMA[i] == TRUE & isolate(criteria$DMAapp) == "vissig"){ #visual detections in an extension eligible DMA 
+    if (egsas$eDMA[i] == TRUE & (isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp) == "rwsurv")){ #visual detections in an extension eligible DMA 
       egsas$ACTION_NEW[i] = 55
     } else if (egsas$eAPZ[i] == TRUE & isolate(criteria$DMAapp) == "acoudet") { #acoustic detections in an extension eligible APZ 
       egsas$ACTION_NEW[i] = 55
     } else if (egsas$eDMA[i] == TRUE & isolate(criteria$DMAapp) == "acoudet") { #acoustic detections in an extension eligible DMA aka cannot extend 
       egsas$ACTION_NEW[i] = 2  
-    } else if (egsas$eAPZ[i] == TRUE & isolate(criteria$DMAapp) == "vissag") { #visual detections in an extension eligible APZ aka cannot extend 
+    } else if (egsas$eAPZ[i] == TRUE & (isolate(criteria$DMAapp) == "vissag" | isolate(criteria$DMAapp) == "rwsurv")) { #visual detections in an extension eligible APZ aka cannot extend 
       egsas$ACTION_NEW[i] = 2    
     } else if (egsas$bDMA[i] == TRUE | egsas$bAPZ[i] == TRUE) { #benign dma
       egsas$ACTION_NEW[i] = 2   
@@ -345,15 +345,16 @@ extdf_list<-lapply(comboext, function(x) {
     
     for (i in 1:nrow(egsas))
       if (egsas$sightID[i] %in% dmaextsightID$sightID) {
-        #print(i)
-        #print("1")
+        print(i)
+        print("1")
         egsas$ACTION_NEW[i] = 55
         #print(egsas)
         df<-data.frame(extDMAs = DMAid,
                        TRIGGER_GROUPSIZE = exttot$total,
                        TRIGGERDATE = exttot$TRIGGERDATE,
                        TRIGGERORG = exttot$OBSERVER_ORG)
-        #print(df)
+        print("356")
+        print(df)
         extdf_list<-rbind(extdf_list,df)
 
       } else {
@@ -364,6 +365,7 @@ extdf_list<-lapply(comboext, function(x) {
 
    extdf_list})
 
+print(extdf_list)
 
 for (i in 1:nrow(egsas))
   if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
@@ -392,8 +394,8 @@ for (i in 1:nrow(egsas))
     #print("3")
     egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
   }
-
-  #print(extdf_list)
+print("here")
+  print(extdf_list)
   extdf<-bind_rows(extdf_list, .id = "column_label")
   print(extdf)
   #######
@@ -441,19 +443,19 @@ for (i in 1:nrow(egsas))
     distinct()%>%
     mutate(corer=round(sqrt(GROUP_SIZE/(pi*egden)),2))%>%
     as.data.frame()
-  #print(dmaextsights)
+
   dmaextsights$GROUP_SIZE<-as.numeric(dmaextsights$GROUP_SIZE)
   
-  extPolyID<-rownames(dmaextsights)
-  #print(extPolyID)
   #core radius in meters
-  extcorer_m<-dmaextsights$corer*1852
-  dmaextsights<-cbind(dmaextsights,extcorer_m,extPolyID)
+  dmaextsights<-dmaextsights%>%
+    mutate(extcorer_m = dmaextsights$corer*1852,
+           extPolyID = 1:nrow(dmaextsights))
+
   
   if (nrow(dmaextsights) > 0){
+  
   #copy for spatializing
   dmaextdf<-dmaextsights
-  
   
   ########################
   ## df to spatial object ##
@@ -473,7 +475,7 @@ for (i in 1:nrow(egsas))
   ##this will be used later when sightings are clustered by overlapping core radiis
   extclustdf<-spTransform(dmaextdf.tr, CRS.latlon)
   extclustdf<-as.data.frame(extclustdf)
-  #print(extclustdf)
+  print(extclustdf)
   ##creates a dataframe from the density buffers put around sightings considered for DMA analysis
   extpolycoord<-dmaextbuff %>% fortify() %>% dplyr::select("long","lat","id")
   ##poly coordinates out of utm
@@ -495,7 +497,7 @@ for (i in 1:nrow(egsas))
   extclustdf$extPolyID<-as.numeric(extclustdf$extPolyID)
   
   extclustdf<-full_join(ext_clustdf_fun_out,extclustdf,by=c("upoly"="extPolyID"))
-  
+  #print(extclustdf)
   #################################
   extclusty<-extclustdf%>%
     group_by(cluster)%>%
@@ -511,6 +513,13 @@ for (i in 1:nrow(egsas))
   #print(extclustn)
   #print(egsas)
   
+  totalnew<-extclusty%>%
+    ungroup()%>%
+    distinct(totes)%>%
+    summarise (n = sum(totes))
+  
+  
+  print(totalnew)
   
   for (i in 1:nrow(egsas))
     if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
