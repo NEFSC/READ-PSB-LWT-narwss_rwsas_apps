@@ -4,20 +4,12 @@ fluidPage(
   sidebarLayout(
     sidebarPanel(
       radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE), 
-      conditionalPanel(
-        condition = "input$filepathway == Local",
-        textInput("filepathinput", (HTML(paste("Local pathway for GPS files", '<br/>', "Example: C:/Users/leah.crowe/Desktop/Canada Data Processing/"))))),
+      textInput("filepathinput", (HTML(paste("Local pathway for GPS files", '<br/>', "Example: C:/Users/leah.crowe/Desktop/Canada Data Processing/")))),
       radioButtons("tzone", "Camera Time Zone", choices = c("Atlantic Time","Eastern Time"), selected = "Eastern Time", inline = FALSE),
+      textInput("photoyear","Year"),
+      textInput("photofile", "Filename.csv"),
       textInput("permit", "Permit Number:", placeholder = "MMPA #####"),
-      fileInput("imagesub", "Choose CSV File",
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv")
-      ),
-      
-      tags$hr(),
-      checkboxInput("header", "Header", TRUE)
+      actionButton("photogo", "Get positions")
     ),
     mainPanel(
       (HTML(paste('<br/>',
