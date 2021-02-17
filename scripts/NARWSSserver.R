@@ -318,7 +318,6 @@ observeEvent(input$rawupload,{
       gpsrank<- gpsplus %>% arrange(DATETIME_UTC, gpsbin) %>% group_by(gpsbin) %>% mutate(rank=rank(DATETIME_UTC, ties.method = "first"))
       ##select for 1st in the bin
       gpsfil<-gpsrank %>% filter(rank == 1)
-      
       #############
       
       f<-merge(eff_sig2, gpsfil, by=c("DATETIME_UTC","LATITUDE","LONGITUDE","SPEED","HEADING"), all=TRUE)
