@@ -1,77 +1,68 @@
 
-# Longterm goal to change the pathway creation to grab positions
-# Get rid of yr variable and make it not matter
-
-output$finalmess <- renderText({
-  # input$file1 will be NULL initially. After the user selects
-  # and uploads a file, it will be a data frame with 'name',
-  # 'size', 'type', and 'datapath' columns. The 'datapath'
-  # column will contain the local filenames where the data can
-  # be found.
-  inFile <- input$imagesub
+observeEvent(input$photogo,{
   
-  pernum=input$permit
-
-  
-  if (is.null(inFile)){
-    return("")
-   
-  }else{
+  if(input$filepathway == 'Network'){
     
-  subraw<-read.csv(inFile$datapath, header = input$header, stringsAsFactors = FALSE)
-  print(head(subraw))
+  phyear <- input$photoyear
+  phfile <- input$photofile
+  pernum <- input$permit
+  
+  print(phyear)
+  print(phfile)
+  print(pernum)
+  
+  ntwkpathway<-paste0('//net/mmi/Fieldwrk/Aerials/',phyear,'/')
+  ntwkpathimage<-paste0(ntwkpathway,phyear,'_digital_photos/Image Submission/',phfile)
+  
+  subraw<-read.csv(ntwkpathimage, header = TRUE, stringsAsFactors = FALSE)
   subraw$Month<-sprintf("%02d",subraw$Month)
   subraw$Day<-sprintf("%02d", subraw$Day)
-  
   subraw<-data.frame(date_tz = "",subraw)
   subraw$date_tz<-dmy_hms(subraw$date_tz)
   print(head(subraw))
-
+  
+  
   withProgress(message = 'Finding whale positions from timestamp...', min = 0, max = nrow(subraw), {
     for(i in 1:nrow(subraw))
-    if ( is.na(subraw$Latitude[i]) && subraw$Local.Time[i] != '' && !is.na(subraw$Year[i]) && subraw$Month[i] != 'NA' && subraw$Day[i] != 'NA' ){
-    yr<-substr(subraw$Year[i],3,4)
-    datestr<-paste0(yr,subraw$Month[i],subraw$Day[i])
-   
-    if (input$filepathway == 'Network'){
-      path<-paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/Flights/edit_data/')
-    } else if (input$filepathway == 'Local'){
-      path<-input$filepathinput
-    }
-    
-    gps<-as.data.frame(read.csv(paste0(path,datestr,'/',datestr,'.gps'), header=FALSE, stringsAsFactors = FALSE))
-    names(gps)<-c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE','T1')
-    gps$DateTime<-dmy_hms(gps$DateTime, tz = "GMT")
-    
+      if ( is.na(subraw$Latitude[i]) && subraw$Local.Time[i] != '' && !is.na(subraw$Year[i]) && subraw$Month[i] != 'NA' && subraw$Day[i] != 'NA' ){
+        yr<-substr(subraw$Year[i],3,4)
+        print(yr)
+        print("yr")
+        datestr<-paste0(yr,subraw$Month[i],subraw$Day[i])
+        print(datestr)
+        gps<-as.data.frame(read.csv(paste0(ntwkpathway,'Flights/edit_data/',datestr,'/',datestr,'.gps'), header=FALSE, stringsAsFactors = FALSE))
+        names(gps)<-c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE','T1')
+        gps$DateTime<-dmy_hms(gps$DateTime, tz = "GMT")
+        
         if (input$tzone == 'Atlantic Time'){
           gps$date_tz<-with_tz(gps$DateTime, tzone = "America/New_York")
         } else if (input$tzone == 'Eastern Time'){
           gps$date_tz<-with_tz(gps$DateTime, tzone = "Canada/Atlantic")
         }
-    
-    gps$date_tz<-as.POSIXct(gps$date_tz, format = "%Y-%m-%d %H:%M:%OS")
-
-    newdate<-paste0(subraw$Year[i],'-',subraw$Month[i],'-',subraw$Day[i])
-    date_time <- (paste(newdate, subraw$Local.Time[i]))
-    
+        
+        gps$date_tz<-as.POSIXct(gps$date_tz, format = "%Y-%m-%d %H:%M:%OS")
+        
+        newdate<-paste0(subraw$Year[i],'-',subraw$Month[i],'-',subraw$Day[i])
+        date_time <- (paste(newdate, subraw$Local.Time[i]))
+        
         if (input$tzone == 'Atlantic Time'){
           date_tz<- as.POSIXlt(date_time, tz = "Canada/Atlantic", format = "%Y-%m-%d %H:%M:%OS")
         } else if (input$tzone == 'Eastern Time'){
           date_tz<- as.POSIXlt(date_time, tz = "America/New_York", format = "%Y-%m-%d %H:%M:%OS")
         }
-    
-    print(date_tz)
-    subraw$date_tz[i]<-date_tz
-    
-    row<-subraw[i,]
-    
-    setDT(row)[,  Latitude := setDT(gps)[row, Latitude, on = "date_tz", roll = "nearest"]]
-    setDT(row)[,  Longitude := setDT(gps)[row, Longitude, on = "date_tz", roll = "nearest"]]
-    
-    subraw[i,]<-row
-    incProgress(amount = 1)
-    
-    }
+        
+        print(date_tz)
+        subraw$date_tz[i]<-date_tz
+        
+        row<-subraw[i,]
+        
+        setDT(row)[,  Latitude := setDT(gps)[row, Latitude, on = "date_tz", roll = "nearest"]]
+        setDT(row)[,  Longitude := setDT(gps)[row, Longitude, on = "date_tz", roll = "nearest"]]
+        
+        subraw[i,]<-row
+        incProgress(amount = 1)
+        
+      }
   })
   CRS.latlon<-CRS("+init=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_defs +towgs84=0,0,0")
   CRS.new<-CRS("+proj=utm +zone=19 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
@@ -236,7 +227,7 @@ output$finalmess <- renderText({
   subed$Obs = 'NEFSC/T'
   subed$Platform = 'A'
   subed$Image.Type = 'DS'
- 
+  
   print(pernum)
   for (i in 1:nrow(subed))
     if (nchar(pernum) == 0){
@@ -252,7 +243,7 @@ output$finalmess <- renderText({
   
   subed<-subed%>%
     dplyr::rename("Field EGNO" = Field.EGNO, "EG Letter" = EG.Letter, "Local Time" = Local.Time, "Image Type" = Image.Type, "Assoc. Type" = Assoc..Type, "First Edit" = First.Edit, "Second Edit" = Second.Edit, "Final Edit" = Final.Edit)
-
+  
   if (input$filepathway == 'Network'){
     write.csv(subed, paste0('//net/mmi/Fieldwrk/Aerials/20',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'), na = '', row.names = FALSE)
   } else if (input$filepathway == 'Local'){
@@ -260,20 +251,22 @@ output$finalmess <- renderText({
     print(paste0(input$filepathinput,'NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'))  
   }
   
-    finalleaf<-leaflet(data = subed, options = leafletOptions(zoomControl = TRUE)) %>% 
-      addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
-      addPolygons(data = allpoly, weight = 2, color = "blue") %>%
-      addCircleMarkers(lng = ~subed$Longitude, lat = ~subed$Latitude, color = "black", stroke = FALSE, fillOpacity = 2, radius = 5, popup = paste0(subed$Year,"-",subed$Month,"-",subed$Day,"-",subed$`EG Letter`)) %>%
-      #addLegend(colors = c("blue"), labels = c("regions"), opacity = 0.3)%>%
-      addWMSTiles(
-        "https://gis.ngdc.noaa.gov/arcgis/services/graticule/MapServer/WMSServer/",
-        layers = c("1-degree grid", "5-degree grid"),
-        options = WMSTileOptions(format = "image/png8", transparent = TRUE),
-        attribution = NULL)  
-    output$finalleaf = renderLeaflet({print(finalleaf)})
-    
-    "The photo submission spreadsheet can be found on the network in the 'Image Submission' folder and is named 'NEFSC Sighting Data Table_Twin Otter_[datetime created].csv'"
-    
-  }#else
-})
+  finalleaf<-leaflet(data = subed, options = leafletOptions(zoomControl = TRUE)) %>% 
+    addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
+    addPolygons(data = allpoly, weight = 2, color = "blue") %>%
+    addCircleMarkers(lng = ~subed$Longitude, lat = ~subed$Latitude, color = "black", stroke = FALSE, fillOpacity = 2, radius = 5, popup = paste0(subed$Year,"-",subed$Month,"-",subed$Day,"-",subed$`EG Letter`)) %>%
+    #addLegend(colors = c("blue"), labels = c("regions"), opacity = 0.3)%>%
+    addWMSTiles(
+      "https://gis.ngdc.noaa.gov/arcgis/services/graticule/MapServer/WMSServer/",
+      layers = c("1-degree grid", "5-degree grid"),
+      options = WMSTileOptions(format = "image/png8", transparent = TRUE),
+      attribution = NULL)  
+  output$finalleaf = renderLeaflet({print(finalleaf)})
+  
+  output$finalmess<-renderText({"The photo submission spreadsheet can be found on the network in the 'Image Submission' folder and is named 'NEFSC Sighting Data Table_Twin Otter_[datetime created].csv'"})
+  
+  
 
+  }
+  
+})
