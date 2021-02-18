@@ -299,7 +299,7 @@ observeEvent(input$photogo,{
   
   #error message if network choice doesn't match with where the app is launched
   } else {
-  output$finalmess<-renderText({"Are you sure you chose the correct Network Pathway?"})  
+  output$finalmess<-renderText({"Are you sure you chose the correct 'File Pathway?'"})  
   }
   
 })
