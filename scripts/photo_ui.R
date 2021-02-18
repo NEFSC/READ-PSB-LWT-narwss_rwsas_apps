@@ -6,11 +6,11 @@ fluidPage(
       radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE), 
       textInput("filepathinput", (HTML(paste("Local pathway for GPS files", '<br/>', "Example: C:/Users/leah.crowe/Desktop/Canada Data Processing/")))),
       radioButtons("tzone", "Camera Time Zone", choices = c("Atlantic Time","Eastern Time"), selected = "Eastern Time", inline = FALSE),
-      textInput("photoyear","Year"),
-      textInput("photofile", "Filename.csv"),
-      textInput("permit", "Permit Number:", placeholder = "MMPA #####"),
+      textInput("photoyear","Year (YYYY)"),
+      textInput("photofile", "Filename (must be a csv, but do not enter the extension)"),
+      textInput("permit", "Permit Number", placeholder = "MMPA #####"),
       actionButton("photogo", "Get positions")
-    ),
+      ),
     mainPanel(
       (HTML(paste('<br/>',
                   "CSV must include these columns:",'<br/>',
