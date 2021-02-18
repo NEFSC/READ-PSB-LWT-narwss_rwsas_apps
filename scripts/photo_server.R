@@ -12,7 +12,7 @@ observeEvent(input$photogo,{
   print(pernum)
   
   ntwkpathway<-paste0('//net/mmi/Fieldwrk/Aerials/',phyear,'/')
-  ntwkpathimage<-paste0(ntwkpathway,phyear,'_digital_photos/Image Submission/',phfile)
+  ntwkpathimage<-paste0(ntwkpathway,phyear,'_digital_photos/Image Submission/',phfile,'.csv')
   
   subraw<-read.csv(ntwkpathimage, header = TRUE, stringsAsFactors = FALSE)
   subraw$Month<-sprintf("%02d",subraw$Month)
