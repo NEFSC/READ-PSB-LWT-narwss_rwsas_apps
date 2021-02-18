@@ -4,7 +4,7 @@ fluidPage(
   sidebarLayout(
     sidebarPanel(
       radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE), 
-      textInput("filepathinput", (HTML(paste("Local pathway for GPS files", '<br/>', "Example: C:/Users/leah.crowe/Desktop/Canada Data Processing/")))),
+      textInput("filepathinput", (HTML(paste("Local pathway for edit_data folders and photo submission csv", '<br/>', "Example: C:/Users/leah.crowe/Desktop/Canada Data Processing/")))),
       radioButtons("tzone", "Camera Time Zone", choices = c("Atlantic Time","Eastern Time"), selected = "Eastern Time", inline = FALSE),
       textInput("photoyear","Year (YYYY)"),
       textInput("photofile", "Filename (must be a csv, but do not enter the extension)"),
