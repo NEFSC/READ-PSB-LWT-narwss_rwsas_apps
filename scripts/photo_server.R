@@ -1,26 +1,48 @@
 
 observeEvent(input$photogo,{
   
-  if(input$filepathway == 'Network'){
-    
-  phyear <- input$photoyear
-  phfile <- input$photofile
-  pernum <- input$permit
+  output$finalmess<-renderText({""})
   
+  phserv<-input$filepathway
+  phyear<-input$photoyear
+  phfile<-input$photofile
+  pernum<-input$permit
+  override<-NULL
+  print(phserv)
   print(phyear)
   print(phfile)
   print(pernum)
   
-  ntwkpathway<-paste0('//net/mmi/Fieldwrk/Aerials/',phyear,'/')
-  ntwkpathimage<-paste0(ntwkpathway,phyear,'_digital_photos/Image Submission/',phfile,'.csv')
+  print(file.exists('./scripts/oracleaccess.R'))
   
-  subraw<-read.csv(ntwkpathimage, header = TRUE, stringsAsFactors = FALSE)
+  if (file.exists('./scripts/oracleaccess.R') == TRUE){
+    override <- 'Network'
+  } else {
+    override <- 'Local'
+  }
+  
+  if (override == phserv){
+  
+  if(phserv == 'Network'){
+    pathway<-paste0('//net/mmi/Fieldwrk/Aerials/',phyear,'/')
+    pathimage<-paste0(pathway,phyear,'_digital_photos/Image Submission/',phfile,'.csv')
+  } else if (phserv == 'Local'){
+    pathway<-input$filepathinput
+    pathimage<-paste0(input$filepathinput,phfile,'.csv')
+  }
+
+  print(pathway)
+  print(pathimage)
+  print(file.exists(pathimage))
+  
+  if (file.exists(pathimage) == TRUE){
+    
+  subraw<-read.csv(pathimage, header = TRUE, stringsAsFactors = FALSE)
   subraw$Month<-sprintf("%02d",subraw$Month)
   subraw$Day<-sprintf("%02d", subraw$Day)
   subraw<-data.frame(date_tz = "",subraw)
   subraw$date_tz<-dmy_hms(subraw$date_tz)
   print(head(subraw))
-  
   
   withProgress(message = 'Finding whale positions from timestamp...', min = 0, max = nrow(subraw), {
     for(i in 1:nrow(subraw))
@@ -30,7 +52,13 @@ observeEvent(input$photogo,{
         print("yr")
         datestr<-paste0(yr,subraw$Month[i],subraw$Day[i])
         print(datestr)
-        gps<-as.data.frame(read.csv(paste0(ntwkpathway,'Flights/edit_data/',datestr,'/',datestr,'.gps'), header=FALSE, stringsAsFactors = FALSE))
+        
+        if(input$filepathway == 'Network'){
+          pathgps<-paste0(pathway,'Flights/edit_data/',datestr,'/',datestr,'.gps')
+        } else if (input$filepathway == 'Local'){  
+          pathgps<-paste0(pathway,'/',datestr,'/',datestr,'.gps')}
+        
+        gps<-as.data.frame(read.csv(pathgps, header=FALSE, stringsAsFactors = FALSE))
         names(gps)<-c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE','T1')
         gps$DateTime<-dmy_hms(gps$DateTime, tz = "GMT")
         
@@ -255,7 +283,6 @@ observeEvent(input$photogo,{
     addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
     addPolygons(data = allpoly, weight = 2, color = "blue") %>%
     addCircleMarkers(lng = ~subed$Longitude, lat = ~subed$Latitude, color = "black", stroke = FALSE, fillOpacity = 2, radius = 5, popup = paste0(subed$Year,"-",subed$Month,"-",subed$Day,"-",subed$`EG Letter`)) %>%
-    #addLegend(colors = c("blue"), labels = c("regions"), opacity = 0.3)%>%
     addWMSTiles(
       "https://gis.ngdc.noaa.gov/arcgis/services/graticule/MapServer/WMSServer/",
       layers = c("1-degree grid", "5-degree grid"),
@@ -265,8 +292,14 @@ observeEvent(input$photogo,{
   
   output$finalmess<-renderText({"The photo submission spreadsheet can be found on the network in the 'Image Submission' folder and is named 'NEFSC Sighting Data Table_Twin Otter_[datetime created].csv'"})
   
+  #error message is bad file name
+  } else {
+  output$finalmess<-renderText({"File does not exist"})
+  }
   
-
+  #error message if network choice doesn't match with where the app is launched
+  } else {
+  output$finalmess<-renderText({"Are you sure you chose the correct Network Pathway?"})  
   }
   
 })
