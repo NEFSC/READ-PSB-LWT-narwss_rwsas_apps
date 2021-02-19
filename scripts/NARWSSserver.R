@@ -164,7 +164,7 @@ observeEvent(input$rawupload,{
       ##round lat/lon for show
     }  
     ######
-      print(eff_sig)
+
       eff_sig$DATETIME_UTC<-as.character.Date(eff_sig$DATETIME_UTC)
       eff_sig$LATITUDE<-as.character(eff_sig$LATITUDE)
       eff_sig$LONGITUDE<-as.character(eff_sig$LONGITUDE)
@@ -1212,7 +1212,9 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
       disable("dmaup")
         }
       
-    } 
+} else {
+  dmanamesexpsent<-"Information not included in this report"
+} 
       ############
       ## REPORT ##
       ############
