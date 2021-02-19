@@ -1212,9 +1212,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
       disable("dmaup")
         }
       
-} else {
-  dmanamesexpsent<-"Information not included in this report"
-} 
+}
       ############
       ## REPORT ##
       ############
@@ -1304,7 +1302,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
             
             rptnotes<-input$reportnotes
             
-            if (criteria$loc == 'Network'){
+            if (file.exists('./scripts/oracleaccess.R') == TRUE){
 
               dmanamesexpsent<-paste0("Active right whale SLOW zone(s): ",dmanamesexp,".")
               webshotpath<-paste0(getwd(),"/surveymap.png")
@@ -1312,7 +1310,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
               source('./scripts/input_sas.R', local = TRUE)$value
               source('./scripts/input_dma.R', local = TRUE)$value
               
-            } else if (criteria$loc == 'Local'){
+            } else {
               
               disable("dmaup")
               disable("dmareport")
