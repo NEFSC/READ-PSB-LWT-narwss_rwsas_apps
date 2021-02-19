@@ -4,6 +4,8 @@ disable("dmareport")
 disable("dmaletter")
 disable("kml")
 
+if (file.exists('./scripts/oracleaccess.R') == TRUE){
+
 source('./scripts/reactive.R', local = TRUE)$value
 source('./scripts/oracleaccess.R', local = TRUE)$value
 #need for action & dma even though you can only do DMA stuff on the server. It separates it from the NARWSS app. 
@@ -202,6 +204,8 @@ observeEvent(input$eval,{
 source('./scripts/input_sas.R', local = TRUE)$value
 source('./scripts/input_dma.R', local = TRUE)$value
 
-
+} else {
+  disable("query")
+}
 
 
