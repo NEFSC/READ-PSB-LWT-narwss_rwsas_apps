@@ -1330,6 +1330,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
             
               params<-list(date1 = date_formats$date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
               print(webshotpath)
+              print(params)
               rmarkdown::render(tempReport, output_file = file,
                               params = params,
                               envir = new.env(parent = globalenv())
