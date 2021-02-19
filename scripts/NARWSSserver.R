@@ -1147,20 +1147,19 @@ observeEvent(input$rawupload,{
       
       source('./scripts/sma.R', local = TRUE)$value
       
-      if (input$filepathway == 'Network'){
+if (file.exists('./scripts/oracleaccess.R') == TRUE){
       source('./scripts/oracleaccess.R', local = TRUE)$value
-      source('./scripts/activedma.R', local = TRUE)$value}
+      source('./scripts/activedma.R', local = TRUE)$value
       
       if(nrow(egtable) == 0 | egtable$DateTime[1] == 'No right whales sighted'){
         ##if no Eg:
         output$error1<-renderText({"No right whales were reported for this day"})
-      }
-      else {
+      } else {
         
         output$obspeeps_options<-renderUI({
           radioButtons("obspeeps","Who even are you?", choiceNames = list("Allison", "Christin", "Leah", "Pete", "Tim", "I don't know"), choiceValues = list(3,4,873,2,1,0), selected = "I don't know")})
         output$plane_options<-renderUI({
-          radioButtons("plane","Which plane were you in?", choiceNames = list("NOAA46", "NOAA48", "NOAA56", "NOAA57", "An Otter"), choiceValues = list(183,178,284,49,18), selected = "An Otter")})  
+          radioButtons("plane","Which plane were you in?", choiceNames = list("NOAA46", "NOAA48", "NOAA56", "NOAA57", "Some otter plane"), choiceValues = list(183,178,284,49,18), selected = "An Otter")})  
         
         #####
         ##egtable for SAS
@@ -1213,7 +1212,7 @@ observeEvent(input$rawupload,{
       disable("dmaup")
         }
       
-        
+    } 
       ############
       ## REPORT ##
       ############
