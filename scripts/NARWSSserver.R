@@ -164,7 +164,7 @@ observeEvent(input$rawupload,{
       ##round lat/lon for show
     }  
     ######
-      
+      print(eff_sig)
       eff_sig$DATETIME_UTC<-as.character.Date(eff_sig$DATETIME_UTC)
       eff_sig$LATITUDE<-as.character(eff_sig$LATITUDE)
       eff_sig$LONGITUDE<-as.character(eff_sig$LONGITUDE)
