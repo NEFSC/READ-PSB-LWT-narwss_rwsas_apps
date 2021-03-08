@@ -58,16 +58,14 @@ observeEvent(input$dmaup,{
       mutate(TRIGGERTYPE = 'v')
   }
   
-  
   print("past dmainfo")
   ##################################
   ##list of dmas being extended
-  
-  if (dma_react$extdfname != ""){
+
+  if (plyr::empty(dma_react$extdfname) == FALSE){
     extended_dmainfo<-as.list(dma_react$extdfname$ID)
-    
     for (i in extended_dmainfo){
-      #print(i)
+      print(i)
       sqlQuery(cnxn, paste0("UPDATE DMAINFO
                             SET CANCELLED = 'extended'
                             WHERE ID = ",i,";"))}
