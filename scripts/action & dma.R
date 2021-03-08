@@ -277,6 +277,7 @@ names(comboext)<-DMAlist
     #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
     #I don't remember why I named this dmacand -- maybe dma combo and... then some?
     # applied over the list of sightings that fall within each DMA
+
 extdf_list<-lapply(comboext, function(x) {
     #print(x)
     dmacandext<-x %>%
@@ -342,11 +343,13 @@ extdf_list<-lapply(comboext, function(x) {
     ##DMAid will pass into the next for loop
     ##the below doesn't mean anything going forward for egsas
     ##this is all part of the lapply to make the extdf_list
+    print("#1")
+    print(dmaextsightID)
     
     for (i in 1:nrow(egsas))
       if (egsas$sightID[i] %in% dmaextsightID$sightID) {
-        print(i)
-        print("1")
+        #print(i)
+        #print("1")
         egsas$ACTION_NEW[i] = 55
         #print(egsas)
         df<-data.frame(extDMAs = DMAid,
@@ -354,7 +357,7 @@ extdf_list<-lapply(comboext, function(x) {
                        TRIGGERDATE = exttot$TRIGGERDATE,
                        TRIGGERORG = exttot$OBSERVER_ORG)
         print("356")
-        print(df)
+        #print(df)
         extdf_list<-rbind(extdf_list,df)
 
       } else {
@@ -363,35 +366,34 @@ extdf_list<-lapply(comboext, function(x) {
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
 
-   extdf_list})
-
-print(extdf_list)
+    extdf_list
+    })
 
 for (i in 1:nrow(egsas))
   if (is.na(egsas$ACTION_NEW[i])){ #is.na = DMA 4 animals
-    #print(i)
-    #print("4")
+    print(i)
+    print("4")
     egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
   } else if (exists("dmaextsightID") && egsas$sightID[i] %in% dmaextsightID$sightID) {
-    #print(i)
-    #print("1")
+    print(i)
+    print("1")
     egsas$ACTION_NEW[i] = 55
-    #print(head(egsas))
+    print(head(egsas))
     df<-data.frame(extDMAs = DMAid,
                    TRIGGER_GROUPSIZE = exttot$total,
                    TRIGGERDATE = exttot$TRIGGERDATE,
                    TRIGGERORG = exttot$OBSERVER_ORG)
-    #print(df)
+    print(df)
     extdf_list<-rbind(extdf_list,df)
     #print(extdf)
   } else if (egsas$ACTION_NEW[i] == 55){
-    #print(i)
-    #print("2")
+    print(i)
+    print("2")
     egsas$ACTION_NEW[i] = 2 #still in protected zone, but not trigger anything
-    #print(egsas)
+    print(egsas)
   } else {
-    #print(i)
-    #print("3")
+    print(i)
+    print("3")
     egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
   }
 print("here")
@@ -515,9 +517,9 @@ print("here")
   
   totalnew<-extclusty%>%
     ungroup()%>%
-    distinct(totes)%>%
+    distinct(indDMA,cluster,totes)%>%
+    group_by(indDMA)%>%
     summarise (n = sum(totes))
-  
   
   print(totalnew)
   
@@ -532,7 +534,7 @@ print("here")
     } else {
       egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
     }
-  #print(egsas)
+  print(egsas)
   
   } #276
 } #end 55 in action_new
@@ -934,7 +936,13 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
   ##join dmanamedf with ext dmas
   ##ext IDs should be 1 + max(ID) of new dmas
   if(exists("dmanamedf") & exists("extdfname")){
+    
+    extdfname$ID<-as.character(extdfname$ID)
+    extdfname$NAME<-as.character(extdfname$NAME)
+    extdfname$TRIGGERDATE<-ymd_hms(extdfname$TRIGGERDATE)
+
     alldmas<-rbind(dmanamedf,extdfname)
+    
   } else if (!exists("dmanamedf") & exists("extdfname")){
     alldmas<-extdfname
   } else if (exists("dmanamedf") & !exists("extdfname")){
@@ -1002,7 +1010,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
   ##buttons
   print("enable")
   enable("dmaup")
-  
+
   ###############
   dmanameout<-alldmas%>%
     dplyr::rename("GROUP_SIZE" = "TRIGGER_GROUPSIZE")
