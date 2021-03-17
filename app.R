@@ -1,7 +1,7 @@
-##########################################
-## App file for NARWSS & RWSAS DMA APPs ##
-## Leah Crowe 2019                      ##
-##########################################
+######################################
+## App file for NARWSS & RWSAS APPs ##
+## Leah Crowe 2019                  ##
+######################################
 
 
 #############
@@ -43,6 +43,7 @@ ui <- dashboardPage(
       # Third tab content
       tabItem(tabName = "Photo",
               source('./scripts/photo_app.R', local = TRUE)$value
+
       )
     )
   )
