@@ -207,5 +207,3 @@ source('./scripts/input_dma.R', local = TRUE)$value
 } else {
   disable("query")
 }
-
-
