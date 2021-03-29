@@ -7,13 +7,20 @@
 ## User interface ##
 ####################
 
-ui = source('./scripts/DMAui.R', local = TRUE)$value
+ui = secure_app(source('./scripts/DMAui.R', local = TRUE)$value)
 ############
 ## Server ##
 ############
 
 	## Define server logic 
 	server = function(input, output, session) {
+	  
+	  res_auth <- secure_server(
+	    check_credentials = check_credentials(credentials)
+	  )
+	  
+	  output$auth_output <- renderPrint({
+	    reactiveValuesToList(res_auth)})
 	  
 	  ## rwData
 	  source('./scripts/DMAserver.R', local = TRUE)$value
