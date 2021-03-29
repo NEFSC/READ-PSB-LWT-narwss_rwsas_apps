@@ -10,6 +10,7 @@
 
 Sys.setenv(ORACLE_HOME="/ora1/app/oracle/product/11.2.0/dbhome_1")
 source('./scripts/global_libraries.R', local = TRUE)$value
+source('./scripts/creds.R', local = TRUE)$value
 
 ####################
 ## User interface ##
