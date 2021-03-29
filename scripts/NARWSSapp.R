@@ -4,12 +4,11 @@
 ##   Updated: January 2019                           ##             
 #######################################################
 
-
 ####################
 ## User interface ##
 ####################
 
-ui = source('./scripts/NARWSSui.R', local = TRUE)$value
+ui = secure_app(source('./scripts/NARWSSui.R', local = TRUE)$value)
 ############
 ## Server ##
 ############
@@ -17,6 +16,12 @@ ui = source('./scripts/NARWSSui.R', local = TRUE)$value
 	## Define server logic 
 	server = function(input, output, session) {
 	  
+	  res_auth <- secure_server(
+	    check_credentials = check_credentials(credentials)
+	  )
+	  
+	  output$auth_output <- renderPrint({
+	    reactiveValuesToList(res_auth)})
 	  ## rwData
 	  source('./scripts/NARWSSserver.R', local = TRUE)$value
 		
