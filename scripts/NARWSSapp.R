@@ -15,16 +15,18 @@ ui = secure_app(source('./scripts/NARWSSui.R', local = TRUE)$value)
 
 	## Define server logic 
 	server = function(input, output, session) {
-	  
+
+	  if (file.exists('./scripts/creds.R') == TRUE){	  	  
 	  res_auth <- secure_server(
 	    check_credentials = check_credentials(credentials)
-	  )
 	  
 	  output$auth_output <- renderPrint({
 	    reactiveValuesToList(res_auth)})
+	  }
+	  
 	  ## rwData
 	  source('./scripts/NARWSSserver.R', local = TRUE)$value
-		
+	  
 	}
 
 #########################
