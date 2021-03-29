@@ -1,6 +1,6 @@
 fluidPage(
   useShinyjs(),
-  titlePanel("NEFSC Right Whale Data Processing"),
+  titlePanel("NEFSC Right Whale Aerial Survey Data Processing"),
       splitLayout(radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE), 
               conditionalPanel(
                 condition = "input$filepathway == Local",
