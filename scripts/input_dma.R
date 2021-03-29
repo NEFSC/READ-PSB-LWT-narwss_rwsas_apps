@@ -62,14 +62,16 @@ observeEvent(input$dmaup,{
   ##################################
   ##list of dmas being extended
 
-  if (plyr::empty(dma_react$extdfname) == FALSE){
+  if (is.na(plyr::empty(dma_react$extdfname))) {
+    print('no extension')
+  } else  if (plyr::empty(dma_react$extdfname) == FALSE){
     extended_dmainfo<-as.list(dma_react$extdfname$ID)
     for (i in extended_dmainfo){
       print(i)
       sqlQuery(cnxn, paste0("UPDATE DMAINFO
                             SET CANCELLED = 'extended'
                             WHERE ID = ",i,";"))}
-    }
+  } else {} 
   ##################################
   
   dmainfoinsert<-dmainfo%>%
