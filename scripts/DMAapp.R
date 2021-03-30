@@ -7,7 +7,7 @@
 ## User interface ##
 ####################
 
-ui = secure_app(source('./scripts/DMAui.R', local = TRUE)$value)
+ui = shinymanager::secure_app(source('./scripts/DMAui.R', local = TRUE)$value)
 ############
 ## Server ##
 ############
@@ -15,8 +15,8 @@ ui = secure_app(source('./scripts/DMAui.R', local = TRUE)$value)
 	## Define server logic 
 	server = function(input, output, session) {
 	  
-	  res_auth <- secure_server(
-	    check_credentials = check_credentials(credentials)
+	  res_auth <- shinymanager::secure_server(
+	    check_credentials = shinymanager::check_credentials(credentials)
 	  )
 	  
 	  output$auth_output <- renderPrint({
