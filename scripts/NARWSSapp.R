@@ -8,7 +8,7 @@
 ## User interface ##
 ####################
 
-ui = shinymanager::secure_app(source('./scripts/NARWSSui.R', local = TRUE)$value)
+ui = shinymanager::secure_app(source('./scripts/NARWSSui.R', local = TRUE)$value, timeout = 0)
 ############
 ## Server ##
 ############

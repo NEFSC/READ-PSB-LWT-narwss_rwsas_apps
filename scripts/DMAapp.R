@@ -7,7 +7,7 @@
 ## User interface ##
 ####################
 
-ui = shinymanager::secure_app(source('./scripts/DMAui.R', local = TRUE)$value)
+ui = shinymanager::secure_app(source('./scripts/DMAui.R', local = TRUE)$value, timeout = 0)
 ############
 ## Server ##
 ############
