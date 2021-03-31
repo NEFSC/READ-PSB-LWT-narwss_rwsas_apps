@@ -8,7 +8,7 @@
 ## User interface ##
 ####################
 
-ui = shinymanager::secure_app(source('./scripts/NARWSSui.R', local = TRUE)$value, timeout = 0)
+ui = shinymanager::secure_app(source('./scripts/NARWSSui.R', local = TRUE)$value)
 ############
 ## Server ##
 ############
@@ -18,7 +18,9 @@ ui = shinymanager::secure_app(source('./scripts/NARWSSui.R', local = TRUE)$value
 
 	  if (file.exists('./scripts/creds.R') == TRUE){	  	  
 	  res_auth <- shinymanager::secure_server(
-	    check_credentials = shinymanager::check_credentials(credentials))
+	    check_credentials = shinymanager::check_credentials(credentials),
+	    timeout = 0
+	    )
 	  
 	  output$auth_output <- renderPrint({
 	    reactiveValuesToList(res_auth)})
