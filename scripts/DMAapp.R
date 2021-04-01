@@ -17,7 +17,7 @@ ui = shinymanager::secure_app(source('./scripts/DMAui.R', local = TRUE)$value)
 	  
 	  res_auth <- shinymanager::secure_server(
 	    check_credentials = shinymanager::check_credentials(credentials),
-	    timeout = 0
+	    timeout = 120
 	  )
 	  
 	  output$auth_output <- renderPrint({
