@@ -1157,7 +1157,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
       } else {
         
         output$obspeeps_options<-renderUI({
-          radioButtons("obspeeps","Who even are you?", choiceNames = list("Allison", "Christin", "Leah", "Pete", "Tim", "I don't know"), choiceValues = list(3,4,873,2,1,0), selected = "I don't know")})
+          radioButtons("obspeeps","Who even are you?", choiceNames = list("Allison", "Christin", "Heather","Leah", "Pete", "Tim", "I don't know"), choiceValues = list(3,4,940,873,2,1,0), selected = "I don't know")})
         output$plane_options<-renderUI({
           radioButtons("plane","Which plane were you in?", choiceNames = list("NOAA46", "NOAA48", "NOAA56", "NOAA57", "Some otter plane"), choiceValues = list(183,178,284,49,18), selected = "An Otter")})  
         
