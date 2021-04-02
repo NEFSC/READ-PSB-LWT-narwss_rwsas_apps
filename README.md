@@ -52,7 +52,7 @@ The app can be launched by running
 
 `shiny::runGitHub("READ-PSB-LWT-narwss_rwsas_apps", username = "NEFSC", ref = "master")`
 
-in your RStudio environment. Click 'Run App' to get started. In the window that pops up, click "Open in Browser". As of September 2020, the app is not supported for local use. 
+in your RStudio environment. Click 'Run App' to get started. In the window that pops up, click "Open in Browser". 
 
 
 ## Script Flow Chart
