@@ -41,8 +41,11 @@ library(webshot)
 library(zoo)
 
 ```
+##Additional installations
 
-Finally, if you do not get TRUE when you run `tinytex:::is_tinytex()`, then you probably need to run this: `tinytex::install_tinytex(force=TRUE)`. More info on this process and the TinyTex package can be found here: https://yihui.name/tinytex/
+`webshot::install_phantomjs()`
+
+If you do not get TRUE when you run `tinytex:::is_tinytex()`, then you probably need to run this: `tinytex::install_tinytex(force=TRUE)`. More info on this process and the TinyTex package can be found here: https://yihui.name/tinytex/
 
 ## Running the App
 The app can be launched by running
