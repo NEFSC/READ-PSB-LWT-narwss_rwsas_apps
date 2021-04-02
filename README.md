@@ -41,7 +41,7 @@ library(webshot)
 library(zoo)
 
 ```
-##Additional installations
+## Additional installations
 
 `webshot::install_phantomjs()`
 
