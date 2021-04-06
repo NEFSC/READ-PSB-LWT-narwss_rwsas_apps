@@ -931,7 +931,7 @@ observeEvent(input$rawupload,{
     
     ###########
     
-    observeEvent(input$save,{
+observeEvent(input$save,{
       final = hot_to_r(input$handsrf)
       ##########
       ##format/write f_ file
@@ -1286,7 +1286,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
       htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
       print("html2")
 
-        output$report<-downloadHandler(
+output$report<-downloadHandler(
           filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_NOAA_NERW_Aerial_Report.pdf"),
           content = function(file) {
             
