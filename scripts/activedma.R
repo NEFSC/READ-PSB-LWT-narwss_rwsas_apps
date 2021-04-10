@@ -31,15 +31,15 @@ SpatialPolygons(DMAcoord_)
 #################
 ##action code dataframe to join with results of dma evaluation later
 actioncode<-"select *
-            from rightwhalesight.action"
+            from action"
 actioncodedf<-sqlQuery(cnxn, actioncode)
 actioncodedf$ID<-as.numeric(actioncodedf$ID)
 
 #################
 #query all relevant DMAs & APZs
 ##the to_date(to_char) for the expdate is necessary, otherwise, the modayr seconds default to 00:00:00 and dmas that expire on the same day are still included
-activedmasql<-paste0("select rightwhalesight.dmainfo.name, to_char(rightwhalesight.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((rightwhalesight.dmainfo.expdate - 7), 'YYYY-MM-DD') as ext, rightwhalesight.dmainfo.triggertype
-                  from rightwhalesight.dmainfo
+activedmasql<-paste0("select dmainfo.name, to_char(dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID, to_char((dmainfo.expdate - 7), 'YYYY-MM-DD') as ext, dmainfo.triggertype
+                  from dmainfo
                   where to_date('",MODAYR,"', 'YYYY-MM-DD') < to_date(to_char(EXPDATE, 'YYYY-MM-DD'),'YYYY-MM-DD') 
                     and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(TRIGGERDATE, 'YYYY-MM-DD'),'YYYY-MM-DD')
                      and (cancelled not like 'cancel%' or cancelled is null);")
@@ -83,19 +83,22 @@ if (nrow(actdma) == 0){
 ####################
   
   ##dma/apz bounds
-  actdma_boundssql<-paste0("select rightwhalesight.dmacoords.ID, vertex, lat, lon
-                  from rightwhalesight.dmacoords, rightwhalesight.dmainfo
-                  where to_date('",MODAYR,"', 'YYYY-MM-DD') < EXPDATE
-                    and to_date('",MODAYR,"', 'YYYY-MM-DD') > TRIGGERDATE
-                    and rightwhalesight.dmacoords.ID = RIGHTWHALESIGHT.DMAINFO.ID;")
+  actdma_boundssql<-paste0("select dmacoords.ID, vertex, lat, lon
+                     from dmainfo
+                     left outer join dmacoords on dmainfo.ID = dmacoords.ID
+                     where to_date('",MODAYR,"', 'YYYY-MM-DD') < to_date(to_char(EXPDATE, 'YYYY-MM-DD'),'YYYY-MM-DD') 
+                     and to_date('",MODAYR,"', 'YYYY-MM-DD') > to_date(to_char(TRIGGERDATE, 'YYYY-MM-DD'),'YYYY-MM-DD')
+                     and (cancelled not like 'cancel%' or cancelled is null);")
   
   actdma_bounds<-sqlQuery(cnxn,actdma_boundssql)
+  print(actdma_bounds)
   
-  actdmadf<-inner_join(actdma,actdma_bounds,by = "ID")
+  actdmadf<-actdma%>%
+    left_join(actdma_bounds,by = "ID")
     
   actdmadf$EXPDATE<-ymd(actdmadf$EXPDATE)
   actdmadf$EXT<-ymd(actdmadf$EXT)
-
+  print(actdmadf)
 ###########################################
 ## Categorizing current protection zones ##
 ###########################################
