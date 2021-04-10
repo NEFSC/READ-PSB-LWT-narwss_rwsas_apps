@@ -14,7 +14,7 @@ observeEvent(input$dmaup,{
   ###################
   
   maxidsql<-"SELECT max(ID)
-  FROM RIGHTWHALESIGHT.DMAINFO"
+  FROM DMAINFO"
   
   maxid<-sqlQuery(cnxn,maxidsql)
   maxid<-as.integer(maxid)
