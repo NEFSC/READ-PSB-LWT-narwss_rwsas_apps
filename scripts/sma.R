@@ -3,7 +3,7 @@
 ##########################
 
 #UTM unPROJECTED 19 for US, should be 20 for CA
-print(egtable)
+#print(egtable)
 sightings20<-egtable%>%
   filter(LONGITUDE >= -66)
 sightings19<-egtable%>%
