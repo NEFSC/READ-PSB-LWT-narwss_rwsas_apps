@@ -950,7 +950,12 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
   }  
 
   alldmas_trig<-alldmas%>%
-    filter(TRIGGER_GROUPSIZE > 2)
+    filter(TRIGGER_GROUPSIZE > 2)%>%
+    group_by(ID)%>%
+    slice_max(TRIGGERORG)%>%
+    ungroup()
+  
+  print(alldmas_trig)
   
   alldmas<-alldmas_trig%>%
     mutate(ID = dense_rank(ID))
