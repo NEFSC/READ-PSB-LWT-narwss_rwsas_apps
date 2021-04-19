@@ -949,8 +949,12 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
     alldmas<-dmanamedf
   }  
 
-  alldmas<-alldmas%>%
+  alldmas_trig<-alldmas%>%
+    filter(TRIGGER_GROUPSIZE > 2)
+  
+  alldmas<-alldmas_trig%>%
     mutate(ID = dense_rank(ID))
+  print(alldmas)
   
   print("do bounds exist?")
   if(exists("dmabounds") & exists("extdfbounds")){
@@ -961,8 +965,12 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
     alldmabounds<-dmabounds
   } 
   
+  print(alldmabounds)
   alldmabounds<-alldmabounds%>%
-    mutate(ID = dense_rank(ID))
+    right_join(alldmas_trig, by = "ID")%>%
+    mutate(ID = dense_rank(ID))%>%
+    dplyr::select(ID, VERTEX, LAT, LON)
+  print(alldmabounds)
   
   ##for database (excludes the 5th point to close the polygon)
   dmacoord<-alldmabounds%>%
