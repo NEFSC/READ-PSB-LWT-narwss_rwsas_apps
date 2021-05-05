@@ -545,19 +545,29 @@ print("here")
 if (NA %in% egsas$ACTION_NEW) {
   print("beg NA")
   ##only taking ACTION_NEW = na
-  actionna<-egsas %>% filter(is.na(egsas$ACTION_NEW)) %>% dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID")
+  actionna<-egsas%>% 
+            filter(is.na(egsas$ACTION_NEW))%>%
+    ##calculates core area
+            mutate(corer = round(sqrt(GROUP_SIZE/(pi*egden)),2))%>%
+            dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID","corer")
+            
   ##distance between points matrix -- compares right whale sightings positions to each other
   combo<-reshape::expand.grid.df(actionna,actionna)
-  names(combo)[6:10]<-c("DateTime2","LATITUDE2","LONGITUDE2","GROUP_SIZE2","sightID2")
+  names(combo)[7:12]<-c("DateTime2","LATITUDE2","LONGITUDE2","GROUP_SIZE2","sightID2","corer2")
   combo$GROUP_SIZE<-as.character(combo$GROUP_SIZE)
   combo$GROUP_SIZE<-as.numeric(combo$GROUP_SIZE)
-  ##calculates core area
-  setDT(combo)[ ,corer:=round(sqrt(GROUP_SIZE/(pi*egden)),2)] 
+  print(combo)
+  print(summary(combo))
+
   ##calculates distance between points in nautical miles
-  setDT(combo)[ ,dist_nm:=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
-                                                           matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
-                                                           a=6378137, f=1/298.257222101)*m_nm]
-  #print(combo)
+  combo <- combo%>%
+    mutate(dist_nm=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
+                                                               matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
+                                                               a=6378137, f=1/298.257222101)*m_nm,
+           total_corer = corer + corer2)
+  
+
+  print(combo)
   #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
   #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
   #I don't remember why I named this dmacand -- maybe dma combo and... then some?
@@ -575,7 +585,7 @@ if (NA %in% egsas$ACTION_NEW) {
   } else {
     
   dmacand<-combo %>%
-    dplyr::filter((combo$dist_nm != 0 & combo$dist_nm <= combo$corer) | (combo$GROUP_SIZE > 2 & combo$dist_nm == 0))
+    dplyr::filter((dist_nm != 0 & dist_nm <= total_corer) | (GROUP_SIZE > 2 & dist_nm == 0))
 
   }
   
@@ -970,7 +980,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)){
            "Lon (Degree Minutes)" = paste( formatC(abs(trunc(LON)), width = 3,flag = 0), formatC(round((abs(LON) %% 1)*60,0), width = 2,flag = 0), "W", sep = " "))%>%
     dplyr::rename("Lat (Decimal Degrees)" = LAT, "Lon (Decimal Degrees)" = LON)%>%
     filter(VERTEX != 5)
-  #print(dmacoord)
+  print(dmacoord)
   
   if (exists("kmlcoord")){
     print("enter kml land")
