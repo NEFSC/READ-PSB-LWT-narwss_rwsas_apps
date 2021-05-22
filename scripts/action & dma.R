@@ -547,7 +547,7 @@ if (NA %in% egsas$ACTION_NEW) {
   ##only taking ACTION_NEW = na
   actionna<-egsas%>% 
             filter(is.na(egsas$ACTION_NEW))%>%
-    ##calculates core area
+    ##calculates whale density radius
             mutate(corer = round(sqrt(GROUP_SIZE/(pi*egden)),2))%>%
             dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID","corer")
             
@@ -557,16 +557,14 @@ if (NA %in% egsas$ACTION_NEW) {
   combo$GROUP_SIZE<-as.character(combo$GROUP_SIZE)
   combo$GROUP_SIZE<-as.numeric(combo$GROUP_SIZE)
   print(combo)
-  print(summary(combo))
+  #print(summary(combo))
 
-  ##calculates distance between points in nautical miles
+  ##calculates distance between points in nautical miles and the radii distance between points for trigger
   combo <- combo%>%
     mutate(dist_nm=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
                                                                matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
                                                                a=6378137, f=1/298.257222101)*m_nm,
            total_corer = corer + corer2)
-  
-
   print(combo)
   #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
   #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
