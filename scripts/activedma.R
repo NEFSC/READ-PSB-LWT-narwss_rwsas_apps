@@ -7,7 +7,7 @@
 #################
 ## declare function
 #################
-
+print("beg activedma")
 querytoshape<-function(x){ #dmaquery = x
 
 vector5<-x%>%
@@ -27,7 +27,8 @@ DMAcoord<-lapply(idDMA, Polygon)
 DMAcoord_<-lapply(seq_along(DMAcoord), function(i) Polygons(list(Polygon(DMAcoord[[i]], hole=as.logical(NA))), ID = names(idDMA)[i]))
 SpatialPolygons(DMAcoord_)
 }
-
+print(input$sig_acou)
+if (input$sig_acou != "Test"){
 #################
 ##action code dataframe to join with results of dma evaluation later
 actioncode<-"select *
@@ -46,15 +47,27 @@ activedmasql<-paste0("select dmainfo.name, to_char(dmainfo.expdate, 'YYYY-MM-DD'
 
 actdma<-sqlQuery(cnxn,activedmasql)
 
+} else {
+  print("else")
+  actioncodedf <- data.frame(ID = c(1,2,4,5),
+                             ACTION = c("ONLY 1 OR 2","IN EXISTING PROTECTION ZONE","DMA","DMA EXTENSION"))
+  
+  dmacsv<-read.csv('./Aerial and SLOW zone data/DMAINFO export 19April2021.csv', header = T, stringsAsFactors = F)
+  actdma<-dmacsv%>%
+    filter(EXPDATE > MODAYR & TRIGGERDATE < MODAYR)
+  
+}  
+
 print(actdma)
+
 actdma<-actdma%>%
   group_by(NAME)%>%
   arrange(EXPDATE)%>%
   top_n(n = 1, EXPDATE)%>% #selects for later dma if there are two technically active because of an extension
   ungroup()
-
-print(actdma)
-
+  
+  print(actdma)
+ 
 ##do we have ANY dmas?
 if (nrow(actdma) == 0){
   
@@ -81,7 +94,7 @@ if (nrow(actdma) == 0){
 ####################
 ## Extend or not? ##
 ####################
-  
+if (input$sig_acou != "Test"){
   ##dma/apz bounds
   actdma_boundssql<-paste0("select dmacoords.ID, vertex, lat, lon
                      from dmainfo
@@ -95,9 +108,25 @@ if (nrow(actdma) == 0){
   
   actdmadf<-actdma%>%
     left_join(actdma_bounds,by = "ID")
-    
+  
+} else {
+  
+  actdma_bounds<-read.csv('./Aerial and SLOW zone data/DMACOORDS export 19April2021.csv', header = T, stringsAsFactors = F)
+
+  actdmadf<-actdma_bounds%>%
+    left_join(dmacsv, by = "ID")%>%
+    filter(EXPDATE > MODAYR & TRIGGERDATE < MODAYR)%>%
+    mutate(EXT=ymd(EXPDATE)-as.difftime(7, unit="days"))
+
+  print("second else")
+}
+  
   actdmadf$EXPDATE<-ymd(actdmadf$EXPDATE)
   actdmadf$EXT<-ymd(actdmadf$EXT)
+  actdmadf$ID<-as.numeric(actdmadf$ID)
+  actdmadf$VERTEX<-as.numeric(actdmadf$VERTEX)
+  actdmadf$LAT<-as.numeric(actdmadf$LAT)
+  actdmadf$LON<-as.numeric(actdmadf$LON)
   print(actdmadf)
 ###########################################
 ## Categorizing current protection zones ##
@@ -139,6 +168,7 @@ dmaext<-actdmadf%>%
       benigndma<-querytoshape(dmanoth)
     }
 
+  print(benigndma)
 #evaluate extension triggers DMAs
 
   if (nrow(dmaext) == 0){
@@ -146,7 +176,7 @@ dmaext<-actdmadf%>%
   } else {
       ##all polys together
       extensiondma<-querytoshape(dmaext)
-
+    print(extensiondma)
 ############################
 ##change projection, extension
 
