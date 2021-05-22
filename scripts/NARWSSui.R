@@ -2,7 +2,7 @@ fluidPage(
   useShinyjs(),
   titlePanel("NEFSC Right Whale Aerial Survey Data Processing"),
       splitLayout(radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE),
-                  radioButtons("realortest", "Is this real life or a test?", choices = c("Real", "Test"), selected = "Real", inline = FALSE), 
+                  radioButtons("sig_acou", "Is this real life or a test?", choices = c("Real", "Test"), selected = "Real", inline = FALSE), 
                   textInput("filepathinput", (HTML(paste("Local pathway", '<br/>', "Example: C:/2018/Flights/edit_data/")))),
               width = 3),
       tabsetPanel(type = "tabs",
