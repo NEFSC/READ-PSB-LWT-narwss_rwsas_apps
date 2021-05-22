@@ -1148,7 +1148,7 @@ observeEvent(input$save,{
       source('./scripts/sma.R', local = TRUE)$value
       
 if (file.exists('./scripts/oracleaccess.R') == TRUE){
-
+      print("oracle")
       source('./scripts/oracleaccess.R', local = TRUE)$value
       source('./scripts/activedma.R', local = TRUE)$value
   
