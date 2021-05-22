@@ -56,6 +56,10 @@ observeEvent(input$query,{
       
       dailyeg<-sqlQuery(cnxn,datesql)
       
+    } else if (input$sig_acou == "Test"){
+      #dmaevaldate<-'2021-05-03'
+      dailyeg<-read.csv(paste0('./data/sightings_',dmaevaldate,'.csv'))
+      #print(dailyeg)
     }
       
       if(nrow(dailyeg) == 0){
@@ -63,8 +67,8 @@ observeEvent(input$query,{
         output$error1<-renderText({"No right whales were reported for this day"})
         disable("eval")
         output$dailyeghot = renderRHandsontable({blank})
-      }
-      else if (nrow(dailyeg) > 0 & input$sig_acou == 'Visual Sightings'){
+      
+        } else if (nrow(dailyeg) > 0 & (input$sig_acou == 'Visual Sightings' | input$sig_acou == 'Test')){
         output$error1<-renderText({""})  
         
         dailyeg$SIGHTDATE<-ymd_hms(dailyeg$SIGHTDATE, tz = "America/New_York")
@@ -126,12 +130,12 @@ observeEvent(input$eval,{
       dmaevaldate<-input$sasdate
       print(dmaevaldate)
       egtable = hot_to_r(input$dailyeghot)
-      print(egtable)
+      #print(egtable)
       egtable<-egtable%>%
         filter(Select == TRUE)%>%
         dplyr::select(-Select)
       
-      print(egtable)
+      #print(egtable)
       
       egtable$LAT<-as.numeric(egtable$LAT)
       egtable$LON<-as.numeric(egtable$LON)
@@ -142,7 +146,7 @@ observeEvent(input$eval,{
       MODA<-unique(format(dmaevaldate, "%m-%d"))
       MODAYR<-unique(dmaevaldate, "%m-%d")
 
-      if (input$sig_acou == 'Visual Sightings'){
+      if (input$sig_acou == 'Visual Sightings' | input$sig_acou == 'Test'){
       ##egtable & egsas kept seperate like this for now, need to investigate more about how these tables are used between dma and narwss apps 11/20/2018 lmc
         egtable<-egtable%>%
           dplyr::rename("DateTime" = "SIGHTDATE","LATITUDE" = "LAT", "LONGITUDE" = "LON", "GROUP_SIZE" = "GROUPSIZE", "ID_RELIABILITY" = "SPECIES_CERT")
@@ -179,7 +183,7 @@ observeEvent(input$eval,{
       ##############
       source('./scripts/sma.R', local = TRUE)$value
       source('./scripts/activedma.R', local = TRUE)$value
-      
+
       #####
       ##egtable for SAS
         output$error1<-renderText({""})
