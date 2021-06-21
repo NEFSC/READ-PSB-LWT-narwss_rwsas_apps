@@ -30,6 +30,7 @@ library(htmlwidgets)
 library(webshot)
 library(rlist)
 library(ellipsis)
+library(stringi)
 
 if (file.exists('./scripts/creds.R') == TRUE){
   library(shinymanager, lib.loc = "/net/home5/lcrowe/R/x86_64-redhat-linux-gnu-library/3.6/")
