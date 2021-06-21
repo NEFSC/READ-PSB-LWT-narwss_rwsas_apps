@@ -89,7 +89,7 @@ if (nrow(actdma) == 0){
     mutate(sentence = paste(NAME, "expires on", EXPDATE))
   print(repdma)
   dmalist<-as.list(repdma$sentence)
-  dmanamesexp<-do.call("paste", c(dmalist, sep = ", "))
+  dmanamesexp<-stringi::stri_replace_last(do.call("paste", c(dmalist, sep = ", ")), fixed = ",", ", and")
   
 ####################
 ## Extend or not? ##
