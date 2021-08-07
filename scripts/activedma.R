@@ -46,9 +46,7 @@ activedmasql<-paste0("select dmainfo.name, to_char(dmainfo.expdate, 'YYYY-MM-DD'
                      and (cancelled not like 'cancel%' or cancelled is null);")
 
 actdma<-sqlQuery(cnxn,activedmasql)
-actdma$EXPDATE<-ymd_hms(actdma$EXPDATE)
-actdma$TRIGGERDATE<-dmy(actdma$TRIGGERDATE)
-
+print(actdma)
 
 } else {
   print("else")
@@ -56,9 +54,9 @@ actdma$TRIGGERDATE<-dmy(actdma$TRIGGERDATE)
                              ACTION = c("ONLY 1 OR 2","IN EXISTING PROTECTION ZONE","DMA","DMA EXTENSION"))
   
   dmacsv<-read.csv('./Aerial and SLOW zone data/DMAINFO export 05Aug2021.csv', header = T, stringsAsFactors = F)
-  dmacsv$EXPDATE<-ymd_hms(dmacsv$EXPDATE)
+  dmacsv$EXPDATE<-as.Date(dmacsv$EXPDATE)
   dmacsv$TRIGGERDATE<-dmy(dmacsv$TRIGGERDATE)
-  
+
   actdma<-dmacsv%>%
     filter(EXPDATE > MODAYR & TRIGGERDATE < MODAYR)
   
@@ -88,9 +86,7 @@ if (nrow(actdma) == 0){
   ############
   ## report ##
   ############
-  actdma$EXPDATE<-as.Date(actdma$EXPDATE)
-  #actdma$EXPDATE<-format(actdma$EXPDATE, format = "%d %B %Y")
-  print(actdma)
+
   repdma<-actdma%>%  
     mutate(EXPDATE = format(EXPDATE, format = "%d %B %Y"),
            sentence = paste(NAME, "expires on", EXPDATE))
@@ -128,8 +124,6 @@ if (input$sig_acou != "Test"){
   print("second else")
 }
   
-  actdmadf$EXPDATE<-as.Date(actdmadf$EXPDATE)
-  actdmadf$EXT<-as.Date(actdmadf$EXT)
   actdmadf$ID<-as.numeric(actdmadf$ID)
   actdmadf$VERTEX<-as.numeric(actdmadf$VERTEX)
   actdmadf$LAT<-as.numeric(actdmadf$LAT)
