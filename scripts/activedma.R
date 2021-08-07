@@ -46,6 +46,9 @@ activedmasql<-paste0("select dmainfo.name, to_char(dmainfo.expdate, 'YYYY-MM-DD'
                      and (cancelled not like 'cancel%' or cancelled is null);")
 
 actdma<-sqlQuery(cnxn,activedmasql)
+actdma$EXPDATE<-ymd_hms(actdma$EXPDATE)
+actdma$TRIGGERDATE<-dmy(actdma$TRIGGERDATE)
+
 
 } else {
   print("else")
