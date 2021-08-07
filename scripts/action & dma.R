@@ -447,13 +447,12 @@ print("here")
     as.data.frame()
 
   dmaextsights$GROUP_SIZE<-as.numeric(dmaextsights$GROUP_SIZE)
-  
+
   #core radius in meters
   dmaextsights<-dmaextsights%>%
     mutate(extcorer_m = dmaextsights$corer*1852,
            extPolyID = 1:nrow(dmaextsights))
 
-  
   if (nrow(dmaextsights) > 0){
   
   #copy for spatializing
