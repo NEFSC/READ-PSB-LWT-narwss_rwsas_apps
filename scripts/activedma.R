@@ -52,7 +52,10 @@ actdma<-sqlQuery(cnxn,activedmasql)
   actioncodedf <- data.frame(ID = c(1,2,4,5),
                              ACTION = c("ONLY 1 OR 2","IN EXISTING PROTECTION ZONE","DMA","DMA EXTENSION"))
   
-  dmacsv<-read.csv('./Aerial and SLOW zone data/DMAINFO export 19April2021.csv', header = T, stringsAsFactors = F)
+  dmacsv<-read.csv('./Aerial and SLOW zone data/DMAINFO export 05Aug2021.csv', header = T, stringsAsFactors = F)
+  dmacsv$EXPDATE<-ymd_hms(dmacsv$EXPDATE)
+  dmacsv$TRIGGERDATE<-dmy(dmacsv$TRIGGERDATE)
+  
   actdma<-dmacsv%>%
     filter(EXPDATE > MODAYR & TRIGGERDATE < MODAYR)
   
@@ -82,11 +85,12 @@ if (nrow(actdma) == 0){
   ############
   ## report ##
   ############
-  actdma$EXPDATE<-lubridate::ymd(actdma$EXPDATE)
-  actdma$EXPDATE<-format(actdma$EXPDATE, format = "%d %B %Y")
+  actdma$EXPDATE<-as.Date(actdma$EXPDATE)
+  #actdma$EXPDATE<-format(actdma$EXPDATE, format = "%d %B %Y")
   print(actdma)
   repdma<-actdma%>%  
-    mutate(sentence = paste(NAME, "expires on", EXPDATE))
+    mutate(EXPDATE = format(EXPDATE, format = "%d %B %Y"),
+           sentence = paste(NAME, "expires on", EXPDATE))
   print(repdma)
   dmalist<-as.list(repdma$sentence)
   dmanamesexp<-stringi::stri_replace_last(do.call("paste", c(dmalist, sep = ", ")), fixed = ",", ", and")
@@ -111,18 +115,18 @@ if (input$sig_acou != "Test"){
   
 } else {
   
-  actdma_bounds<-read.csv('./Aerial and SLOW zone data/DMACOORDS export 19April2021.csv', header = T, stringsAsFactors = F)
+  actdma_bounds<-read.csv('./Aerial and SLOW zone data/DMACOORDS export 05Aug2021.csv', header = T, stringsAsFactors = F)
 
   actdmadf<-actdma_bounds%>%
     left_join(dmacsv, by = "ID")%>%
     filter(EXPDATE > MODAYR & TRIGGERDATE < MODAYR)%>%
-    mutate(EXT=ymd(EXPDATE)-as.difftime(7, unit="days"))
-
+    mutate(EXT=as.Date(EXPDATE)-as.difftime(7, unit="days"))
+   
   print("second else")
 }
   
-  actdmadf$EXPDATE<-ymd(actdmadf$EXPDATE)
-  actdmadf$EXT<-ymd(actdmadf$EXT)
+  actdmadf$EXPDATE<-as.Date(actdmadf$EXPDATE)
+  actdmadf$EXT<-as.Date(actdmadf$EXT)
   actdmadf$ID<-as.numeric(actdmadf$ID)
   actdmadf$VERTEX<-as.numeric(actdmadf$VERTEX)
   actdmadf$LAT<-as.numeric(actdmadf$LAT)
