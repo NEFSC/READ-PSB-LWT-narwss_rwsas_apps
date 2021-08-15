@@ -28,7 +28,7 @@ DMAcoord_<-lapply(seq_along(DMAcoord), function(i) Polygons(list(Polygon(DMAcoor
 SpatialPolygons(DMAcoord_)
 }
 print(input$sig_acou)
-if (input$sig_acou != "Test"){
+if (isolate(criteria$loc) == 'Network'){
 #################
 ##action code dataframe to join with results of dma evaluation later
 actioncode<-"select *
@@ -58,7 +58,9 @@ print(actdma)
   dmacsv$TRIGGERDATE<-dmy(dmacsv$TRIGGERDATE)
 
   actdma<-dmacsv%>%
-    filter(EXPDATE > MODAYR & TRIGGERDATE < MODAYR)
+    filter(EXPDATE > MODAYR & TRIGGERDATE < MODAYR)%>%
+    dplyr::select(NAME, EXPDATE, ID, TRIGGERTYPE)%>%
+    mutate(EXT = EXPDATE - days(7))
   
 }  
 
@@ -97,7 +99,7 @@ if (nrow(actdma) == 0){
 ####################
 ## Extend or not? ##
 ####################
-if (input$sig_acou != "Test"){
+if (isolate(criteria$loc) == 'Network'){
   ##dma/apz bounds
   actdma_boundssql<-paste0("select dmacoords.ID, vertex, lat, lon
                      from dmainfo
@@ -117,9 +119,8 @@ if (input$sig_acou != "Test"){
   actdma_bounds<-read.csv('./Aerial and SLOW zone data/DMACOORDS export 05Aug2021.csv', header = T, stringsAsFactors = F)
 
   actdmadf<-actdma_bounds%>%
-    left_join(dmacsv, by = "ID")%>%
-    filter(EXPDATE > MODAYR & TRIGGERDATE < MODAYR)%>%
-    mutate(EXT=as.Date(EXPDATE)-as.difftime(7, unit="days"))
+    dplyr::select(ID, VERTEX, LAT, LON)%>%
+    right_join(actdma, by = "ID")
    
   print("second else")
 }
