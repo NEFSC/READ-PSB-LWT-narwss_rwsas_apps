@@ -130,7 +130,7 @@ egsas<-cbind(egsas,inoutsma,Canada,SPM,sightID)
 egsas<-egsas%>%mutate(ACTION_NEW = NA)
 #print(egsas)
 
-if (isolate(criteria$loc) == 'Network'){
+#if (isolate(criteria$loc) == 'Network'){
 bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
 eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
 
@@ -138,7 +138,7 @@ bAPZ<-!is.na(sp::over(eg.tr, as(benignapz.tr, "SpatialPolygons")))
 eAPZ<-!is.na(sp::over(eg.tr, as(extensionapz.tr, "SpatialPolygons")))
 
 egsas<-cbind(egsas,bDMA,eDMA,bAPZ,eAPZ)
-}
+#}
 
 #print(egsas)
 
@@ -152,7 +152,7 @@ for (i in 1:nrow(egsas))
   } else if (egsas$SPM[i] == TRUE){
     egsas$ACTION_NEW[i] = 6
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
-  } else if (isolate(criteria$loc) == 'Network'){
+  } else if (input$sig_acou == 'Real'){
     #print("network if")
     if (egsas$eDMA[i] == TRUE & (isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp) == "rwsurv")){ #visual detections in an extension eligible DMA 
       egsas$ACTION_NEW[i] = 55
@@ -396,22 +396,24 @@ for (i in 1:nrow(egsas))
     egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
   }
 print("here")
+
+##############
+  print("extension details")
   print(extdf_list)
   extdf<-bind_rows(extdf_list, .id = "column_label")
-  print(extdf)
+  #print(extdf)
   #######
   extdf<-extdf%>%
-    filter(!is.na(extDMAs))%>%
-    distinct()
-  #print(extdf)
-  #print("extdfname")
+   filter(!is.na(extDMAs))%>%
+   distinct()
+
+  print(dplyr::left_join(extdf, actdmadf, by = c("extDMAs" = "ID")))
   extdf$extDMAs<-as.integer(extdf$extDMAs)
-  extdfname<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
+  extdfname<-dplyr::left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
     mutate(INITOREXT = "e")%>%
     dplyr::select(extDMAs,NAME,INITOREXT,TRIGGER_GROUPSIZE,TRIGGERDATE,TRIGGERORG)%>%
     dplyr::rename("ID" = "extDMAs")%>%
     distinct()
-  print(extdfname)
   
   extdfbounds<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
     dplyr::select(extDMAs,VERTEX,LAT,LON)%>%
@@ -447,12 +449,12 @@ print("here")
 
   dmaextsights$GROUP_SIZE<-as.numeric(dmaextsights$GROUP_SIZE)
 
-  #core radius in meters
-  dmaextsights<-dmaextsights%>%
-    mutate(extcorer_m = dmaextsights$corer*1852,
-           extPolyID = 1:nrow(dmaextsights))
-
   if (nrow(dmaextsights) > 0){
+    
+    #core radius in meters
+    dmaextsights<-dmaextsights%>%
+      mutate(extcorer_m = dmaextsights$corer*1852,
+             extPolyID = 1:nrow(dmaextsights))
   
   #copy for spatializing
   dmaextdf<-dmaextsights
@@ -1182,7 +1184,7 @@ sas_react$egsastab<-egsastab
 ## On network ##
 ################
 
-if (isolate(criteria$loc) == 'Network'){
+if (input$sig_acou == 'Test'){
   ##########
   ###sas on network
   egsastabout<-sas_react$egsastab%>%
