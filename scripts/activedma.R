@@ -28,7 +28,8 @@ DMAcoord_<-lapply(seq_along(DMAcoord), function(i) Polygons(list(Polygon(DMAcoor
 SpatialPolygons(DMAcoord_)
 }
 print(input$sig_acou)
-if (isolate(criteria$loc) == 'Network'){
+#if (isolate(criteria$loc) == 'Network'){
+if (input$sig_acou != "Test"){
 #################
 ##action code dataframe to join with results of dma evaluation later
 actioncode<-"select *
@@ -99,7 +100,8 @@ if (nrow(actdma) == 0){
 ####################
 ## Extend or not? ##
 ####################
-if (isolate(criteria$loc) == 'Network'){
+#if (isolate(criteria$loc) == 'Network'){
+if (input$sig_acou != "Test"){
   ##dma/apz bounds
   actdma_boundssql<-paste0("select dmacoords.ID, vertex, lat, lon
                      from dmainfo
