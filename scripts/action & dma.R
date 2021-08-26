@@ -1,6 +1,5 @@
 ###Action & DMA analysis
 
-
 ##############
 ## FUNCTION ##
 ##############
@@ -131,7 +130,7 @@ egsas<-cbind(egsas,inoutsma,Canada,SPM,sightID)
 egsas<-egsas%>%mutate(ACTION_NEW = NA)
 #print(egsas)
 
-if (isolate(criteria$loc) == 'Network'){
+#if (isolate(criteria$loc) == 'Network'){
 bDMA<-!is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
 eDMA<-!is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
 
@@ -139,7 +138,7 @@ bAPZ<-!is.na(sp::over(eg.tr, as(benignapz.tr, "SpatialPolygons")))
 eAPZ<-!is.na(sp::over(eg.tr, as(extensionapz.tr, "SpatialPolygons")))
 
 egsas<-cbind(egsas,bDMA,eDMA,bAPZ,eAPZ)
-}
+#}
 
 #print(egsas)
 
@@ -153,7 +152,7 @@ for (i in 1:nrow(egsas))
   } else if (egsas$SPM[i] == TRUE){
     egsas$ACTION_NEW[i] = 6
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
-  } else if (isolate(criteria$loc) == 'Network'){
+  } else if (input$sig_acou == 'Real' | input$sig_acou == 'Test' | isolate(criteria$loc) == 'Network'){
     #print("network if")
     if (egsas$eDMA[i] == TRUE & (isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp) == "rwsurv")){ #visual detections in an extension eligible DMA 
       egsas$ACTION_NEW[i] = 55
@@ -397,22 +396,24 @@ for (i in 1:nrow(egsas))
     egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
   }
 print("here")
+
+##############
+  print("extension details")
   print(extdf_list)
   extdf<-bind_rows(extdf_list, .id = "column_label")
-  print(extdf)
+  #print(extdf)
   #######
   extdf<-extdf%>%
-    filter(!is.na(extDMAs))%>%
-    distinct()
-  #print(extdf)
-  #print("extdfname")
+   filter(!is.na(extDMAs))%>%
+   distinct()
+
+  print(dplyr::left_join(extdf, actdmadf, by = c("extDMAs" = "ID")))
   extdf$extDMAs<-as.integer(extdf$extDMAs)
-  extdfname<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
+  extdfname<-dplyr::left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
     mutate(INITOREXT = "e")%>%
     dplyr::select(extDMAs,NAME,INITOREXT,TRIGGER_GROUPSIZE,TRIGGERDATE,TRIGGERORG)%>%
     dplyr::rename("ID" = "extDMAs")%>%
     distinct()
-  print(extdfname)
   
   extdfbounds<-left_join(extdf, actdmadf, by = c("extDMAs" = "ID"))%>%
     dplyr::select(extDMAs,VERTEX,LAT,LON)%>%
@@ -447,14 +448,13 @@ print("here")
     as.data.frame()
 
   dmaextsights$GROUP_SIZE<-as.numeric(dmaextsights$GROUP_SIZE)
-  
-  #core radius in meters
-  dmaextsights<-dmaextsights%>%
-    mutate(extcorer_m = dmaextsights$corer*1852,
-           extPolyID = 1:nrow(dmaextsights))
 
-  
   if (nrow(dmaextsights) > 0){
+    
+    #core radius in meters
+    dmaextsights<-dmaextsights%>%
+      mutate(extcorer_m = dmaextsights$corer*1852,
+             extPolyID = 1:nrow(dmaextsights))
   
   #copy for spatializing
   dmaextdf<-dmaextsights
@@ -547,7 +547,7 @@ if (NA %in% egsas$ACTION_NEW) {
   ##only taking ACTION_NEW = na
   actionna<-egsas%>% 
             filter(is.na(egsas$ACTION_NEW))%>%
-    ##calculates core area
+    ##calculates whale density radius
             mutate(corer = round(sqrt(GROUP_SIZE/(pi*egden)),2))%>%
             dplyr::select("DateTime", "LATITUDE", "LONGITUDE", "GROUP_SIZE","sightID","corer")
             
@@ -557,16 +557,14 @@ if (NA %in% egsas$ACTION_NEW) {
   combo$GROUP_SIZE<-as.character(combo$GROUP_SIZE)
   combo$GROUP_SIZE<-as.numeric(combo$GROUP_SIZE)
   print(combo)
-  print(summary(combo))
+  #print(summary(combo))
 
-  ##calculates distance between points in nautical miles
+  ##calculates distance between points in nautical miles and the radii distance between points for trigger
   combo <- combo%>%
     mutate(dist_nm=geosphere::distVincentyEllipsoid(matrix(c(LONGITUDE,LATITUDE), ncol = 2),
                                                                matrix(c(LONGITUDE2, LATITUDE2), ncol =2), 
                                                                a=6378137, f=1/298.257222101)*m_nm,
            total_corer = corer + corer2)
-  
-
   print(combo)
   #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
   #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
@@ -1186,7 +1184,7 @@ sas_react$egsastab<-egsastab
 ## On network ##
 ################
 
-if (isolate(criteria$loc) == 'Network'){
+if (input$sig_acou == 'Test'| isolate(criteria$loc) == 'Network'){
   ##########
   ###sas on network
   egsastabout<-sas_react$egsastab%>%
