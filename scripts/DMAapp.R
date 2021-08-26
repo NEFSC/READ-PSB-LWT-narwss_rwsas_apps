@@ -7,7 +7,12 @@
 ## User interface ##
 ####################
 
-ui = shinymanager::secure_app(source('./scripts/DMAui.R', local = TRUE)$value)
+if (file.exists('./scripts/creds.R') == TRUE){
+  ui = shinymanager::secure_app(source('./scripts/DMAui.R', local = TRUE)$value)
+} else {
+  ui = source('./scripts/DMAui.R', local = TRUE)$value
+}
+
 ############
 ## Server ##
 ############
