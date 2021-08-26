@@ -1050,7 +1050,7 @@ observeEvent(input$save,{
       ## egrep is the aps and fin est no breaks without dupes and without new?
       egrep<-egtable%>%
         filter((PSB_LEGSTAGE == 7 | startsWith(SIGHTING_COMMENTS, "fin est no break") | grepl('No right whales', egtable$DateTime)))
-      print(egrep)
+      #print(egrep)
       egrep<-egrep%>%
         filter(!grepl('new\\?', egrep$SIGHTING_COMMENTS) & !grepl('dup', egrep$SIGHTING_COMMENTS))
       print(egrep)
@@ -1146,16 +1146,19 @@ observeEvent(input$save,{
       ##############
       
       source('./scripts/sma.R', local = TRUE)$value
+      print(file.exists('./scripts/oracleaccess.R'))
       
 if (file.exists('./scripts/oracleaccess.R') == TRUE){
+      print("oracle")
       source('./scripts/oracleaccess.R', local = TRUE)$value
       source('./scripts/activedma.R', local = TRUE)$value
-      
+  
       if(nrow(egtable) == 0 | egtable$DateTime[1] == 'No right whales sighted'){
         ##if no Eg:
         output$error1<-renderText({"No right whales were reported for this day"})
-      } else {
-        
+      
+        } else {
+
         output$obspeeps_options<-renderUI({
           radioButtons("obspeeps","Who even are you?", choiceNames = list("Allison", "Christin", "Heather","Leah", "Pete", "Tim", "I don't know"), choiceValues = list(3,4,940,873,2,1,0), selected = "I don't know")})
         output$plane_options<-renderUI({
@@ -1248,7 +1251,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
       
       #if on network, add in the current DMAs including the ones that are not up for extension (benign) and the ones eligible for extension
       #these are the same color for the flight report, but won't be for the Potential Protection Area report (if applicable)
-      if (input$filepathway == 'Network'){ 
+      if (input$filepathway == 'Network' | input$sig_acou == 'Real'){ 
         reportleaf<-reportleaf %>%
           addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
           addPolygons(data = extensiondma, weight = 2, color = "yellow") %>%
