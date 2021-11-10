@@ -131,6 +131,7 @@ if (input$sig_acou != "Test"){
   actdmadf$VERTEX<-as.numeric(actdmadf$VERTEX)
   actdmadf$LAT<-as.numeric(actdmadf$LAT)
   actdmadf$LON<-as.numeric(actdmadf$LON)
+  actdmadf$EXT<-ymd(actdmadf$EXT)
   print(actdmadf)
 ###########################################
 ## Categorizing current protection zones ##
