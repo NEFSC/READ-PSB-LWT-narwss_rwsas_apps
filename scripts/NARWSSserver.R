@@ -1251,7 +1251,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
       
       #if on network, add in the current DMAs including the ones that are not up for extension (benign) and the ones eligible for extension
       #these are the same color for the flight report, but won't be for the Potential Protection Area report (if applicable)
-      if (input$filepathway == 'Network' | input$sig_acou == 'Real'){ 
+      if (input$filepathway == 'Network'){ 
         reportleaf<-reportleaf %>%
           addPolygons(data = benigndma, weight = 2, color = "yellow") %>%
           addPolygons(data = extensiondma, weight = 2, color = "yellow") %>%
