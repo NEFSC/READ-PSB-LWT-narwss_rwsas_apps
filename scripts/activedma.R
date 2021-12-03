@@ -100,7 +100,8 @@ if (nrow(actdma) == 0){
 ####################
 ## Extend or not? ##
 ####################
-#if (isolate(criteria$loc) == 'Network'){
+print(input$sig_acou)
+  #if (isolate(criteria$loc) == 'Network'){
 if (input$sig_acou != "Test"){
   ##dma/apz bounds
   actdma_boundssql<-paste0("select dmacoords.ID, vertex, lat, lon
@@ -126,7 +127,7 @@ if (input$sig_acou != "Test"){
    
   print("second else")
 }
-  
+  actdmadf$EXT <-ymd(actdmadf$EXT)
   actdmadf$ID<-as.numeric(actdmadf$ID)
   actdmadf$VERTEX<-as.numeric(actdmadf$VERTEX)
   actdmadf$LAT<-as.numeric(actdmadf$LAT)
