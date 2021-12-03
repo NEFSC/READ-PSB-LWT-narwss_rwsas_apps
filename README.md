@@ -44,7 +44,7 @@ library(zoo)
 ```
 ## Additional installations
 
-`webshot::install_phantomjs()`
+`webshot::install_phantomjs(force = TRUE)`
 
 If you do not get TRUE when you run `tinytex:::is_tinytex()`, then you probably need to run this: `tinytex::install_tinytex(force=TRUE)`. More info on this process and the TinyTex package can be found here: https://yihui.name/tinytex/
 
