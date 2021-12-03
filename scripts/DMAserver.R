@@ -49,6 +49,8 @@ observeEvent(input$query,{
       #########################           
     } else if (input$sig_acou == 'Acoustic Detections'){
       
+      source('./scripts/Acoustic_datapull.R', local = TRUE)$value
+      
       datesql<-paste0("select *
                 from rightwhalesight.acoustic_detections
                 where trunc(DATETIME_ET) = to_date('",dmaevaldate,"','YYYY-MM-DD')
