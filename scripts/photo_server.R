@@ -54,11 +54,16 @@ observeEvent(input$photogo,{
         print(datestr)
         
         if(input$filepathway == 'Network'){
-          pathgps<-paste0(pathway,'Flights/edit_data/',datestr,'/',datestr,'.gps')
-        } else if (input$filepathway == 'Local'){  
+          #pathgps<-paste0(pathway,'Flights/edit_data/',datestr,'/',datestr,'.gps') #LMC OG code - revert if needed
+          pathgps<-paste0(pathway,'Flights/edit_data/',datestr,'/',datestr,"*\\.gps") #forward slash from NARWSSserver code rather than 2 backslashes which didn't work
+          } else if (input$filepathway == 'Local'){  
           pathgps<-paste0(pathway,'/',datestr,'/',datestr,'.gps')}
         
-        gps<-as.data.frame(read.csv(pathgps, header=FALSE, stringsAsFactors = FALSE))
+        #gps<-as.data.frame(read.csv(pathgps, header=FALSE, stringsAsFactors = FALSE)) #OG code that doesn't account for multiple GPS files
+        gps_list<-list.files(paste0(pathway, 'Flights/edit_data/',datestr,'/'), "*\\.gps") #changed path to pathway and survey_date to Flights/edit_data, added 1 datestr occurrences
+        gps_files<-lapply(gps_list, function (x) read.csv(paste0(pathway,'Flights/edit_data/',datestr,'/',x), header=FALSE, stringsAsFactors = FALSE)) #changed path to pathway and survey_date to Flights/edit_data/, added datestr
+        gps_all<-do.call(rbind, gps_files)
+        gps <-as.data.frame(gps_all)
         names(gps)<-c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE','T1')
         gps$DateTime<-dmy_hms(gps$DateTime, tz = "GMT")
         
