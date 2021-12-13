@@ -830,7 +830,7 @@ observeEvent(input$rawupload,{
         } 
       
       #####
-      #add SST_C, drop and reorder columns
+      #add SST_C, SOURCE <- 'NEFSC', drop and reorder columns  
       #####
       
       f$DATETIME_UTC<-ymd_hms(f$DATETIME_UTC, tz = "GMT")
@@ -838,9 +838,10 @@ observeEvent(input$rawupload,{
       ##reordered final
       rf <- f%>%
         mutate(SST_C = NA,
+               SOURCE = 'NEFSC',
                PLANE = paste0("TWIN OTTER NOAA ",input$tn),
                DATETIME_ET = format(DATETIME_UTC, tz = "America/New_York"))%>%
-        dplyr::select(PLANE,DATETIME_ET,EVENT_NUMBER,LATITUDE,LONGITUDE,FLIGHT_TYPE,LEGTYPE,LEGSTAGE,PSB_LEGSTAGE,
+        dplyr::select(SOURCE,PLANE,DATETIME_ET,EVENT_NUMBER,LATITUDE,LONGITUDE,FLIGHT_TYPE,LEGTYPE,LEGSTAGE,PSB_LEGSTAGE,
                                 ALTITUDE,HEADING,SPEED,SST_C,VISIBILTY_NM,BEAUFORT,CLOUD_CODE,GLARE_L,GLARE_R,
                                 QUALITY_L,QUALITY_R,SIGHTING_NUMBER,SPCODE,ID_RELIABILITY,GROUP_SIZE,CALVES,
                                 ACTUAL_HEADING,OBSERVER,OBS_POSITION,ANGLE,CUE,B1_FINAL_CODE,B2_FINAL_CODE,
