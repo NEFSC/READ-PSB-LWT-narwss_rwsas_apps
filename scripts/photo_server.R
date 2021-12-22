@@ -146,6 +146,12 @@ observeEvent(input$photogo,{
   gsl<-data.frame(
     long = c(-66.5,-66.5,-58,-58),
     lat = c(52,46,46,52))
+  ny<-data.frame(
+    long =c(-73.5, -72, -72, -72.75, -73.5),
+    lat = c(40, 40, 41.3, 41.1, 40.8))
+  nj<-data.frame(
+    long = c(-75,-73.5,-73.5,-75),
+    lat = c(38.79, 38.79, 40.48, 40.48))
   
   bofpoly<-Polygons(list(Polygon(bof, hole=as.logical(NA))),ID =1)
   jlpoly<-Polygons(list(Polygon(jl, hole=as.logical(NA))),ID =2)
@@ -159,7 +165,8 @@ observeEvent(input$photogo,{
   snepoly<-Polygons(list(Polygon(sne, hole=as.logical(NA))),ID =10)
   ccbpoly<-Polygons(list(Polygon(ccb, hole=as.logical(NA))),ID =11)
   gslpoly<-Polygons(list(Polygon(gsl, hole=as.logical(NA))),ID =12)
-  
+  nypoly<-Polygons(list(Polygon(ny, hole=as.logical(NA))),ID =13)
+  njpoly<-Polygons(list(Polygon(nj, hole=as.logical(NA))),ID =14)
   
   
   bofpoly<-SpatialPolygons(list(bofpoly))
@@ -174,8 +181,10 @@ observeEvent(input$photogo,{
   snepoly<-SpatialPolygons(list(snepoly))
   ccbpoly<-SpatialPolygons(list(ccbpoly))
   gslpoly<-SpatialPolygons(list(gslpoly))
+  nypoly<-SpatialPolygons(list(nypoly))
+  njpoly<-SpatialPolygons(list(njpoly))
   
-  allpoly<-rbind(bofpoly,jlpoly,mbpoly,gscpoly,gompoly,gmbpoly,rbpoly,esspoly,gbpoly,snepoly,ccbpoly,gslpoly)
+  allpoly<-rbind(bofpoly,jlpoly,mbpoly,gscpoly,gompoly,gmbpoly,rbpoly,esspoly,gbpoly,snepoly,ccbpoly,gslpoly,nypoly, njpoly)
   
   proj4string(bofpoly)<-CRS.latlon
   proj4string(jlpoly)<-CRS.latlon
@@ -189,6 +198,8 @@ observeEvent(input$photogo,{
   proj4string(snepoly)<-CRS.latlon
   proj4string(ccbpoly)<-CRS.latlon
   proj4string(gslpoly)<-CRS.latlon
+  proj4string(nypoly)<-CRS.latlon
+  proj4string(njpoly)<-CRS.latlon
   
   bofpoly<-spTransform(bofpoly,CRS.new)
   jlpoly <-spTransform(jlpoly, CRS.new)
@@ -202,6 +213,8 @@ observeEvent(input$photogo,{
   snepoly<-spTransform(snepoly,CRS.new)
   ccbpoly<-spTransform(ccbpoly,CRS.new)
   gslpoly<-spTransform(gslpoly,CRS.new)
+  nypoly<-spTransform(nypoly, CRS.new)
+  njpoly<-spTransform(njpoly, CRS.new)
   
   BOF<-!is.na(sp::over(subraw.tr, as(bofpoly, "SpatialPolygons")))
   JL<-!is.na(sp::over(subraw.tr, as(jlpoly, "SpatialPolygons")))
@@ -215,9 +228,11 @@ observeEvent(input$photogo,{
   SNE<-!is.na(sp::over(subraw.tr, as(snepoly, "SpatialPolygons")))
   CCB<-!is.na(sp::over(subraw.tr, as(ccbpoly, "SpatialPolygons")))
   GSL<-!is.na(sp::over(subraw.tr, as(gslpoly, "SpatialPolygons")))
+  NY<-!is.na(sp::over(subraw.tr, as(nypoly, "SpatialPolygons")))
+  NJ<-!is.na(sp::over(subraw.tr, as(njpoly, "SpatialPolygons")))
   
   ######
-  subraw<-cbind(subraw,BOF,JL,MB,GSC,GOM,GMB,RB,ESS,GB,SNE,CCB,GSL)
+  subraw<-cbind(subraw,BOF,JL,MB,GSC,GOM,GMB,RB,ESS,GB,SNE,CCB,GSL,NY, NJ)
   
   for (i in 1:nrow(subraw))
     if (subraw$BOF[i] == TRUE){
@@ -244,6 +259,10 @@ observeEvent(input$photogo,{
       subraw$Area[i] = 'CCB'
     } else if (subraw$GSL[i] == TRUE){
       subraw$Area[i] = 'GSL'
+    } else if (subraw$NY[i] == TRUE){
+      subraw$Area[i] = 'NY'
+    } else if (subraw$NJ[i] == TRUE){
+      subraw$Area[i] = 'NJ'
     }
   
   subraw$Latitude[which(subraw$Latitude == 0)]<-''
@@ -255,7 +274,7 @@ observeEvent(input$photogo,{
   
   subed<-subraw%>%
     filter(subraw$Photographer != '')%>%
-    dplyr::select(-date_tz,-BOF,-JL,-MB,-GSC,-GOM,-GMB,-RB,-ESS,-GB,-SNE,-CCB,-GSL)
+    dplyr::select(-date_tz,-BOF,-JL,-MB,-GSC,-GOM,-GMB,-RB,-ESS,-GB,-SNE,-CCB,-GSL,-NY, -NJ)
   
   subed$Obs = 'NEFSC/T'
   subed$Platform = 'A'
