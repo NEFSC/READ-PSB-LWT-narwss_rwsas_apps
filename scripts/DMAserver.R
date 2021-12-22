@@ -36,12 +36,29 @@ observeEvent(input$query,{
 
     if (input$sig_acou == 'Visual Sightings'){ 
       
-      datesql<-paste0("select rightwhalesight.sas.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,rightwhalesight.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
-                from rightwhalesight.sas,rightwhalesight.action
+      #Using SAS Table
+      # datesql<-paste0("select rightwhalesight.sas.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,rightwhalesight.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
+      #           from rightwhalesight.sas,rightwhalesight.action
+      #           where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD')
+      #                 and SPECIES_CERT = 3
+      #                 and rightwhalesight.sas.action = rightwhalesight.action.ID
+      #           order by ID;")
+      
+      #attempts to repoint to SASWMJOIN2 20211217 THIS WORKS!
+      #dmaevaldate <- date('2021-12-16')  #to test without running app
+      # datesql <-paste0("select ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,action, OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
+      #  from rightwhalesight.saswmjoin2
+      # where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD')
+      # and SPECIES_CERT = 3
+      # order by ID;")
+      
+      #Using SASWMJOIN 2 - otherwise exactly same as original
+      datesql<-paste0("select rightwhalesight.saswmjoin2.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,rightwhalesight.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
+                from rightwhalesight.saswmjoin2,rightwhalesight.action
                 where trunc(sightdate) = to_date('",dmaevaldate,"','YYYY-MM-DD')
-                      and SPECIES_CERT = 3
-                      and rightwhalesight.sas.action = rightwhalesight.action.ID   
-                order by ID;") 
+                and rightwhalesight.saswmjoin2.action = rightwhalesight.action.ID
+                and SPECIES_CERT = 3
+                order by ID;")
       
       dailyeg<-sqlQuery(cnxn,datesql)
       #########################
