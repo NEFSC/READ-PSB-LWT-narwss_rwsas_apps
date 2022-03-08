@@ -162,8 +162,8 @@ for (i in 1:nrow(egsas))
      # egsas$ACTION_NEW[i] = 2  
    # } else if (egsas$eAPZ[i] == TRUE & (isolate(criteria$DMAapp) == "vissag" | isolate(criteria$DMAapp) == "rwsurv")) { #visual detections in an extension eligible APZ aka cannot extend (but should make new DMA if needed)
     #  egsas$ACTION_NEW[i] = 44 #changed to 44 from 2 on 20220307 to keep DMA and ASZ completely separate    
-  #  } else if (egsas$bDMA[i] == TRUE | egsas$bAPZ[i] == TRUE) { #benign dma
-   #   egsas$ACTION_NEW[i] = 44 #changed to 44 from 2 by HJF to keep ASZ and DMA completely separate  
+   } else if (egsas$bDMA[i] == TRUE | egsas$bAPZ[i] == TRUE) { #benign dma or benign APZ
+      egsas$ACTION_NEW[i] = 2  
     }
   } else if (egsas$inoutsma[i] == FALSE){
     egsas$ACTION_NEW[i] = NA
