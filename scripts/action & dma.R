@@ -154,20 +154,20 @@ for (i in 1:nrow(egsas))
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
   } else if (input$sig_acou == 'Real' | input$sig_acou == 'Test' | isolate(criteria$loc) == 'Network'){
     #print("network if")
-    if (egsas$eDMA[i] == TRUE & (isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp) == "rwsurv") & egsas$bDMA[i] != TRUE){ #visual detections in an extension eligible DMA 
-      egsas$ACTION_NEW[i] = 55  #added an additional AND statement for in edma BUT NOT in a bDMA to extend
-    } else if (egsas$eAPZ[i] == TRUE & isolate(criteria$DMAapp) == "acoudet" & egsas$bAPZ[i] != TRUE) { #acoustic detections in an extension eligible APZ 
-      egsas$ACTION_NEW[i] = 55 #with added statement for in eAPZ but NOT in a bDMA in order to extend
+    if (egsas$eDMA[i] == TRUE & (isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp) == "rwsurv")){ #visual detections in an extension eligible DMA 
+      egsas$ACTION_NEW[i] = 55  #& egsas$bDMA[i] != TRUE additional AND statement for in edma BUT NOT in a bDMA to extend (not needed per T Cole 20220312)
+    } else if (egsas$eAPZ[i] == TRUE & isolate(criteria$DMAapp) == "acoudet" ) { #acoustic detections in an extension eligible APZ 
+      egsas$ACTION_NEW[i] = 55 #& egsas$bAPZ[i] != TRUE statement for in eAPZ but NOT in a bDMA in order to extend
     #} else if (egsas$eDMA[i] == TRUE & isolate(criteria$DMAapp) == "acoudet") { #acoustic detections in an extension eligible DMA aka cannot extend 
      # egsas$ACTION_NEW[i] = 2  
    # } else if (egsas$eAPZ[i] == TRUE & (isolate(criteria$DMAapp) == "vissag" | isolate(criteria$DMAapp) == "rwsurv")) { #visual detections in an extension eligible APZ aka cannot extend (but should make new DMA if needed)
     #  egsas$ACTION_NEW[i] = 44 #changed to 44 from 2 on 20220307 to keep DMA and ASZ completely separate    
    } else if (egsas$bDMA[i] == TRUE | egsas$bAPZ[i] == TRUE) { #benign dma OR benign APZ
       egsas$ACTION_NEW[i] = 2  
-    } else if (egsas$bAPZ[i] == TRUE & egsas$eAPZ[i] == TRUE) { #detection in BOTH a bAPZ AND a eAPZ (falls within overlap area of both)
-      egsas$ACTION_NEW[i] = 2  #possibly redundant/unneeded
-    } else if (egsas$bDMA[i] == TRUE & egsas$eDMA[i] == TRUE) { #sighting in BOTH a bDMA AND a eDMA (falls within overlap area of both)
-      egsas$ACTION_NEW[i] = 2  #possibly redundant/unneeded
+   # } else if (egsas$bAPZ[i] == TRUE & egsas$eAPZ[i] == TRUE) { #detection in BOTH a bAPZ AND a eAPZ (falls within overlap area of both)
+    #  egsas$ACTION_NEW[i] = 2  #possibly redundant/unneeded
+    #} else if (egsas$bDMA[i] == TRUE & egsas$eDMA[i] == TRUE) { #sighting in BOTH a bDMA AND a eDMA (falls within overlap area of both)
+     # egsas$ACTION_NEW[i] = 2  #possibly redundant/unneeded
     }
   } else if (egsas$inoutsma[i] == FALSE){
     egsas$ACTION_NEW[i] = NA
