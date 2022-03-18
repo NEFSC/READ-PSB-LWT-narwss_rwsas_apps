@@ -54,7 +54,7 @@ knitr::include_graphics("dmaletter.png")
 \hspace*{198pt} `r params$letterdate` \hspace{74pt} F/NEC: S. Hayes\newline
 \newline
 \newline
-MEMORANDUM FOR:	\hspace*{28pt} Peter Kelliher\newline
+MEMORANDUM FOR:	\hspace*{28pt} Alicia Schuler\newline
 	              \hspace*{141pt}{\it Shipping Liaison, GARFO}\newline
 \newline
 FROM:	\hspace*{101pt} Tim Cole\newline

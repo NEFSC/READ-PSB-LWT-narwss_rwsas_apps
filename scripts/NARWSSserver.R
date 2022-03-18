@@ -830,7 +830,7 @@ observeEvent(input$rawupload,{
         } 
       
       #####
-      #add SST_C, drop and reorder columns
+      #add SST_C, SOURCE <- 'NEFSC', drop and reorder columns  
       #####
       
       f$DATETIME_UTC<-ymd_hms(f$DATETIME_UTC, tz = "GMT")
@@ -838,9 +838,10 @@ observeEvent(input$rawupload,{
       ##reordered final
       rf <- f%>%
         mutate(SST_C = NA,
+               SOURCE = 'NEFSC',
                PLANE = paste0("TWIN OTTER NOAA ",input$tn),
                DATETIME_ET = format(DATETIME_UTC, tz = "America/New_York"))%>%
-        dplyr::select(PLANE,DATETIME_ET,EVENT_NUMBER,LATITUDE,LONGITUDE,FLIGHT_TYPE,LEGTYPE,LEGSTAGE,PSB_LEGSTAGE,
+        dplyr::select(SOURCE,PLANE,DATETIME_ET,EVENT_NUMBER,LATITUDE,LONGITUDE,FLIGHT_TYPE,LEGTYPE,LEGSTAGE,PSB_LEGSTAGE,
                                 ALTITUDE,HEADING,SPEED,SST_C,VISIBILTY_NM,BEAUFORT,CLOUD_CODE,GLARE_L,GLARE_R,
                                 QUALITY_L,QUALITY_R,SIGHTING_NUMBER,SPCODE,ID_RELIABILITY,GROUP_SIZE,CALVES,
                                 ACTUAL_HEADING,OBSERVER,OBS_POSITION,ANGLE,CUE,B1_FINAL_CODE,B2_FINAL_CODE,
@@ -1160,7 +1161,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
         } else {
 
         output$obspeeps_options<-renderUI({
-          radioButtons("obspeeps","Who even are you?", choiceNames = list("Allison", "Christin", "Heather","Leah", "Pete", "Tim", "I don't know"), choiceValues = list(3,4,940,873,2,1,0), selected = "I don't know")})
+          radioButtons("obspeeps","Who even are you?", choiceNames = list("Allison", "Alison", "Christin", "Heather","Leah", "Pete", "Tim", "I don't know"), choiceValues = list(3,880,4,940,873,2,1,0), selected = "I don't know")})
         output$plane_options<-renderUI({
           radioButtons("plane","Which plane were you in?", choiceNames = list("NOAA46", "NOAA48", "NOAA56", "NOAA57", "Some otter plane"), choiceValues = list(183,178,284,49,18), selected = "An Otter")})  
         
