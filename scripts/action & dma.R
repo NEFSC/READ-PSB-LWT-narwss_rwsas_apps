@@ -110,8 +110,12 @@ for (i in 1:nrow(egsas))
     inoutsma<-!is.na(sp::over(eg.tr, as(sma1, "SpatialPolygons")))
   } else if (between(MODA,"03-01","03-31")){
     inoutsma<-!is.na(sp::over(eg.tr, as(sma2, "SpatialPolygons")))
-  } else if (between(MODA,"04-01","04-30")){
-    inoutsma<-!is.na(sp::over(eg.tr, as(sma3, "SpatialPolygons")))
+  # } else if (between(MODA,"04-01","04-30")){
+  #   inoutsma<-!is.na(sp::over(eg.tr, as(sma3, "SpatialPolygons")))
+  } else if (between(MODA,"04-01","04-15")){
+    inoutsma<-!is.na(sp::over(eg.tr, as(sma3.1, "SpatialPolygons"))) #HJF added w/ SMA code edits
+  } else if (between(MODA,"04-16","04-30")){
+    inoutsma<-!is.na(sp::over(eg.tr, as(sma3.2, "SpatialPolygons"))) #HJF added w/ SMA code edits
   } else if (between(MODA,"05-01","05-15")){
     inoutsma<-!is.na(sp::over(eg.tr, as(sma4, "SpatialPolygons")))
   } else if (between(MODA,"05-16","07-31")){
