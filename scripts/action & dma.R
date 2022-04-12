@@ -166,10 +166,12 @@ for (i in 1:nrow(egsas))
      # egsas$ACTION_NEW[i] = 2  
    # } else if (egsas$eAPZ[i] == TRUE & (isolate(criteria$DMAapp) == "vissag" | isolate(criteria$DMAapp) == "rwsurv")) { #visual detections in an extension eligible APZ aka cannot extend (but should make new DMA if needed)
     #  egsas$ACTION_NEW[i] = 44 #changed to 44 from 2 on 20220307 to keep DMA and ASZ completely separate    
-   } else if (egsas$bDMA[i] == TRUE | egsas$bAPZ[i] == TRUE) { #benign dma OR benign APZ
-      egsas$ACTION_NEW[i] = 2  
-   # } else if (egsas$bAPZ[i] == TRUE & egsas$eAPZ[i] == TRUE) { #detection in BOTH a bAPZ AND a eAPZ (falls within overlap area of both)
-    #  egsas$ACTION_NEW[i] = 2  #possibly redundant/unneeded
+   # } else if (egsas$bDMA[i] == TRUE | egsas$bAPZ[i] == TRUE) { #benign dma OR benign APZ #HJF commenting out 20220412 as not taking into account vis is APZ and vice versa
+   #    egsas$ACTION_NEW[i] = 2  
+    } else if (egsas$bDMA[i] == TRUE & isolate(criteria$DMAapp) == "vissig") {#vis dets in benign DMA aka cannot extend
+        egsas$ACTION_NEW[i] = 2
+    } else if (egsas$bAPZ[i] == TRUE & isolate(criteria$DMAapp) == "acoudet") {#acoustic detections in benign APZ aka cannot extend
+      egsas$ACTION_NEW[i] = 2
     #} else if (egsas$bDMA[i] == TRUE & egsas$eDMA[i] == TRUE) { #sighting in BOTH a bDMA AND a eDMA (falls within overlap area of both)
      # egsas$ACTION_NEW[i] = 2  #possibly redundant/unneeded
     }
