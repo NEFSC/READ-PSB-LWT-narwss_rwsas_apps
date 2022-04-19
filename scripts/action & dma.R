@@ -110,8 +110,12 @@ for (i in 1:nrow(egsas))
     inoutsma<-!is.na(sp::over(eg.tr, as(sma1, "SpatialPolygons")))
   } else if (between(MODA,"03-01","03-31")){
     inoutsma<-!is.na(sp::over(eg.tr, as(sma2, "SpatialPolygons")))
-  } else if (between(MODA,"04-01","04-30")){
-    inoutsma<-!is.na(sp::over(eg.tr, as(sma3, "SpatialPolygons")))
+  # } else if (between(MODA,"04-01","04-30")){
+  #   inoutsma<-!is.na(sp::over(eg.tr, as(sma3, "SpatialPolygons")))
+  } else if (between(MODA,"04-01","04-15")){
+    inoutsma<-!is.na(sp::over(eg.tr, as(sma3.1, "SpatialPolygons"))) #HJF added w/ SMA code edits
+  } else if (between(MODA,"04-16","04-30")){
+    inoutsma<-!is.na(sp::over(eg.tr, as(sma3.2, "SpatialPolygons"))) #HJF added w/ SMA code edits
   } else if (between(MODA,"05-01","05-15")){
     inoutsma<-!is.na(sp::over(eg.tr, as(sma4, "SpatialPolygons")))
   } else if (between(MODA,"05-16","07-31")){
@@ -157,17 +161,17 @@ for (i in 1:nrow(egsas))
     if (egsas$eDMA[i] == TRUE & (isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp) == "rwsurv")){ #visual detections in an extension eligible DMA 
       egsas$ACTION_NEW[i] = 55  #& egsas$bDMA[i] != TRUE additional AND statement for in edma BUT NOT in a bDMA to extend (not needed per T Cole 20220312)
     } else if (egsas$eAPZ[i] == TRUE & isolate(criteria$DMAapp) == "acoudet" ) { #acoustic detections in an extension eligible APZ 
-      egsas$ACTION_NEW[i] = 55 #& egsas$bAPZ[i] != TRUE statement for in eAPZ but NOT in a bDMA in order to extend
+      egsas$ACTION_NEW[i] = 55 #& egsas$bAPZ[i] != TRUE statement for in eAPZ but NOT in a bDMA in order to extend (also not needed as of 20220312)
     #} else if (egsas$eDMA[i] == TRUE & isolate(criteria$DMAapp) == "acoudet") { #acoustic detections in an extension eligible DMA aka cannot extend 
      # egsas$ACTION_NEW[i] = 2  
-   # } else if (egsas$eAPZ[i] == TRUE & (isolate(criteria$DMAapp) == "vissag" | isolate(criteria$DMAapp) == "rwsurv")) { #visual detections in an extension eligible APZ aka cannot extend (but should make new DMA if needed)
-    #  egsas$ACTION_NEW[i] = 44 #changed to 44 from 2 on 20220307 to keep DMA and ASZ completely separate    
-   } else if (egsas$bDMA[i] == TRUE | egsas$bAPZ[i] == TRUE) { #benign dma OR benign APZ
-      egsas$ACTION_NEW[i] = 2  
-   # } else if (egsas$bAPZ[i] == TRUE & egsas$eAPZ[i] == TRUE) { #detection in BOTH a bAPZ AND a eAPZ (falls within overlap area of both)
-    #  egsas$ACTION_NEW[i] = 2  #possibly redundant/unneeded
+   # } else if (egsas$eAPZ[i] == TRUE & (isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp) == "rwsurv")) { #visual detections in an extension eligible APZ aka cannot extend (but should make new DMA if needed)
+    #  egsas$ACTION_NEW[i] = 44 #changed to 44 from 2 on 20220307 to keep DMA and ASZ completely separate
+    } else if (egsas$bDMA[i] == TRUE & isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp == "rwsurv")) { #vis dets in benign DMA aka cannot extend
+        egsas$ACTION_NEW[i] = 2
+    } else if (egsas$bAPZ[i] == TRUE & isolate(criteria$DMAapp) == "acoudet") { #acoustic detections in benign APZ aka cannot extend
+      egsas$ACTION_NEW[i] = 2
     #} else if (egsas$bDMA[i] == TRUE & egsas$eDMA[i] == TRUE) { #sighting in BOTH a bDMA AND a eDMA (falls within overlap area of both)
-     # egsas$ACTION_NEW[i] = 2  #possibly redundant/unneeded
+     # egsas$ACTION_NEW[i] = 2  #not necessary as of 20220312
     }
   } else if (egsas$inoutsma[i] == FALSE){
     egsas$ACTION_NEW[i] = NA
