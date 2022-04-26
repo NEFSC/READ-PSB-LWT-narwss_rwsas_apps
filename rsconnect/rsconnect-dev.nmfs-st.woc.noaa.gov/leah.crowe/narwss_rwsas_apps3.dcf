@@ -1,0 +1,12 @@
+name: narwss_rwsas_apps3
+title: narwss_rwsas_apps
+username: leah.crowe
+account: leah.crowe
+server: rsconnect-dev.nmfs-st.woc.noaa.gov
+hostUrl: http://rsconnect-dev.nmfs-st.woc.noaa.gov:3939/__api__
+appId: 13
+bundleId: 43
+url: http://rsconnect-dev.nmfs-st.woc.noaa.gov:3939/content/13/
+when: 1598982462.99651
+asMultiple: FALSE
+asStatic: FALSE
