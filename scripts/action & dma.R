@@ -166,7 +166,7 @@ for (i in 1:nrow(egsas))
      # egsas$ACTION_NEW[i] = 2  
    # } else if (egsas$eAPZ[i] == TRUE & (isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp) == "rwsurv")) { #visual detections in an extension eligible APZ aka cannot extend (but should make new DMA if needed)
     #  egsas$ACTION_NEW[i] = 44 #changed to 44 from 2 on 20220307 to keep DMA and ASZ completely separate
-    } else if (egsas$bDMA[i] == TRUE & isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp == "rwsurv")) { #vis dets in benign DMA aka cannot extend
+    } else if (egsas$bDMA[i] == TRUE & (isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp) == "rwsurv")) { #vis dets in benign DMA aka cannot extend
         egsas$ACTION_NEW[i] = 2
     } else if (egsas$bAPZ[i] == TRUE & isolate(criteria$DMAapp) == "acoudet") { #acoustic detections in benign APZ aka cannot extend
       egsas$ACTION_NEW[i] = 2
