@@ -86,6 +86,7 @@ sasdma<-leaflet(data = egsas, options = leafletOptions(zoomControl = FALSE)) %>%
   addPolygons(data = smapresent.sp, weight = 2, color = "red")%>%
   addPolylines(data = NEUS_shiplane.sp, weight = 1, color = "green", fill = F)
   
+
 ########
 ##ACTION
 ########
