@@ -1329,7 +1329,13 @@ output$report<-downloadHandler(
               webshot::webshot("temp.html", file = webshotpath)
               print("webshot")
               
-              tempReport<-file.path("./scripts/FlightReport.Rmd")
+              if (input$filepathway == 'Network'){
+                tempReport<-file.path("./scripts/FlightReport.Rmd")
+              } else if (input$filepathway == 'Local'){
+              tempReport<-file.path("./scripts/FlightReport_local.Rmd")
+              ##slightly different formatting including vertical space between text and objects
+              }
+              
               file.copy("FlightReport.Rmd", tempReport, overwrite = FALSE)
             
               params<-list(date1 = date_formats$date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
