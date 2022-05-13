@@ -1,0 +1,39 @@
+---
+title: "<center>NOAA Northeast Region  \nRight Whale Aerial Survey Report</center>"
+params:
+  date1: NA
+  rptnotes: NA
+  reportmap: NA
+  netable: NA
+  egreport: NA
+  dmanamesexpsent: NA
+  ftypesent: NA
+  webshotpath: NA
+output:
+  html_document
+
+---
+
+<center><h1>`r params$date1`</h1></center>
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
+knitr::include_graphics(params$webshotpath)
+```
+
+<center>`r params$rptnotes`</center>
+\vspace*{-7mm}
+<center>`r params$dmanamesexpsent`</center>
+\vspace*{-7mm}
+<center>`r params$ftypesent`</center>
+\vspace*{-4mm}
+```{r echo = FALSE, warning = FALSE, results = 'asis'}
+knitr::kable(params$netable, caption = "Species Sighted")%>%kableExtra::kable_classic(full_width = F, html_font = "Cambria")
+```
+
+```{r echo = FALSE, warning = FALSE, results = 'asis'}
+knitr::kable(params$egreport, caption = "Right Whale Sighting(s) Details")%>%kableExtra::kable_classic(full_width = F, html_font = "Cambria")
+```
+
