@@ -2,6 +2,7 @@
 disable("edittable")
 disable("save")
 disable("report")
+disable("report_html")
 disable("sas")
 disable("dmaup")
 disable("dmareport")
@@ -1283,6 +1284,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
       unlink("./scripts/*.log")
 
       enable("report")
+      enable("report_html")
       output$reportmap = renderLeaflet({print(reportmap)})
       output$netable<-renderTable({netable}, digits = 0)
       output$egreport<-renderTable({egreport})
