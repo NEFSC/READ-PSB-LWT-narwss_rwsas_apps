@@ -1290,63 +1290,27 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE){
       htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
       print("html2")
 
+#PDF
 output$report<-downloadHandler(
           filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_NOAA_NERW_Aerial_Report.pdf"),
           content = function(file) {
-            
-              print(tempdir())
-            
-            if (ftype == 20){
-              ftypesent<-"Only large whale sightings were recorded on this survey."
-            } else if (ftype == 21){
-              ftypesent<-"Only large whale sightings (excluding live minke whales) were recorded on this survey."
-            } else {
-              ftypesent<-""
-            }
-            
-            rptnotes<-input$reportnotes
-            
-            if (file.exists('./scripts/oracleaccess.R') == TRUE){
-
-              dmanamesexpsent<-paste0("Active right whale SLOW zone(s): ",dmanamesexp,".")
-              webshotpath<-paste0(getwd(),"/surveymap.png")
-              source('./scripts/oracleaccess.R', local = TRUE)$value
-              source('./scripts/input_sas.R', local = TRUE)$value
-              source('./scripts/input_dma.R', local = TRUE)$value
-              
-            } else {
-              
-              disable("dmaup")
-              disable("dmareport")
-              disable("kml")
-              disable("dmaletter")
-              
-              dmanamesexpsent<-""
-              webshotpath<-paste0(path,"surveymap.png")
-              
-            }
-              
-              webshot::webshot("temp.html", file = webshotpath)
-              print("webshot")
-              
-              if (input$filepathway == 'Network'){
-                tempReport<-file.path("./scripts/FlightReport.Rmd")
-              } else if (input$filepathway == 'Local'){
+            if (input$filepathway == 'Network'){
+              tempReport<-file.path("./scripts/FlightReport.Rmd")
+            } else if (input$filepathway == 'Local'){
               tempReport<-file.path("./scripts/FlightReport_local.Rmd")
               ##slightly different formatting including vertical space between text and objects
-              }
-              
-              file.copy("FlightReport.Rmd", tempReport, overwrite = FALSE)
+            }
             
-              params<-list(date1 = date_formats$date1, rptnotes = rptnotes, reportmap = reportmap, netable = netable, egreport = egreport, dmanamesexpsent = dmanamesexpsent, ftypesent = ftypesent, webshotpath = webshotpath)
-              print(webshotpath)
-              print(params)
-              rmarkdown::render(tempReport, output_file = file,
-                              params = params,
-                              envir = new.env(parent = globalenv())
-                              )
-                              
-            })
+            source('./scripts/download_content.R', local = TRUE)$value}
+            )
+
+output$report_html<-downloadHandler(
+          filename = paste0(date_formats$day1,date_formats$month1,date_formats$year1,"_NOAA_NERW_Aerial_Report.html"),
+          content = function(file) {
+            tempReport<-file.path("./scripts/FlightReport_local_html.Rmd")
+            source('./scripts/download_content.R', local = TRUE)$value}
+  )
+
     }) #OBSERVE EVENT SAVE   
   })  #OBSERVE EVENT EDITTABLE
 
