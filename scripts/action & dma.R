@@ -157,7 +157,7 @@ for (i in 1:nrow(egsas))
   } else if (egsas$SPM[i] == TRUE){
     egsas$ACTION_NEW[i] = 6
     output$error3<-renderText({"Soc re bleu! One of these right whales was in France!"})  
-  } else if (input$sig_acou == 'Real' | input$sig_acou == 'Test' | isolate(criteria$loc) == 'Network'){
+  } else if (isolate(criteria$loc) == 'Network'){
     #print("network if")
     if (egsas$eDMA[i] == TRUE & (isolate(criteria$DMAapp) == "vissig" | isolate(criteria$DMAapp) == "rwsurv")){ #visual detections in an extension eligible DMA 
       egsas$ACTION_NEW[i] = 55  #& egsas$bDMA[i] != TRUE additional AND statement for in edma BUT NOT in a bDMA to extend (not needed per T Cole 20220312)
@@ -1197,7 +1197,8 @@ sas_react$egsastab<-egsastab
 ## On network ##
 ################
 
-if (input$sig_acou == 'Test'| isolate(criteria$loc) == 'Network'){
+if (#input$sig_acou == 'Test'| 
+  isolate(criteria$loc) == 'Network'){
   ##########
   ###sas on network
   egsastabout<-sas_react$egsastab%>%
