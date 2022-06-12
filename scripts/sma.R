@@ -101,7 +101,7 @@ sma3.2<-subset(allSMA.tr, ID %in% 3:10)
 sma4<-subset(allSMA.tr, ID %in% c(8,10))
 ##16MAY-31JULY
 #sma5<-gsc.tr
-sma5<-subset(allSMA.tr, ID == 5)
+sma5<-subset(allSMA.tr, ID == 10)
 ##01NOv-14Nov
 #sma6<-rgeos::union(mano.tr, block.tr)
 #sma6<-rgeos::union(sma6, maso.tr)
