@@ -23,7 +23,7 @@ ui <- dashboardPage(
   ## Sidebar content
   dashboardSidebar(
     sidebarMenu(
-      menuItem(icon = icon("plane"),"Aerial Survey Processing App", tabName = "NARWSS"),
+      menuItem(icon = icon("plane"),"Aerial Survey Data Processing", tabName = "NARWSS"),
       menuItem(icon = icon("calendar"),"Trigger Analysis", tabName = "DMA"),
       menuItem(icon = icon("camera"),"Photo Position Finder", tabName = "Photo"),
       menuItem(icon = icon("ship"),"SLOW zone viewer", tabName = "szone"),
