@@ -60,8 +60,8 @@ ui <- dashboardPage(
               source('./scripts/NARWSSapp.R', local = TRUE)$value),
       
       # Second tab content
-      tabItem(tabName = "DMA",
-              source('./scripts/DMAapp.R', local = TRUE)$value),
+      tabItem(tabName = "Trigger",
+              source('./scripts/trigger_app.R', local = TRUE)$value),
       
       # Third tab content
       tabItem(tabName = "Photo",
