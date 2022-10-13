@@ -1,5 +1,5 @@
 
-## R Shiny Application for DMA evaluation            ##
+## R Shiny Application for trigger analysis          ##
 ##   Written By: Leah Crowe 2018                     ##
 
 
@@ -8,9 +8,9 @@
 
 
 if (file.exists('./scripts/creds.R') == TRUE) {
-  ui = shinymanager::secure_app(source('./scripts/DMAui.R', local = TRUE)$value)
+  ui = shinymanager::secure_app(source('./scripts/trigger_ui.R', local = TRUE)$value)
 } else {
-  ui = source('./scripts/DMAui.R', local = TRUE)$value
+  ui = source('./scripts/trigger_ui.R', local = TRUE)$value
 }
 
 
@@ -28,7 +28,7 @@ server = function(input, output, session) {
   })
   
   ## rwData
-  source('./scripts/DMAserver.R', local = TRUE)$value
+  source('./scripts/trigger_server.R', local = TRUE)$value
   
 }
 
