@@ -29,7 +29,7 @@ ui <- dashboardPage(
       menuItem(
         icon = icon("calendar"),
         "Trigger Analysis",
-        tabName = "DMA"
+        tabName = "Trigger"
       ),
       menuItem(
         icon = icon("camera"),
