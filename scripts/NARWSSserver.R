@@ -1649,7 +1649,7 @@ observeEvent(input$edittable, {
         egsas <- egsas %>%
           dplyr::select(-CALVES,-Behavior)
         
-        source('./scripts/action & dma.R', local = TRUE)$value
+        source('./scripts/action & slowzone.R', local = TRUE)$value
         disable("dmaup")
       }
       
