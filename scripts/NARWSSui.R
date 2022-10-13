@@ -3,7 +3,7 @@ fluidPage(
   titlePanel("NEFSC Right Whale Aerial Survey Data Processing"),
       splitLayout(radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE),
                   #radioButtons("sig_acou", "Is this real life or a test?", choices = c("Real", "Test"), selected = "Real", inline = FALSE), 
-                  textInput("filepathinput", (HTML(paste("Local pathway", '<br/>', "Example: C:/2018/Flights/edit_data/")))),
+                  textInput("filepathinput", (HTML(paste("Local pathway", '<br/>', "Example: C:/2022/Flights/edit_data/")))),
               width = 3),
       tabsetPanel(type = "tabs",
                   tabPanel("Aerial Survey",
@@ -21,7 +21,7 @@ fluidPage(
                            position = 'left',
                            br(),
                            splitLayout(textInput("sd", "Survey Date", width = "90", placeholder = "YYMMDD"),
-                                       textInput("tn", "Tail number", width = "90", placeholder = "57"),
+                                       textInput("tn", "Tail number: ##", width = "90", placeholder = NULL), #20221013 update to removed placeholder per obs' requests
                                        radioButtons("rawedits","Edited eff/sig files?", choices = c("Yes","No"), selected = "No", inline = FALSE)),
                            actionButton("rawupload", "Edit Raw Eff & Sig"),
                            br(),
