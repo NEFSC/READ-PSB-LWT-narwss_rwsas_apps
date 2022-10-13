@@ -1,66 +1,106 @@
 fluidPage(
   useShinyjs(),
   titlePanel("NEFSC Right Whale Aerial Survey Data Processing"),
-      splitLayout(radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE),
-                  #radioButtons("sig_acou", "Is this real life or a test?", choices = c("Real", "Test"), selected = "Real", inline = FALSE), 
-                  textInput("filepathinput", (HTML(paste("Local pathway", '<br/>', "Example: C:/2018/Flights/edit_data/")))),
-              width = 3),
-      tabsetPanel(type = "tabs",
-                  tabPanel("Aerial Survey",
-                           (HTML(paste('<br/>',
-                                       "<strong>Suggested naming convention</strong>",'<br/>',
-                                       '<br/>',
-                                       "For <strong>ONE</strong> flight days, files can be labeled as:",'<br/>', 
-                                       "[YYMMDD].gps, [YYMMDD].eff, [YYMMDD].sig",'<br/>',
-                                       '<br/>',
-                                       "For <strong>MULTI</strong> flight days, files can be labeled according to this pattern:",'<br/>', 
-                                       "[YYMMDD].gps, [YYMMDD] <strong>(1)</strong>.eff, [YYMMDD] <strong>(2)</strong>.eff, [YYMMDD] <strong>(1)</strong>.sig, [YYMMDD] <strong>(2)</strong>.sig",
-                                       '<br/>','<br/>',
-                                       "You can have as many .gps, .sig, or .eff files in a day as you want, but only include those with UNIQUE information. Only include one .gps file if it has all location data from all flights.",
-                                       '<br/>'))),
-                           position = 'left',
-                           br(),
-                           splitLayout(textInput("sd", "Survey Date", width = "90", placeholder = "YYMMDD"),
-                                       textInput("tn", "Tail number", width = "90", placeholder = "57"),
-                                       radioButtons("rawedits","Edited eff/sig files?", choices = c("Yes","No"), selected = "No", inline = FALSE)),
-                           actionButton("rawupload", "Edit Raw Eff & Sig"),
-                           br(),
-                           textOutput("error"),
-                           textOutput("error2"),
-                           wellPanel(
-                             div(rHandsontableOutput("handsES", height = 500), style = "font-size:80%")),
-                           actionButton("edittable", "Open Sesame"),
-                           br(),
-                           wellPanel(
-                             leafletOutput("egmap")),
-                           textOutput("calferror"),
-                           wellPanel(
-                             div(rHandsontableOutput("handsrf", height = 800), style = "font-size:80%")),
-                           actionButton("save", "Export CSV"),
-                           br(),
-                           leafletOutput("reportmap"),
-                           tableOutput("egreport"),
-                           tableOutput("netable"),
-                           textAreaInput("reportnotes", "Report Notes", "Survey flown in XXX conditions. Beaufort ranged from X to X.", height = 100, width = 500),
-                           textOutput("error3"),
-                           textOutput("error4"),
-                           downloadButton("report_html", "Generate Report (html)"),
-                           downloadButton("report", "Generate Report (PDF)")),
-                  tabPanel("SAS & DMA Evaluation",
-                           splitLayout(uiOutput("obspeeps_options"),
-                                       uiOutput("plane_options")),
-                           tableOutput("egsastabout"),
-                           textOutput("error5"),
-                           actionButton("sas","Upload sightings to SAS"),
-                           br(),
-                           leafletOutput("sasdma"), 
-                           tableOutput("dmanameout"),  
-                           tableOutput("dmacoord"),   
-                           actionButton("dmaup","Upload DMA to database"),
-                           downloadButton("dmareport", "Download DMA Report"),
-                           downloadButton("kml", "Download KML"),
-                           downloadButton("dmaletter", "Download DMA Letter")
-                           )
-                           )
-                  )
-    
+  splitLayout(
+    radioButtons(
+      "filepathway",
+      "File Pathway",
+      choices = c("Network", "Local"),
+      selected = "Network",
+      inline = FALSE
+    ),
+    textInput("filepathinput", (HTML(
+      paste(
+        "Local pathway",
+        '<br/>',
+        "Example: C:/2018/Flights/edit_data/"
+      )
+    ))),
+    width = 3
+  ),
+  tabsetPanel(
+    type = "tabs",
+    tabPanel(
+      "Aerial Survey",
+      (HTML(
+        paste(
+          '<br/>',
+          "<strong>Suggested naming convention</strong>",
+          '<br/>',
+          '<br/>',
+          "For <strong>ONE</strong> flight days, files can be labeled as:",
+          '<br/>',
+          "[YYMMDD].gps, [YYMMDD].eff, [YYMMDD].sig",
+          '<br/>',
+          '<br/>',
+          "For <strong>MULTI</strong> flight days, files can be labeled according to this pattern:",
+          '<br/>',
+          "[YYMMDD].gps, [YYMMDD] <strong>(1)</strong>.eff, [YYMMDD] <strong>(2)</strong>.eff, [YYMMDD] <strong>(1)</strong>.sig, [YYMMDD] <strong>(2)</strong>.sig",
+          '<br/>',
+          '<br/>',
+          "You can have as many .gps, .sig, or .eff files in a day as you want, but only include those with UNIQUE information. Only include one .gps file if it has all location data from all flights.",
+          '<br/>'
+        )
+      )),
+      position = 'left',
+      br(),
+      splitLayout(
+        textInput("sd", "Survey Date", width = "90", placeholder = "YYMMDD"),
+        textInput("tn", "Tail number", width = "90", placeholder = "57"),
+        radioButtons(
+          "rawedits",
+          "Edited eff/sig files?",
+          choices = c("Yes", "No"),
+          selected = "No",
+          inline = FALSE
+        )
+      ),
+      actionButton("rawupload", "Edit Raw Eff & Sig"),
+      br(),
+      textOutput("error"),
+      textOutput("error2"),
+      wellPanel(div(
+        rHandsontableOutput("handsES", height = 500), style = "font-size:80%"
+      )),
+      actionButton("edittable", "Open Sesame"),
+      br(),
+      wellPanel(leafletOutput("egmap")),
+      textOutput("calferror"),
+      wellPanel(div(
+        rHandsontableOutput("handsrf", height = 800), style = "font-size:80%"
+      )),
+      actionButton("save", "Export CSV"),
+      br(),
+      leafletOutput("reportmap"),
+      tableOutput("egreport"),
+      tableOutput("netable"),
+      textAreaInput(
+        "reportnotes",
+        "Report Notes",
+        "Survey flown in XXX conditions. Beaufort ranged from X to X.",
+        height = 100,
+        width = 500
+      ),
+      textOutput("error3"),
+      textOutput("error4"),
+      downloadButton("report_html", "Generate Report (html)"),
+      downloadButton("report", "Generate Report (PDF)")
+    ),
+    tabPanel(
+      "SAS & Trigger Analysis",
+      splitLayout(uiOutput("obspeeps_options"),
+                  uiOutput("plane_options")),
+      tableOutput("egsastabout"),
+      textOutput("error5"),
+      actionButton("sas", "Upload sightings to SAS"),
+      br(),
+      leafletOutput("sasdma"),
+      tableOutput("dmanameout"),
+      tableOutput("dmacoord"),
+      actionButton("dmaup", "Upload DMA to database"),
+      downloadButton("dmareport", "Download DMA Report"),
+      downloadButton("kml", "Download KML"),
+      downloadButton("dmaletter", "Download DMA Letter")
+    )
+  )
+)
