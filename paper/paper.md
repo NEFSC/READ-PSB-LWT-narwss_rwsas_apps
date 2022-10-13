@@ -1,7 +1,7 @@
 ---
-title: 'Shiny tools for management rules: R Shiny applications that aid in the conservation
+title: 'Shiny tools for management rules: interactive applications that aid in the conservation
   strategies for North Atlantic right whales'
-author:
+authors:
 - name: Leah M. Crowe
   orcid: 0000-0001-9133-8522
   affiliation: 1
@@ -16,7 +16,7 @@ output:
     df_print: paged
   pdf_document: default
 bibliography: paper.bib
-affiliation:
+affiliations:
 - name: Integrated Statistics under contract to the Northeast Fisheries Science Center,
     National Marine Fisheries Service, National Oceanic and Atmospheric Administration,
     USA
@@ -30,7 +30,7 @@ tags:
 - trigger analysis
 - conservation
 - management
-header-includes: \DeclareUnicodeCharacter{2212}{\ensuremath{-}}
+
 ---
 
 # Summary
@@ -45,7 +45,7 @@ The expansion of the dynamic program, as well as the increase in detection of ri
 
 Vessel strikes and entanglement in fishing gear are the leading causes of right whale mortality and constrain the recovery of this species [@corkeron2018recovery]. North Atlantic right whales predominately live along the eastern seaboard of the United States and Canada where some of the busiest shipping ports in North America exist. The North Atlantic Right Whale Sighting Survey (NARWSS) data processing tool, and the Right Whale Sighting Advisory System (RWSAS) trigger analysis tool improve the workflow between data processing and the determination of potential Right Whale Slow Zones (Fig. 2). These tools provide a platform that allows for efficient survey data processing to help eliminate sources of human error, integrates currently active management zones, determines if trigger criteria for a new dynamic protection zone has been met, and calculates the boundaries of proposed Slow Zones. 
 
-The tools described here have been developed to be specifically used by scientists at the Northeast Fisheries Science Center (NEFSC) in their role of providing data on right whales to federal managers; however, the data processing and reporting procedure will be of interest to survey and management teams with similar objectives. Additionally, these publicly available tools provide transparency and reproducibility of the process of requesting dynamic protection zones. 
+The tools described here have been developed to be specifically used by scientists at the Northeast Fisheries Science Center (NEFSC) in their role of providing data on right whales to federal managers; however, the data processing and reporting procedure will be of interest to survey and management teams with similar objectives. Additionally, these publicly available tools provide transparency and reproducibility of the process of declaring dynamic protection zones. 
 
 # 'Aerial Survey Data Processing'
 
