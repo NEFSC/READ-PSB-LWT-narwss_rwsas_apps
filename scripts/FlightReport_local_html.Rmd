@@ -1,5 +1,5 @@
 ---
-title:"<center>NOAA Northeast Region  \nRight Whale Aerial Survey Report</center>"
+title: "<center>NOAA Northeast Region  \nRight Whale Aerial Survey Report</center>"
 params:
   date1: NA
   rptnotes: NA
