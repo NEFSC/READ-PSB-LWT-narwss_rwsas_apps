@@ -32,5 +32,4 @@ fluidPage(
     placeholder = "e.g.: 'New England Aquarium aerial survey team' or 'public'"
   ),
   downloadButton("dmaletter", "Download Letter")
-  
 )

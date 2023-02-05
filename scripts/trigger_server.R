@@ -7,7 +7,7 @@ disable("kml")
 if (file.exists('./scripts/oracleaccess.R') == TRUE) {
   source('./scripts/reactive.R', local = TRUE)$value
   source('./scripts/oracleaccess.R', local = TRUE)$value
-  #need for 'action & slowzone' even though you can only do trigger analysis on the server. It separates it from the NARWSS app.
+  #need criteria$loc for 'action & slowzone' even though you can only do trigger analysis on the server. It separates it from the NARWSS app.
   criteria$loc <- 'Network'
   
   observeEvent(input$query, {
@@ -56,7 +56,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       
       dailyeg <- sqlQuery(cnxn, datesql)
       
-    ## ACOUSTIC DETECTIONS ----
+      ## ACOUSTIC DETECTIONS ----
       
     } else if (input$sig_acou == 'Acoustic Detections') {
       source('./scripts/Acoustic_datapull.R', local = TRUE)$value
@@ -174,9 +174,9 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     
     egtable$LAT <- as.numeric(egtable$LAT)
     egtable$LON <- as.numeric(egtable$LON)
-
+    
     ## SMA evaluation ----
-
+    
     smapath <- "./SMA ind shp"
     MODA <- unique(format(dmaevaldate, "%m-%d"))
     MODAYR <- unique(dmaevaldate, "%m-%d")
@@ -242,15 +242,15 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     
     ## FAKE slowzone ----
     
-    fakeslowzone <- data.frame(long = c(-71, -71, -71, -71, -71),
-                          lat = c(42, 42, 42, 42, 42))
+    fakeslowzone <- data.frame(long = c(-71,-71,-71,-71,-71),
+                               lat = c(42, 42, 42, 42, 42))
     
     fakeslowzone <-
       Polygons(list(Polygon(fakeslowzone, hole = as.logical(NA))), ID = 1)
     
     source('./scripts/sma.R', local = TRUE)$value
     source('./scripts/active_slowzone.R', local = TRUE)$value
-
+    
     ##egtable for SAS
     output$error1 <- renderText({
       ""
@@ -273,7 +273,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     print(criteria$DMAapp)
     
     source('./scripts/action & slowzone.R', local = TRUE)$value
-
+    
   })
   
   source('./scripts/input_sas.R', local = TRUE)$value

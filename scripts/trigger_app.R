@@ -1,7 +1,6 @@
 
-## R Shiny Application for trigger analysis          ##
-##   Written By: Leah Crowe 2018                     ##
-
+## R Shiny Application for trigger analysis
+## Written By: Leah Crowe
 
 
 ## User interface -----
