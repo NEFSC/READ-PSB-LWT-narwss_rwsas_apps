@@ -14,7 +14,7 @@ criteria$DMAapp <- "rwsurv"
 
 observeEvent(input$rawupload, {
   survey_date = input$sd
-  
+
   yr <- substr(survey_date, 1, 2)
   
   if (input$filepathway == 'Network') {
@@ -38,8 +38,8 @@ observeEvent(input$rawupload, {
   obspos = c("L", "C", "R")
   ang = c(0:89, 89.1, 89.2, 89.3, 89.4, 89.5, 89.6, 89.7, 89.8, 89.9, 90)
   cue = c(1:5, 8, 9)
-  
-  #Files ----
+     
+  #Files
   
   if (input$sd == "") {
     output$error <- renderText({
