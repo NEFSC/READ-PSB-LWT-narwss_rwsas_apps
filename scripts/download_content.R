@@ -55,7 +55,7 @@ print(file)
 rmarkdown::render(
   tempReport,
   output_file = file,
-  output = pdf_html,
+  output_yaml = pdf_html,
   params = params,
   envir = new.env(parent = globalenv())
 )
