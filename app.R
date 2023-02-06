@@ -1,6 +1,6 @@
 
-## App file for NARWSS & RWSAS APPs ##
-## Leah Crowe 2019                  ##
+## App file for NARWSS & RWSAS APPs
+## Leah Crowe                       
 
 
 # Global ----
