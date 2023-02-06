@@ -38,6 +38,7 @@ observeEvent(input$rawupload, {
   obspos = c("L", "C", "R")
   ang = c(0:89, 89.1, 89.2, 89.3, 89.4, 89.5, 89.6, 89.7, 89.8, 89.9, 90)
   cue = c(1:5, 8, 9)
+<<<<<<< HEAD
 
     #Files
 
@@ -56,6 +57,10 @@ observeEvent(input$rawupload, {
       } else if (rawed == "No"){
 
   #Files ----
+=======
+     
+  #Files
+>>>>>>> d36926af36d6687a2bf18d0c21c7ea648818db5a
   
   if (input$sd == "") {
     output$error <- renderText({
@@ -84,7 +89,6 @@ observeEvent(input$rawupload, {
           stringsAsFactors = FALSE
         ))
     } else if (rawed == "No") {
-
       ## gps ##
       gps_list <-
         list.files(paste0(path, survey_date, '/'), "*\\.gps")
@@ -201,18 +205,18 @@ observeEvent(input$rawupload, {
       sig_all$LATITUDE <- as.double(sig_all$LATITUDE)
       sig_all$LONGITUDE <- as.double(sig_all$LONGITUDE)
       
-# Drop Columns
-
+      # Drop Columns
+      
       eff <- eff_all %>%
         filter(ABE != "E") %>%  ##remove rows with "E" from eff
-        dplyr::select(-Trans, -Line, -ABE)
+        dplyr::select(-Trans,-Line,-ABE)
       
       sig <- sig_all %>%
         filter(!is.na(Trans)) %>% ##remove rows with no sig data
-        dplyr::select(-Trans, -Line, -T1, -T2, -T3, -T4, -T5)
+        dplyr::select(-Trans,-Line,-T1,-T2,-T3,-T4,-T5)
       
       gps <- gps_all %>%
-        dplyr::select(-T1, -ALTITUDE)
+        dplyr::select(-T1,-ALTITUDE)
       
       eff$BEAUFORT <- as.numeric(eff$BEAUFORT)
       sig$ACTUAL_HEADING <- as.numeric(sig$ACTUAL_HEADING)
@@ -306,7 +310,7 @@ observeEvent(input$rawupload, {
           EDIT2,
           EDIT3
         )
-
+      
       ##format for rhandsontable
       ##round lat/lon for show
       eff_sig$LATITUDE <-
@@ -456,7 +460,6 @@ observeEvent(input$rawupload, {
 })
 
 observeEvent(input$edittable, {
-
   if (input$sd == "") {
     output$error <-
       renderText({
@@ -489,7 +492,7 @@ observeEvent(input$edittable, {
       na = '',
       row.names = FALSE
     )
-
+    
     ##reformat out of hot
     eff_sig2$DATETIME_UTC <- ymd_hms(eff_sig2$DATETIME_UTC)
     eff_sig2$ALTITUDE <- as.numeric(eff_sig2$ALTITUDE)
@@ -513,7 +516,8 @@ observeEvent(input$edittable, {
     
     eff_sig2$SPCODE[eff_sig2$SPCODE == ''] <- NA
     
-    gps_list2 <- list.files(paste0(path, survey_date, '/'), "*\\.gps")
+    gps_list2 <-
+      list.files(paste0(path, survey_date, '/'), "*\\.gps")
     gps_files2 <-
       lapply(gps_list2, function (x)
         read.csv(
@@ -538,13 +542,13 @@ observeEvent(input$edittable, {
     
     #DATETIME link to position, spead, and heading data
     #package data.table documentation
-
+    
     setDT(eff_sig2)[,  LATITUDE := setDT(gps2)[eff_sig2, LATITUDE, on = "DATETIME_UTC", roll = "nearest"]]
     setDT(eff_sig2)[,  LONGITUDE := setDT(gps2)[eff_sig2, LONGITUDE, on = "DATETIME_UTC", roll = "nearest"]]
     setDT(eff_sig2)[,  SPEED := setDT(gps2)[eff_sig2, SPEED, on = "DATETIME_UTC", roll = "nearest"]]
     setDT(eff_sig2)[,  HEADING := setDT(gps2)[eff_sig2, HEADING, on = "DATETIME_UTC", roll = "nearest"]]
     
-
+    
     # GPS filter ----
     ##get bin list using seq for every 8 seconds
     gpsbin <-
@@ -577,8 +581,8 @@ observeEvent(input$edittable, {
         ),
         all = TRUE
       )
-    f <- f[order(f$DATETIME_UTC,-f$EFFORT_COMMENTS), ]
-
+    f <- f[order(f$DATETIME_UTC, -f$EFFORT_COMMENTS),]
+    
     #ALTITUDE ----
     
     f$ALTITUDE = na.locf(f$ALTITUDE, na.rm = FALSE)
@@ -620,7 +624,7 @@ observeEvent(input$edittable, {
       }
     
     f$PHOTOS <- PH
-
+    
     #True swim direction ----
     
     n = 360
@@ -635,7 +639,7 @@ observeEvent(input$edittable, {
       }
     
     #Weather codes ----
-
+    
     #last observed carried forward
     f$QUALITY_L[which(f$QUALITY_L == '')] <- NA
     f$QUALITY_R[which(f$QUALITY_R == '')] <- NA
@@ -650,9 +654,10 @@ observeEvent(input$edittable, {
     
     #get rid of before on watch
     f <-
-      subset(f,!is.na(BEAUFORT) | (is.na(BEAUFORT) & !is.na(SPCODE)))
-
-# Flight Codes ----
+      subset(f, !is.na(BEAUFORT) |
+               (is.na(BEAUFORT) & !is.na(SPCODE)))
+    
+    # Flight Codes ----
     
     # FLIGHT_TYPE ----
     FLIGHT_TYPE = NULL
@@ -682,7 +687,7 @@ observeEvent(input$edittable, {
       }
     
     f <- cbind(f, FLIGHT_TYPE)
-
+    
     #LEGTYPE ----
     ##searches for ' '+legtype abbreviation+' ' OR ' '+legtype abbreviation ($ means it's the end of the string)
     LEGTYPE = NULL
@@ -714,7 +719,7 @@ observeEvent(input$edittable, {
       }
     
     f <- cbind(f, LEGTYPE)
-
+    
     # LEGSTAGE ----
     LEGSTAGE = NULL
     for (i in 1:nrow(f))
@@ -734,7 +739,7 @@ observeEvent(input$edittable, {
       }
     
     f <- cbind(f, LEGSTAGE)
-
+    
     # PSB_LEGSTAGE ----
     PSB_LEGSTAGE = NULL
     for (i in 1:nrow(f))
@@ -788,16 +793,17 @@ observeEvent(input$edittable, {
     f <-
       f[!((f$LEGSTAGE == 0 &
              f$PSB_LEGSTAGE == 0) &
-            (!grepl('off watch', f$EFFORT_COMMENTS) & is.na(f$SPCODE))), ]
+            (!grepl('off watch', f$EFFORT_COMMENTS) &
+               is.na(f$SPCODE))),]
     
     #add event number column ----
-
-    f[order(as.Date(f$DATETIME_UTC, format = dmy_hms)), ]
+    
+    f[order(as.Date(f$DATETIME_UTC, format = dmy_hms)),]
     EVENT_NUMBER <- 1:nrow(f)
     f <- cbind(EVENT_NUMBER, f)
     
     #Translate species code ----
-
+    
     f$SPCODE[which(f$SPCODE == 'cm')] <- 'BASH'
     f$SPCODE[which(f$SPCODE == 'blsh')] <- 'BLSH'
     f$SPCODE[which(f$SPCODE == 'bm')] <- 'BLWH'
@@ -877,7 +883,7 @@ observeEvent(input$edittable, {
     f$SPCODE[which(f$SPCODECODE == 'zoop')] <- 'ZOOP'
     
     #Translate Cue ----
-
+    
     f$CUE[which(f$CUE == 1)] <- 'ANIMAL'
     f$CUE[which(f$CUE == 2)] <- 'SPLASH'
     f$CUE[which(f$CUE == 3)] <- 'BLOW'
@@ -1071,28 +1077,33 @@ observeEvent(input$edittable, {
       if (!is.na(f$CALVES[i]) && (f$B1_FINAL_CODE[i]) == '') {
         f$B1_FINAL_CODE[i] = '40'
       } else if (!is.na(f$CALVES[i]) &&
-                 (f$B2_FINAL_CODE[i] == '') && (f$B1_FINAL_CODE[i] != '40')) {
+                 (f$B2_FINAL_CODE[i] == '') &&
+                 (f$B1_FINAL_CODE[i] != '40')) {
         f$B2_FINAL_CODE[i] = '40'
       } else if (!is.na(f$CALVES[i]) &&
                  (f$B3_FINAL_CODE[i] == '') &&
-                 (f$B1_FINAL_CODE[i] != '40') && (f$B2_FINAL_CODE[i] != '40')) {
+                 (f$B1_FINAL_CODE[i] != '40') &&
+                 (f$B2_FINAL_CODE[i] != '40')) {
         f$B3_FINAL_CODE[i] = '40'
       } else if (!is.na(f$CALVES[i]) &&
                  (f$B4_FINAL_CODE[i] == '') &&
                  (f$B1_FINAL_CODE[i] != '40') &&
-                 (f$B2_FINAL_CODE[i] != '40') && (f$B3_FINAL_CODE[i] != '40')) {
+                 (f$B2_FINAL_CODE[i] != '40') &&
+                 (f$B3_FINAL_CODE[i] != '40')) {
         f$B4_FINAL_CODE[i] = '40'
       } else if (!is.na(f$CALVES[i]) &&
                  (f$B5_FINAL_CODE[i] == '') &&
                  (f$B1_FINAL_CODE[i] != '40') &&
                  (f$B2_FINAL_CODE[i] != '40') &&
-                 (f$B3_FINAL_CODE[i] != '40') && (f$B4_FINAL_CODE[i] != '40')) {
+                 (f$B3_FINAL_CODE[i] != '40') &&
+                 (f$B4_FINAL_CODE[i] != '40')) {
         f$B5_FINAL_CODE[i] = '40'
       } else if (!is.na(f$CALVES[i]) &&
                  (f$B5_FINAL_CODE[i] != '40') &&
                  (f$B1_FINAL_CODE[i] != '40') &&
                  (f$B2_FINAL_CODE[i] != '40') &&
-                 (f$B3_FINAL_CODE[i] != '40') && (f$B4_FINAL_CODE[i] != '40')) {
+                 (f$B3_FINAL_CODE[i] != '40') &&
+                 (f$B4_FINAL_CODE[i] != '40')) {
         output$calferror <-
           renderText({
             "Congrats! You have calves, but too many behaviors in a sighting to include code 40."
@@ -1256,10 +1267,10 @@ observeEvent(input$edittable, {
     enable("save")
   }
   
-# save button ----
+  # save button ----
   observeEvent(input$save, {
     final = hot_to_r(input$handsrf)
-
+    
     ##format/write f_ file
     survey_date <- input$sd
     yr <- substr(survey_date, 1, 2)
@@ -1293,7 +1304,7 @@ observeEvent(input$edittable, {
     )
     
     ##report formatting ----
-
+    
     ##beaufort
     minbft <- min(final$BEAUFORT)
     maxbft <- max(final$BEAUFORT)
@@ -1326,7 +1337,8 @@ observeEvent(input$edittable, {
       )
     #print(confsig)
     resight <-
-      grepl("\\<s\\d", confsig$SIGHTING_COMMENTS) & confsig$LEGTYPE == 4
+      grepl("\\<s\\d", confsig$SIGHTING_COMMENTS) &
+      confsig$LEGTYPE == 4
     print(resight)
     confsig <- confsig %>%
       filter(!resight)
@@ -1343,7 +1355,7 @@ observeEvent(input$edittable, {
     
     for (i in 1:seq_along(nrow(egtable)))
       if (nrow(egtable) == 0) {
-        egtable[1, ] <- ''
+        egtable[1,] <- ''
         egtable$DateTime = 'No right whales sighted'
         disable("sas")
         
@@ -1480,14 +1492,16 @@ observeEvent(input$edittable, {
       as.data.frame()
     
     if (nrow(netable) == 0) {
-      netable[1, ] <- ''
+      netable[1,] <- ''
       netable$SPCODE = 'No large whales sighted'
     } else {
       netable$SPCODE[which(netable$SPCODE == 'BASH')] <- 'Basking Shark'
       netable$SPCODE[which(netable$SPCODE == 'BEWH')] <-
         'Beaked Whale'
-      netable$SPCODE[which(netable$SPCODE == 'BLSH')] <- 'Blue Shark'
-      netable$SPCODE[which(netable$SPCODE == 'BLWH')] <- 'Blue Whale'
+      netable$SPCODE[which(netable$SPCODE == 'BLSH')] <-
+        'Blue Shark'
+      netable$SPCODE[which(netable$SPCODE == 'BLWH')] <-
+        'Blue Whale'
       netable$SPCODE[which(netable$SPCODE == 'BODO')] <-
         'Bottlenosed Dolphin'
       netable$SPCODE[which(netable$SPCODE == 'BOWH')] <-
@@ -1509,13 +1523,16 @@ observeEvent(input$edittable, {
         'Leatherback Seaturtle'
       netable$SPCODE[which(netable$SPCODE == 'LOTU')] <-
         'Loggerhead Seaturtle'
-      netable$SPCODE[which(netable$SPCODE == 'MIWH')] <- 'Minke Whale'
+      netable$SPCODE[which(netable$SPCODE == 'MIWH')] <-
+        'Minke Whale'
       netable$SPCODE[which(netable$SPCODE == 'NBWH')] <-
         'Northern Bottlenose Whale'
       netable$SPCODE[which(netable$SPCODE == 'OCSU')] <-
         'Ocean Sunfish'
-      netable$SPCODE[which(netable$SPCODE == 'PIWH')] <- 'Pilot Whale'
-      netable$SPCODE[which(netable$SPCODE == 'RIWH')] <- "Right Whale"
+      netable$SPCODE[which(netable$SPCODE == 'PIWH')] <-
+        'Pilot Whale'
+      netable$SPCODE[which(netable$SPCODE == 'RIWH')] <-
+        "Right Whale"
       netable$SPCODE[which(netable$SPCODE == 'RITU')] <-
         "Kemp's Ridley Seaturtle"
       netable$SPCODE[which(netable$SPCODE == 'SADO')] <-
@@ -1525,7 +1542,8 @@ observeEvent(input$edittable, {
         "Sonobuoy Deployed"
       netable$SPCODE[which(netable$SPCODE == 'SPDO')] <-
         "Spinner Dolphin"
-      netable$SPCODE[which(netable$SPCODE == 'SPWH')] <- "Sperm Whale"
+      netable$SPCODE[which(netable$SPCODE == 'SPWH')] <-
+        "Sperm Whale"
       netable$SPCODE[which(netable$SPCODE == 'STDO')] <-
         "Striped Dolphin"
       netable$SPCODE[which(netable$SPCODE == 'WBDO')] <-
@@ -1548,8 +1566,8 @@ observeEvent(input$edittable, {
     print(MODA)
     
     ## FAKE Slow Zone
-    fakeslowzone <- data.frame(long = c(-71, -71, -71, -71, -71),
-                          lat = c(42, 42, 42, 42, 42))
+    fakeslowzone <- data.frame(long = c(-71,-71,-71,-71,-71),
+                               lat = c(42, 42, 42, 42, 42))
     
     fakeslowzone <-
       Polygons(list(Polygon(fakeslowzone, hole = as.logical(NA))), ID = 1)
@@ -1630,7 +1648,7 @@ observeEvent(input$edittable, {
             ACTION = NA
           )
         print(egsas)
-  
+        
         for (i in 1:nrow(egsas))
           if (egsas$CALVES[i] > 0) {
             egsas$MOMCALF[i] = '1'
@@ -1663,14 +1681,14 @@ observeEvent(input$edittable, {
           }
         
         egsas <- egsas %>%
-          dplyr::select(-CALVES,-Behavior)
+          dplyr::select(-CALVES, -Behavior)
         
         source('./scripts/action & slowzone.R', local = TRUE)$value
         disable("dmaup")
       }
       
     }
-
+    
     ## REPORT ----
     
     date_formats$month1 <-
