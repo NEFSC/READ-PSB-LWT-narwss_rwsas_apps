@@ -1,6 +1,6 @@
 ---
 
-title:  "NOAA Northeast Region \nRight Whale Aerial Survey Report"
+title:  "NOAA Northeast Region\linebreak Right Whale Aerial Survey Report"
 params:
   date1: NA
   rptnotes: NA
