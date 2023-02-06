@@ -1859,7 +1859,6 @@ observeEvent(input$edittable, {
           tempReport <- file.path("./scripts/FlightReport_local.Rmd")
           ##slightly different formatting including vertical space between text and objects
         }
-        pdf_html = "pdf_document"
         source('./scripts/download_content.R', local = TRUE)$value
       }
     )
@@ -1874,7 +1873,6 @@ observeEvent(input$edittable, {
       ),
       content = function(file) {
         tempReport <- file.path("./scripts/FlightReport_local_html.Rmd")
-        pdf_html = "html_document"
         source('./scripts/download_content.R', local = TRUE)$value
       }
     )
