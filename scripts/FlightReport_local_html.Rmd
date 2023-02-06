@@ -1,5 +1,5 @@
 ---
-title: "NOAA Northeast Region Right <br>Whale Aerial Survey Report"
+title: <div style="text-align:center">"NOAA Northeast Region Right <br>Whale Aerial Survey Report"</div>
 params:
   date1: NA
   rptnotes: NA
