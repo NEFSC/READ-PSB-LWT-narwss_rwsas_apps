@@ -38,29 +38,9 @@ observeEvent(input$rawupload, {
   obspos = c("L", "C", "R")
   ang = c(0:89, 89.1, 89.2, 89.3, 89.4, 89.5, 89.6, 89.7, 89.8, 89.9, 90)
   cue = c(1:5, 8, 9)
-<<<<<<< HEAD
-
-    #Files
-
-    if (input$sd == "") {
-        output$error<-renderText({"Enter a survey date"})
-    } else if (length(list.files(paste0(path,survey_date,'/'), "*\\.gps")) == 0) { 
-        output$error2<-renderText({"Uh oh! Those files can't be found! Double check your connection to the network, the local network pathway, your data, and/or your survey date entry."})         
-    } else if (rawed == "Yes" && !file.exists(paste0(path,survey_date,'/','effsig_',survey_date,'.csv'))){
-        output$error2<-renderText({"No initial eff/sig edits were saved."})    
-    } else if (input$tn == "") {
-      output$error2<-renderText({"Enter a two-digit tail number"}) ###Does this need to be renamed error3 or otherwise unused variable?
-    } else {
-      output$error2<-renderText({""})
-      if (rawed == "Yes"){
-        eff_sig<-as.data.frame(read.csv(paste0(path,survey_date,'/','effsig_',survey_date,'.csv'),header=TRUE, stringsAsFactors = FALSE))
-      } else if (rawed == "No"){
 
   #Files ----
-=======
-     
-  #Files
->>>>>>> d36926af36d6687a2bf18d0c21c7ea648818db5a
+  ## Error messages ----
   
   if (input$sd == "") {
     output$error <- renderText({
