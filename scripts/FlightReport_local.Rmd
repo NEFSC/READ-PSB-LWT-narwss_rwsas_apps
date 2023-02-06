@@ -10,7 +10,8 @@ params:
   dmanamesexpsent: NA
   ftypesent: NA
   webshotpath: NA
-output: pdf_document
+output: 
+  pdf_document
 
 ---
 
