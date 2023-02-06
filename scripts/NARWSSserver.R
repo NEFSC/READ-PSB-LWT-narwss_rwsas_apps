@@ -54,10 +54,6 @@ observeEvent(input$rawupload, {
       if (rawed == "Yes"){
         eff_sig<-as.data.frame(read.csv(paste0(path,survey_date,'/','effsig_',survey_date,'.csv'),header=TRUE, stringsAsFactors = FALSE))
       } else if (rawed == "No"){
-       
-        
-########################        
->>>>>>> ee3df9028372e6072094d253793676a22d543bfb
 
   #Files ----
   
