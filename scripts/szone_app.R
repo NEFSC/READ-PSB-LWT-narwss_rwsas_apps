@@ -1,27 +1,21 @@
-#######################################################
-## R Shiny Application for viewing active slow zones throughout history          ##
-##   Written By: Leah Crowe 2021                     ##
-#######################################################
 
-####################
-## User interface ##
-####################
+## R Shiny Application for viewing active slow zones throughout history
+
+## User interface ----
 
 ui = source('./scripts/szone_ui.R', local = TRUE)$value
-############
-## Server ##
-############
 
-	## Define server logic 
-	server = function(input, output, session) {
-	  
-	  ## rwData
-	  source('./scripts/szone_server.R', local = TRUE)$value
-		
-	}
+## Server ----
 
-#########################
-## Create Shiny object ##
-#########################
+## Define server logic
+server = function(input, output, session) {
+  source('./scripts/szone_server.R', local = TRUE)$value
+  
+}
 
-	shinyApp(ui = ui, server = server, options = list(height = 1080))
+
+## Create Shiny object ----
+
+shinyApp(ui = ui,
+         server = server,
+         options = list(height = 1080))
