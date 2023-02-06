@@ -51,6 +51,7 @@ params <-
   )
 print(webshotpath)
 print(params)
+print(file)
 rmarkdown::render(
   tempReport,
   output_file = file,
