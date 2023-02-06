@@ -1,0 +1,69 @@
+---
+title:  "Potential SLOW Zone Report"
+params:
+  dmanameselect: NA
+  date1: NA
+  expletter: NA
+  egsastab: NA
+  dmanameout: NA
+  dmacoord: NA
+  webshotpath: NA
+output: pdf_document
+
+---
+\vspace*{-7mm}
+\begin{center}\LARGE `r params$dmanameselect`\end{center}
+\vspace*{-2mm}
+\begin{center}\LARGE Trigger date: `r params$date1`\end{center}
+\vspace*{-2mm}
+\begin{center}\LARGE Expiration: `r params$expletter`\end{center}
+
+```{r echo = FALSE, warning = FALSE, results = 'asis', out.width = '80%', fig.align="center"}
+
+knitr::include_graphics(params$webshotpath)
+```
+
+```{r echo = FALSE, warning = FALSE, results = 'asis', fig.align="center"}
+egtab<-params$egsastab
+if("GROUP_SIZE" %in% colnames(egtab)){
+  cap <- "Dynamic Management Area Name(s)"
+} else {
+  cap <- "Acoustic SLOW Zone Name(s)"
+}
+
+knitr::kable(params$dmanameout, caption = cap)
+```
+
+```{r echo = FALSE, warning = FALSE, results = 'asis', fig.align="center"}
+
+if("GROUP_SIZE" %in% colnames(egtab)){
+  cap2 <- "Dynamic Management Area Bounds"
+} else {
+  cap2 <- "Acoustic SLOW Zone Bounds"
+}
+
+knitr::kable(params$dmacoord, caption = cap2)
+```
+
+```{r echo = FALSE, warning = FALSE, results = 'asis'}
+
+if("GROUP_SIZE" %in% colnames(egtab)){
+  egtab<-egtab%>%
+    dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)  
+} else {
+  egtab<-egtab%>%
+    dplyr::select(DateTime,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)
+}
+
+egtab<-egtab%>%
+  dplyr::filter(ACTION_NEW == 4 | ACTION_NEW == 5 | ACTION_NEW == 24 | ACTION_NEW == 25)%>%
+  dplyr::rename("LAT"="LATITUDE","LON"="LONGITUDE")
+
+if("GROUP_SIZE" %in% colnames(egtab)){  
+  knitr::kable(egtab, caption = "Right Whale sighting(s)")
+} else {
+  knitr::kable(egtab, caption = "Right Whale Acoustic Detection(s)")
+}  
+
+```
+
