@@ -32,11 +32,11 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     MODAYR <- unique(dmaevaldate, "%m-%d")
     
     ## FAKE DMA ----
-    fakedma <- data.frame(long = c(-71, -71, -71, -71, -71),
+    fakeslowzone <- data.frame(long = c(-71, -71, -71, -71, -71),
                           lat = c(42, 42, 42, 42, 42))
     
-    fakedma <-
-      Polygons(list(Polygon(fakedma, hole = as.logical(NA))), ID = 1)
+    fakeslowzone <-
+      Polygons(list(Polygon(fakeslowzone, hole = as.logical(NA))), ID = 1)
     ##
     egtable <- data.frame(LONGITUDE = -70)
     
