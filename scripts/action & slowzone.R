@@ -1147,17 +1147,17 @@ if (44 %in% egsas$ACTION_NEW) {
 if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   print("4 or 5")
   if (!exists("polyclust_sp")) {
-    polyclust_sp <- SpatialPolygons(list(fakedma))
+    polyclust_sp <- SpatialPolygons(list(fakeslowzone))
   }
   
   #the below is to put a bandaid on sightings trigger extensions not having black core ring to plot.
   #add it to the list
   if (!exists("polycoorddf_sp")) {
-    polycoorddf_sp <- SpatialPolygons(list(fakedma))
+    polycoorddf_sp <- SpatialPolygons(list(fakeslowzone))
   }
   
   if (!exists("extpolycoorddf_sp")) {
-    extpolycoorddf_sp <- SpatialPolygons(list(fakedma))
+    extpolycoorddf_sp <- SpatialPolygons(list(fakeslowzone))
   }
   
   ##join dmanamedf with ext dmas

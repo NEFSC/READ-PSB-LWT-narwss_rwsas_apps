@@ -175,13 +175,13 @@ observeEvent(input$dmaup, {
     
     content = function(file) {
       if (criteria$loc == 'Network') {
-        tempReport <- file.path("./scripts/DMAReport.Rmd")
+        tempReport <- file.path("./scripts/slowzone_Report.Rmd")
       } else if (criteria$loc == 'Local') {
-        tempReport <- file.path(paste0(inputpath, "/DMAReport.Rmd"))
+        tempReport <- file.path(paste0(inputpath, "/slowzone_Report.Rmd"))
       }
       
       print(tempReport)
-      file.copy("DMAReport.Rmd", tempReport, overwrite = TRUE)
+      file.copy("slowzone_Report.Rmd", tempReport, overwrite = TRUE)
       params <-
         list(
           dmanameselect = dmanameselect,
@@ -490,12 +490,12 @@ observeEvent(input$dmaup, {
     
     content = function(file) {
       if (criteria$loc == 'Network') {
-        tempReport <- file.path("./scripts/DMALetter.Rmd")
+        tempReport <- file.path("./scripts/slowzone_Letter.Rmd")
       } else if (criteria$loc == 'Local') {
-        tempReport <- file.path(paste0(inputpath, "/DMALetter.Rmd"))
+        tempReport <- file.path(paste0(inputpath, "/slowzone_Letter.Rmd"))
       }
       
-      file.copy("DMALetter.Rmd", tempReport, overwrite = TRUE)
+      file.copy("slowzone_Letter.Rmd", tempReport, overwrite = TRUE)
       
       ##choose group that saw the most to be the trigger org
       if (criteria$triggrptrue == TRUE) {

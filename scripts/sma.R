@@ -109,7 +109,7 @@ if (between(MODA, "01-01", "02-29")) {
 }
 
 if (is.null(smapresent)) {
-  fakesma <- SpatialPolygons(list(fakedma))
+  fakesma <- SpatialPolygons(list(fakeslowzone))
   smapresent.sp <- fakesma
 } else {
   smapresent.sp <- sp::spTransform(smapresent, CRS.latlon)
