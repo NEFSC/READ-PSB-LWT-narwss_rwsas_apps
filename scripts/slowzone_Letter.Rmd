@@ -78,11 +78,11 @@ DMAlet2 <- nchar(params$title2) > 0
 DMAlet3 <- nchar(params$title3) > 0
 DMAlet4 <- nchar(params$title4) > 0
 ```
-```{r conditional_block, echo=FALSE, results='asis', eval=DMAlet2, child='DMAlet2.Rmd'}
+```{r conditional_block, echo=FALSE, results='asis', eval=DMAlet2, child='slowzone_let2.Rmd'}
 ```
-```{r conditional_block, echo=FALSE, results='asis', eval=DMAlet3, child='DMAlet3.Rmd'}
+```{r conditional_block, echo=FALSE, results='asis', eval=DMAlet3, child='slowzone_let3.Rmd'}
 ```
-```{r conditional_block, echo=FALSE, results='asis', eval=DMAlet4, child='DMAlet4.Rmd'}
+```{r conditional_block, echo=FALSE, results='asis', eval=DMAlet4, child='slowzone_let4.Rmd'}
 ```
 
 Expiration – `r params$expletter`\newline 
