@@ -1,6 +1,6 @@
 ---
 
-title:  "NOAA Northeast Region Right Whale Aerial Survey Report"
+title:  "NOAA Northeast Region  \nRight Whale Aerial Survey Report"
 params:
   date1: NA
   rptnotes: NA
@@ -10,8 +10,7 @@ params:
   dmanamesexpsent: NA
   ftypesent: NA
   webshotpath: NA
-output: 
-  pdf_document
+output: pdf_document
 
 ---
 
