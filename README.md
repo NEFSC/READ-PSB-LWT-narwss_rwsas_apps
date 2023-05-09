@@ -4,50 +4,7 @@ For more info on this app, please check out the Wiki as well as the section in t
 
 ## Getting Started
 
-Required packages include:
-
-```
-
-library(data.table)
-library(DBI)
-library(dplyr)
-library(ellipsis)
-library(extrafont)
-library(fontcm)
-library(geosphere)
-library(ggplot2)
-library(htmlwidgets)
-library(igraph)
-library(knitr)
-library(leaflet)
-library(leaflet.esri)
-library(lubridate)
-library(maps)
-library(maptools)
-library(raster)
-library(RColorBrewer)
-library(reshape)
-library(rgeos)
-library(rgdal)
-library(rhandsontable)
-library(rlist)
-library(rmarkdown)
-library(RODBC)
-library(scales)
-library(sf)
-library(shiny)
-library(shinyjs)
-library(shinydashboard)
-library(shinymanager)
-library(sp)
-library(sqldf)
-library(stringi)
-library(tinytex)
-library(webshot)
-library(zoo)
-
-```
-## Additional installations
+### Additional installations
 
 `webshot::install_phantomjs()`
 
