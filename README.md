@@ -66,7 +66,7 @@ in your RStudio environment. Click 'Run App' to get started. In the window that 
 
 ### Example data
 
-To take a spin with example data, chose/enter these details (NOTE: to download the report, you will have to host the [example data](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/tree/master/example_data/210409) on a local path):
+To take a spin with example data, chose/enter these details (NOTE: to download the report, you will have to host the [example data](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/tree/master/example_data/210409) on a local path specific to your machine):
 
 ![](www/example_data.png)
 
