@@ -26,6 +26,7 @@ observeEvent(input$rawupload, {
     path <- input$filepathinput
     print(path)
     print(typeof(path))
+    criteria$path = path
   }
   
   rawed <- input$rawedits
