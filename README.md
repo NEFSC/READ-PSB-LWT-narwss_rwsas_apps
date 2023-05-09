@@ -64,6 +64,11 @@ The app can be launched by running
 
 in your RStudio environment. Click 'Run App' to get started. In the window that pops up, click "Open in Browser". 
 
+### Example data
+
+To take a spin with example data, chose/enter these details:
+
+![](www/example_data.png)
 
 ## Script Flow Chart
 
