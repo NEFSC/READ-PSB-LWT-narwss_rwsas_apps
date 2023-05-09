@@ -4,7 +4,7 @@ fluidPage(
   titlePanel("NEFSC Right Whale Aerial Survey Data Processing"),
       splitLayout(radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE),
                   #radioButtons("sig_acou", "Is this real life or a test?", choices = c("Real", "Test"), selected = "Real", inline = FALSE), 
-                  textInput("filepathinput", (HTML(paste("Local pathway", '<br/>', "Example: C:/2022/Flights/edit_data/")))),
+                  textInput("filepathinput", (HTML(paste("Local pathway where YYMMDD folder is stored", '<br/>', "Example: C:/2022/Flights/edit_data/")))),
               width = 3),
       tabsetPanel(type = "tabs",
                   tabPanel("Aerial Survey",
