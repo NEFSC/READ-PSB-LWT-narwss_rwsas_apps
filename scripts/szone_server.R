@@ -41,7 +41,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     egtable <- data.frame(LONGITUDE = -70)
     
     source('./scripts/sma.R', local = TRUE)$value
-    source('./scripts/activedma.R', local = TRUE)$value
+    source('./scripts/active_slowzone.R', local = TRUE)$value
     
     sasdma <-
       leaflet(data = smapresent.sp, options = leafletOptions(zoomControl = FALSE)) %>%
