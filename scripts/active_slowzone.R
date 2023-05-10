@@ -1,7 +1,7 @@
-## ACTIVE DMAs and acoustic protection zones ----
+## ACTIVE SLOW zones ----
 
 #queries for active dmas/acoustic protection zones and their bounds. Also identifies if zones are within time period where they could be extended.
-##a lot of variables are named with "dma" even if they refer to both kinds of protection zones (acoustic vs. visual) because the original code for DMAs was modifed in 2020 to accomodate the new acoustic protection zone program
+##a lot of variables are named with "dma" even if they refer to both kinds of protection zones (acoustic vs. visual) because the original code for DMAs was modifed in 2020 to accommodate the new acoustic protection zone program
 
 ## declare function ----
 
@@ -74,12 +74,12 @@ if (isolate(criteria$loc) == 'Network') {
   
   dmacsv <-
     read.csv(
-      './Aerial and SLOW zone data/DMAINFO export 05Aug2021.csv',
+      './example_data/example_data_slowzones.csv',
       header = T,
       stringsAsFactors = F
     )
   dmacsv$EXPDATE <- as.Date(dmacsv$EXPDATE)
-  dmacsv$TRIGGERDATE <- dmy(dmacsv$TRIGGERDATE)
+  dmacsv$TRIGGERDATE <- dmy_hms(dmacsv$TRIGGERDATE)
   
   actdma <- dmacsv %>%
     filter(EXPDATE > MODAYR & TRIGGERDATE < MODAYR) %>%
