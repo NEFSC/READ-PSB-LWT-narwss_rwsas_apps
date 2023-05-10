@@ -1556,9 +1556,13 @@ observeEvent(input$edittable, {
     source('./scripts/sma.R', local = TRUE)$value
     print(file.exists('./scripts/oracleaccess.R'))
     
-    if (file.exists('./scripts/oracleaccess.R') == TRUE) {
+    if (file.exists('./scripts/oracleaccess.R') == TRUE | criteria$path == './example_data/') {
+      
+      if (file.exists('./scripts/oracleaccess.R') == TRUE){
       print("oracle")
       source('./scripts/oracleaccess.R', local = TRUE)$value
+      }
+      
       source('./scripts/active_slowzone.R', local = TRUE)$value
       
       if (nrow(egtable) == 0 |
