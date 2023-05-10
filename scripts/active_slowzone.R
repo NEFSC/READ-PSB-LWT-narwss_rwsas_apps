@@ -83,7 +83,7 @@ if (isolate(criteria$loc) == 'Network') {
   
   actdma <- dmacsv %>%
     filter(EXPDATE > MODAYR & TRIGGERDATE < MODAYR) %>%
-    dplyr::select(NAME, EXPDATE, ID, TRIGGERTYPE) %>%
+    distinct(NAME, EXPDATE, ID, TRIGGERTYPE) %>%
     mutate(EXT = EXPDATE - days(7))
   
 }
@@ -147,7 +147,7 @@ if (nrow(actdma) == 0) {
   } else {
     actdma_bounds <-
       read.csv(
-        './Aerial and SLOW zone data/DMACOORDS export 05Aug2021.csv',
+        './example_data/example_data_slowzones.csv',
         header = T,
         stringsAsFactors = F
       )
