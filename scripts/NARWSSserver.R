@@ -1716,7 +1716,7 @@ observeEvent(input$edittable, {
         )
       )
     
-    ##leaflet map with US or Canadian shipping lanes and managament schemes
+    ##leaflet map with US or Canadian shipping lanes and management schemes
     if (nrow(sightings19) >= nrow(sightings20)) {
       #US
       
@@ -1770,7 +1770,7 @@ observeEvent(input$edittable, {
     
     #if on network, add in the current DMAs including the ones that are not up for extension (benign) and the ones eligible for extension
     #these are the same color for the flight report, but won't be for the Potential Protection Area report (if applicable)
-    if (input$filepathway == 'Network') {
+    if (input$filepathway == 'Network' | criteria$path == './example_data/') {
       reportleaf <- reportleaf %>%
         addPolygons(data = benigndma,
                     weight = 2,
