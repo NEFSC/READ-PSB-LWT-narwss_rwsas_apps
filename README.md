@@ -23,9 +23,19 @@ in your RStudio environment. Click 'Run App' to get started. In the window that 
 
 ### Example data
 
-To take a spin with example data, chose/enter these details (NOTE: to download the report, you will have to host the [example data](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/tree/master/example_data/210409) on a local path specific to your machine):
+To take a spin with processing example aerial survey data and evaluating if sightings trigger SLOW zones, chose/enter the following details (NOTE: to download the report, you will have to host the [example data](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/tree/master/example_data/210409) on a local path specific to your machine, and the SLOW zone analysis will then not be available):
 
 ![](www/example_data.png)
+
+### There are different scenarios available to explore with different example survey days:
+
+210226: Visual sightings that fall within a Seasonal Management Area. One flight day, includes option to load previously editted eff/sig file.
+
+210407: Visual sightings that trigger a new SLOW Zone. One flight day, includes option to load previously editted eff/sig file.
+
+210409: Visual sightings that extend two active and overlapping SLOW Zones. Two flight day, no editted eff/sig file.
+
+210512: Visual sightings that do not trigger new protection measures. One flight day, includes option to load previously editted eff/sig file.
 
 ## Script Flow Chart
 
