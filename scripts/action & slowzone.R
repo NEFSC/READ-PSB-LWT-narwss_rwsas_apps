@@ -171,7 +171,7 @@ for (i in 1:nrow(egsas))
       renderText({
         "Soc re bleu! One of these right whales was in France!"
       })
-  } else if (isolate(criteria$loc) == 'Network') {
+  } else if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
     if (egsas$eDMA[i] == TRUE &
         (isolate(criteria$DMAapp) == "vissig" |
          isolate(criteria$DMAapp) == "rwsurv")) {
@@ -1375,7 +1375,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   }
   
   
-  if (isolate(criteria$loc) == 'Network') {
+  if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
     #The shapes that get plotted are independent of the names
     #print("label testing")
     #print(fortify(benigndma))
@@ -1504,7 +1504,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
     }
   }
   
-  if (isolate(criteria$loc) == 'Network') {
+  if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
     sasdma <- sasdma %>%
       addPolygons(data = benigndma,
                   weight = 2,
@@ -1608,9 +1608,8 @@ sas_react$egsastab <- egsastab
 
 ## On network ----
 
-if (#input$sig_acou == 'Test'|
-  isolate(criteria$loc) == 'Network') {
-  ##########
+if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
+  
   ###sas on network
   egsastabout <- sas_react$egsastab %>%
     left_join(actioncodedf, by = c("ACTION_NEW" = "ID")) %>%
