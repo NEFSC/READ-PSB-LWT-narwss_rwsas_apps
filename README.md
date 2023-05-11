@@ -1,6 +1,6 @@
 # narwss_rwsas_apps
 
-For more info on this app, please check out the Wiki as well as the section in the Shiny Book: https://nefsc.github.io/NEFSC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps
+For more info on this app, please check out the Wiki as well as the section in this Shiny Book: https://nefsc.github.io/NEFSC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps
 
 ## Getting Started
 
