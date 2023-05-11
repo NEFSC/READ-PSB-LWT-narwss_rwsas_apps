@@ -4,7 +4,7 @@ For more info on this app, please check out the Wiki as well as the section in t
 
 ## Getting Started
 
-### Additional installations
+### Additional installations for downloading PDFs
 
 `webshot::install_phantomjs()`
 
@@ -13,6 +13,10 @@ For more info on this app, please check out the Wiki as well as the section in t
 `tinytex::install_tinytex()`
 
 If you do not get TRUE when you run `tinytex:::is_tinytex()`, then you probably need to run this: `tinytex::install_tinytex(force=TRUE)`. More info on this process and the TinyTex package can be found here: https://yihui.name/tinytex/. Note the difference between tinytex the R package and TinyTeX the LaTeX distribution. Both commands above are needed. 
+
+### Troubleshooting PDF downloads
+
+If after doing the installations above you are still having trouble downloading PDFs, there are options to compile the report as an html page. See this [section of the wiki](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/wiki/Aerial-Survey-Processing-App,-Aerial-Survey-Tab:-Part-3). Different computers have different setups related to LaTeX distributions which might be causing the issue.
 
 ## Running the App
 The app can be launched by running
