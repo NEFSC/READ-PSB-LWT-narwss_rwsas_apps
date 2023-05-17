@@ -40,6 +40,51 @@ To take a spin with processing example aerial survey data and evaluating if sigh
 * 210409: Visual sightings that extend two active and overlapping SLOW Zones. Two flight day, no editted eff/sig file.
 * 210512: Visual sightings that fall within active SLOW Zones, but trigger no further action. One flight day, includes option to load previously editted eff/sig file.
 
+## Script Structure
+```
+app.R                             Starting App file that defines the dashboard for all apps in this repo
+
+  scripts/global_libraries.R      Required libraries
+  scripts/creds.R*                Allowable credentials defined for accessing the Shiny app on the network server
+  
+  scripts/NARWSSapp.R             App file for the North Atlantic Right Whale Sighting Survey (NARWSS)vAerial Survey Processing App
+  scripts/NARWSSui.R              User interface for the NARWSS Aerial Survey Processing App
+  scripts/NARWSSserver.R          Server code for NARWSS Aerial Survey Processing App
+  
+  scripts/Trigger_app.R           App file for the Trigger Analysis App
+  scripts/Trigger_ui.R            User interface for the Trigger Analysis App
+  scripts/Trigger_server.R        Server code for the Trigger Analysis App
+    
+  scripts/szone_app.R             App file for the Slow Zone viewer App
+  scripts/szone_ui.R              User interface for the Slow Zone viewer App
+  scripts/szone_server.R          Server code for the Slow Zone viewer App
+  
+  scripts/photo_app.R             App file for the Photo Position Finder App
+  scripts/photo_ui.R              User interface for the Photo Position Finder App
+  scripts/photo_server.R          Server code for the Photo Position Finder App
+
+-- Files called by the server for the NARWSS Aerial Survey Processing App, Trigger Analysis App, and the Slow Zone viewer App --
+  scripts/reactive.R              Reactive values passed between different actions
+  scripts/sma.R                   Determines active Seasonal Management Areas based on the date
+  scripts/oracleaccess.R*         Credentials for accessing Oracle database
+  scripts/active_slowzone.R       Determines active Slow Zones based on the date
+  scripts/action & slowzone.R     Procedure for determining action codes and triggered Slow Zones for right whale detections
+
+-- Files called by the server for the NARWSS Aerial Survey Processing App --  
+  scripts/download_content.R      Content passed to download handler for flight report
+  scripts/FlightReport.Rmd        Template flight report
+
+-- Files called by the server for the NARWSS Aerial Survey Processing App and the Trigger Analysis App --  
+  scripts/input_sas.R             Detections formatted and uploaded to the Sighting Advisory System
+  scripts/input_slowzone.R        Triggered Slow Zone data formatted and uploaded to the database
+    scripts/slowzone_Report.Rmd   Template for Slow Zone report
+    scripts/slowzone_Letter.Rmd   Template for Slow Zone letter. Conditionally cycles through slowzone_let#.Rmd if more than one Slow Zone is triggered from one flight or on one day
+
+-- Files called by the server for the Trigger Analysis App --
+  scripts/Acoustic_datapull.R*    Queries right whale acoustic detections based on selected date  
+
+*not managed on GitHub
+```
 ## Script Flow Chart
 
 ![](www/scriptflow.png)
