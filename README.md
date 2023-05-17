@@ -33,7 +33,7 @@ To take a spin with processing example aerial survey data and evaluating if sigh
 
 <img src="www/example_data.png" width="600">
 
-### There are different scenarios available to explore with different example survey days:
+### There are several scenarios available to explore with different example survey days:
 
 * 210226: Visual sightings that fall within a Seasonal Management Area. One flight day, includes option to load previously editted eff/sig file.
 * 210407: Visual sightings that trigger a new SLOW Zone. One flight day, includes option to load previously editted eff/sig file.
