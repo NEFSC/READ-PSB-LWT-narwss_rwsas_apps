@@ -1,6 +1,8 @@
 # narwss_rwsas_apps
 
-For more info on this app, please check out the Wiki as well as the section in [this Shiny Book](https://nefsc.github.io/NEFSC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps)
+For more info on this app, please check out the [Wiki](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/wiki) as well as [this section in this NEFSC Shiny Book](https://neC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps) where you can also find the point of contact for questions regarding this repository. 
+
+Please report any problems or suggestions via [this repository's issue tab](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/issues).
 
 ## Getting Started
 
@@ -29,17 +31,14 @@ in your RStudio environment. Click 'Run App' to get started. In the window that 
 
 To take a spin with processing example aerial survey data and evaluating if sightings trigger SLOW zones, chose/enter the following details (NOTE: to download the report, you will have to host the [example data](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/tree/master/example_data/210409) on a local path specific to your machine, and the SLOW zone analysis will then not be available):
 
-![](www/example_data.png)
+<img src="www/example_data.png" width="600">
 
 ### There are different scenarios available to explore with different example survey days:
 
-210226: Visual sightings that fall within a Seasonal Management Area. One flight day, includes option to load previously editted eff/sig file.
-
-210407: Visual sightings that trigger a new SLOW Zone. One flight day, includes option to load previously editted eff/sig file.
-
-210409: Visual sightings that extend two active and overlapping SLOW Zones. Two flight day, no editted eff/sig file.
-
-210512: Visual sightings that fall within active SLOW Zones, but trigger no further action. One flight day, includes option to load previously editted eff/sig file.
+* 210226: Visual sightings that fall within a Seasonal Management Area. One flight day, includes option to load previously editted eff/sig file.
+* 210407: Visual sightings that trigger a new SLOW Zone. One flight day, includes option to load previously editted eff/sig file.
+* 210409: Visual sightings that extend two active and overlapping SLOW Zones. Two flight day, no editted eff/sig file.
+* 210512: Visual sightings that fall within active SLOW Zones, but trigger no further action. One flight day, includes option to load previously editted eff/sig file.
 
 ## Script Flow Chart
 
