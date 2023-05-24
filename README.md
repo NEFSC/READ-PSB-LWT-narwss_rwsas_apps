@@ -1,8 +1,6 @@
 # narwss_rwsas_apps
 
-For more info on this app, please check out the [Wiki](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/wiki) as well as [this section in this NEFSC Shiny Book](https://neC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps) where you can also find the point of contact for questions regarding this repository. 
-
-Please report any problems or suggestions via [this repository's issue tab](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/issues).
+For more info on the suite of apps in this repo, please check out the [Wiki](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/wiki) as well as [this section in this NEFSC Shiny Book](https://nefsc.github.io/NEFSC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps). 
 
 ## Getting Started
 
@@ -89,7 +87,15 @@ app.R                             Starting App file that defines the dashboard f
 
 ![](www/scriptflow.png)
 
+## Contributions
 
+In the [NEFSC Shiny Book](https://nefsc.github.io/NEFSC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps), you can find the point of contact for questions regarding this repository. In addition, problems can be reported or suggestions can be submitted via [this repository's issue tab](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/issues). 
+
+For substantial suggestions/changes, please first open the discussion by submitting an [issue](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/issues).
+
+This project, and everyone participating in it, is governed by [this Code of Conduct](https://github.com/nmfs-fish-tools/Resources/blob/main/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+
+##
 
 This repository is a scientific product and is not official communication of the National Oceanic and Atmospheric Administration, or the United States Department of Commerce. All NOAA GitHub project code is provided on an ‘as is’ basis and the user assumes responsibility for its use. Any claims against the Department of Commerce or Department of Commerce bureaus stemming from the use of this GitHub project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DOC or the United States Government.
 
