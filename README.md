@@ -95,7 +95,7 @@ app.R                             Starting App file that defines the dashboard f
 
 ## Contributions
 
-In the [NEFSC Shiny Book](https://nefsc.github.io/NEFSC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps), you can find the point of contact for questions regarding this repository. In addition, problems can be reported or suggestions can be submitted via [this repository's issue tab](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/issues). 
+In the [NEFSC Shiny Book](https://nefsc.github.io/NEFSC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps), you can find the point of contact for questions regarding this repository. In addition, problems can be reported, suggestions can be submitted, and questions can be asked via [this repository's issue tab](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/issues). 
 
 For substantial suggestions/changes, please first open the discussion by submitting an [issue](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/issues).
 
