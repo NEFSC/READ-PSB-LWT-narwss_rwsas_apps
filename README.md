@@ -1,8 +1,12 @@
 # narwss_rwsas_apps
 
-For more info on this app, please check out the [Wiki](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/wiki) as well as [this section in this NEFSC Shiny Book](https://neC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps) where you can also find the point of contact for questions regarding this repository. 
+Welcome to the [North Atlantic Right Whale Sighting Survey (NARWSS)](https://www.fisheries.noaa.gov/new-england-mid-atlantic/marine-mammal-protection/whale-and-dolphin-research-northeast#north-atlantic-right-whale-sighting-surveys) and the [Right Whale Sighting Advisory System (RWSAS)](https://www.fisheries.noaa.gov/new-england-mid-atlantic/marine-mammal-protection/whale-and-dolphin-research-northeast#right-whale-sighting-advisory-system) apps repository!
 
-Please report any problems or suggestions via [this repository's issue tab](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/issues).
+The NARWSS 'Aerial Survey Data Processing' tool, and the RWSAS 'Trigger Analysis' tool improve the workflow between data processing and the determination of potential [Right Whale Slow Zones](https://www.fisheries.noaa.gov/national/endangered-species-conservation/reducing-vessel-strikes-north-atlantic-right-whales). These tools provide a platform to efficiently process survey data to help eliminate sources of human error, integrate currently active management zones, determine if trigger criterion for a new dynamic protection zone have been met, calculate the boundaries of a proposed Slow Zone, and compile reports that are then sent on to managers and other stakeholders.
+
+The tools described here were developed for scientists at the [Northeast Fisheries Science Center (NEFSC)](https://www.fisheries.noaa.gov/about/northeast-fisheries-science-center) in their role as data stewards to support federal managers at the [Greater Atlantic Regional Fisheries Office](https://www.fisheries.noaa.gov/about/greater-atlantic-regional-fisheries-office); however, the data processing and reporting procedure will be of interest to wildlife survey and management teams with similar objectives. Additionally, these publicly available tools provide transparency and reproducibility of the process for declaring dynamic protection zones in the Northeast United States. These tools were written primarily using the R coding language and specifically leverage the 'Shiny' package.
+
+For more info on the suite of apps in this repo, please check out the [Wiki](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/wiki) as well as [this section in this NEFSC Shiny Book](https://nefsc.github.io/NEFSC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps). 
 
 ## Getting Started
 
@@ -33,7 +37,7 @@ To take a spin with processing example aerial survey data and evaluating if sigh
 
 <img src="www/example_data.png" width="600">
 
-### There are different scenarios available to explore with different example survey days:
+### There are several scenarios available to explore with different example survey days:
 
 * 210226: Visual sightings that fall within a Seasonal Management Area. One flight day, includes option to load previously editted eff/sig file.
 * 210407: Visual sightings that trigger a new SLOW Zone. One flight day, includes option to load previously editted eff/sig file.
@@ -42,46 +46,46 @@ To take a spin with processing example aerial survey data and evaluating if sigh
 
 ## Script Structure
 ```
-app.R                             Starting App file that defines the dashboard for all apps in this repo
-
-  scripts/global_libraries.R      Required libraries
-  scripts/creds.R*                Allowable credentials defined for accessing the Shiny app on the network server
+app.R                       Starting App file that defines the dashboard for all apps in this repo
+scripts/
+  global_libraries.R        Required libraries
+  creds.R*                  Allowable credentials defined for accessing the Shiny app on the network server
   
-  scripts/NARWSSapp.R             App file for the North Atlantic Right Whale Sighting Survey (NARWSS)vAerial Survey Processing App
-  scripts/NARWSSui.R              User interface for the NARWSS Aerial Survey Processing App
-  scripts/NARWSSserver.R          Server code for NARWSS Aerial Survey Processing App
+  NARWSSapp.R               App file for the North Atlantic Right Whale Sighting Survey (NARWSS)vAerial Survey Processing App
+  NARWSSui.R                User interface for the NARWSS Aerial Survey Processing App
+  NARWSSserver.R            Server code for NARWSS Aerial Survey Processing App
   
-  scripts/Trigger_app.R           App file for the Trigger Analysis App
-  scripts/Trigger_ui.R            User interface for the Trigger Analysis App
-  scripts/Trigger_server.R        Server code for the Trigger Analysis App
+  Trigger_app.R             App file for the Trigger Analysis App
+  Trigger_ui.R              User interface for the Trigger Analysis App
+  Trigger_server.R          Server code for the Trigger Analysis App
     
-  scripts/szone_app.R             App file for the Slow Zone viewer App
-  scripts/szone_ui.R              User interface for the Slow Zone viewer App
-  scripts/szone_server.R          Server code for the Slow Zone viewer App
+  szone_app.R               App file for the Slow Zone viewer App
+  szone_ui.R                User interface for the Slow Zone viewer App
+  szone_server.R            Server code for the Slow Zone viewer App
   
-  scripts/photo_app.R             App file for the Photo Position Finder App
-  scripts/photo_ui.R              User interface for the Photo Position Finder App
-  scripts/photo_server.R          Server code for the Photo Position Finder App
+  photo_app.R               App file for the Photo Position Finder App
+  photo_ui.R                User interface for the Photo Position Finder App
+  photo_server.R            Server code for the Photo Position Finder App
 
 -- Files called by the server for the NARWSS Aerial Survey Processing App, Trigger Analysis App, and the Slow Zone viewer App --
-  scripts/reactive.R              Reactive values passed between different actions
-  scripts/sma.R                   Determines active Seasonal Management Areas based on the date
-  scripts/oracleaccess.R*         Credentials for accessing Oracle database
-  scripts/active_slowzone.R       Determines active Slow Zones based on the date
-  scripts/action & slowzone.R     Procedure for determining action codes and triggered Slow Zones for right whale detections
+  reactive.R                Reactive values passed between different actions
+  sma.R                     Determines active Seasonal Management Areas based on the date
+  oracleaccess.R*           Credentials for accessing Oracle database
+  active_slowzone.R         Determines active Slow Zones based on the date
+  action & slowzone.R       Procedure for determining action codes and triggered Slow Zones for right whale detections
 
 -- Files called by the server for the NARWSS Aerial Survey Processing App --  
-  scripts/download_content.R      Content passed to download handler for flight report
-  scripts/FlightReport.Rmd        Template flight report
+  download_content.R        Content passed to download handler for flight report
+  FlightReport.Rmd          Template flight report
 
 -- Files called by the server for the NARWSS Aerial Survey Processing App and the Trigger Analysis App --  
-  scripts/input_sas.R             Detections formatted and uploaded to the Sighting Advisory System
-  scripts/input_slowzone.R        Triggered Slow Zone data formatted and uploaded to the database
-    scripts/slowzone_Report.Rmd   Template for Slow Zone report
-    scripts/slowzone_Letter.Rmd   Template for Slow Zone letter. Conditionally cycles through slowzone_let#.Rmd if more than one Slow Zone is triggered from one flight or on one day
+  input_sas.R               Detections formatted and uploaded to the Sighting Advisory System
+  input_slowzone.R          Triggered Slow Zone data formatted and uploaded to the database
+    slowzone_Report.Rmd     Template for Slow Zone report
+    slowzone_Letter.Rmd     Template for Slow Zone letter. Conditionally cycles through slowzone_let#.Rmd if more than one Slow Zone is triggered from one flight or on one day
 
 -- Files called by the server for the Trigger Analysis App --
-  scripts/Acoustic_datapull.R*    Queries right whale acoustic detections based on selected date  
+  Acoustic_datapull.R*      Queries right whale acoustic detections based on selected date  
 
 *not managed on GitHub
 ```
@@ -89,7 +93,15 @@ app.R                             Starting App file that defines the dashboard f
 
 ![](www/scriptflow.png)
 
+## Contributions
 
+In the [NEFSC Shiny Book](https://nefsc.github.io/NEFSC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps), you can find the point of contact for questions regarding this repository. In addition, problems can be reported, suggestions can be submitted, and questions can be asked via [this repository's issue tab](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/issues). 
+
+For substantial suggestions/changes, please first open the discussion by submitting an [issue](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/issues).
+
+This project, and everyone participating in it, is governed by [this Code of Conduct](https://github.com/nmfs-fish-tools/Resources/blob/main/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+
+##
 
 This repository is a scientific product and is not official communication of the National Oceanic and Atmospheric Administration, or the United States Department of Commerce. All NOAA GitHub project code is provided on an ‘as is’ basis and the user assumes responsibility for its use. Any claims against the Department of Commerce or Department of Commerce bureaus stemming from the use of this GitHub project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DOC or the United States Government.
 
