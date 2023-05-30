@@ -46,46 +46,46 @@ To take a spin with processing example aerial survey data and evaluating if sigh
 
 ## Script Structure
 ```
-app.R                             Starting App file that defines the dashboard for all apps in this repo
-
-  scripts/global_libraries.R      Required libraries
-  scripts/creds.R*                Allowable credentials defined for accessing the Shiny app on the network server
+app.R                       Starting App file that defines the dashboard for all apps in this repo
+scripts/
+  global_libraries.R        Required libraries
+  creds.R*                  Allowable credentials defined for accessing the Shiny app on the network server
   
-  scripts/NARWSSapp.R             App file for the North Atlantic Right Whale Sighting Survey (NARWSS)vAerial Survey Processing App
-  scripts/NARWSSui.R              User interface for the NARWSS Aerial Survey Processing App
-  scripts/NARWSSserver.R          Server code for NARWSS Aerial Survey Processing App
+  NARWSSapp.R               App file for the North Atlantic Right Whale Sighting Survey (NARWSS)vAerial Survey Processing App
+  NARWSSui.R                User interface for the NARWSS Aerial Survey Processing App
+  NARWSSserver.R            Server code for NARWSS Aerial Survey Processing App
   
-  scripts/Trigger_app.R           App file for the Trigger Analysis App
-  scripts/Trigger_ui.R            User interface for the Trigger Analysis App
-  scripts/Trigger_server.R        Server code for the Trigger Analysis App
+  Trigger_app.R             App file for the Trigger Analysis App
+  Trigger_ui.R              User interface for the Trigger Analysis App
+  Trigger_server.R          Server code for the Trigger Analysis App
     
-  scripts/szone_app.R             App file for the Slow Zone viewer App
-  scripts/szone_ui.R              User interface for the Slow Zone viewer App
-  scripts/szone_server.R          Server code for the Slow Zone viewer App
+  szone_app.R               App file for the Slow Zone viewer App
+  szone_ui.R                User interface for the Slow Zone viewer App
+  szone_server.R            Server code for the Slow Zone viewer App
   
-  scripts/photo_app.R             App file for the Photo Position Finder App
-  scripts/photo_ui.R              User interface for the Photo Position Finder App
-  scripts/photo_server.R          Server code for the Photo Position Finder App
+  photo_app.R               App file for the Photo Position Finder App
+  photo_ui.R                User interface for the Photo Position Finder App
+  photo_server.R            Server code for the Photo Position Finder App
 
 -- Files called by the server for the NARWSS Aerial Survey Processing App, Trigger Analysis App, and the Slow Zone viewer App --
-  scripts/reactive.R              Reactive values passed between different actions
-  scripts/sma.R                   Determines active Seasonal Management Areas based on the date
-  scripts/oracleaccess.R*         Credentials for accessing Oracle database
-  scripts/active_slowzone.R       Determines active Slow Zones based on the date
-  scripts/action & slowzone.R     Procedure for determining action codes and triggered Slow Zones for right whale detections
+  reactive.R                Reactive values passed between different actions
+  sma.R                     Determines active Seasonal Management Areas based on the date
+  oracleaccess.R*           Credentials for accessing Oracle database
+  active_slowzone.R         Determines active Slow Zones based on the date
+  action & slowzone.R       Procedure for determining action codes and triggered Slow Zones for right whale detections
 
 -- Files called by the server for the NARWSS Aerial Survey Processing App --  
-  scripts/download_content.R      Content passed to download handler for flight report
-  scripts/FlightReport.Rmd        Template flight report
+  download_content.R        Content passed to download handler for flight report
+  FlightReport.Rmd          Template flight report
 
 -- Files called by the server for the NARWSS Aerial Survey Processing App and the Trigger Analysis App --  
-  scripts/input_sas.R             Detections formatted and uploaded to the Sighting Advisory System
-  scripts/input_slowzone.R        Triggered Slow Zone data formatted and uploaded to the database
-    scripts/slowzone_Report.Rmd   Template for Slow Zone report
-    scripts/slowzone_Letter.Rmd   Template for Slow Zone letter. Conditionally cycles through slowzone_let#.Rmd if more than one Slow Zone is triggered from one flight or on one day
+  input_sas.R               Detections formatted and uploaded to the Sighting Advisory System
+  input_slowzone.R          Triggered Slow Zone data formatted and uploaded to the database
+    slowzone_Report.Rmd     Template for Slow Zone report
+    slowzone_Letter.Rmd     Template for Slow Zone letter. Conditionally cycles through slowzone_let#.Rmd if more than one Slow Zone is triggered from one flight or on one day
 
 -- Files called by the server for the Trigger Analysis App --
-  scripts/Acoustic_datapull.R*    Queries right whale acoustic detections based on selected date  
+  Acoustic_datapull.R*      Queries right whale acoustic detections based on selected date  
 
 *not managed on GitHub
 ```
