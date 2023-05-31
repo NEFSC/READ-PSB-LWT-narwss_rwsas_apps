@@ -3,7 +3,6 @@ fluidPage(
   useShinyjs(),
   titlePanel("NEFSC Right Whale Aerial Survey Data Processing"),
       splitLayout(radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE),
-                  #radioButtons("sig_acou", "Is this real life or a test?", choices = c("Real", "Test"), selected = "Real", inline = FALSE), 
                   textInput("filepathinput", (HTML(paste("Local pathway where YYMMDD folder is stored", '<br/>', "Example: C:/2022/Flights/edit_data/")))),
               width = 3),
       tabsetPanel(type = "tabs",
@@ -29,14 +28,14 @@ fluidPage(
                            textOutput("error"),
                            textOutput("error2"),
                            wellPanel(
-                             div(rHandsontableOutput("handsES", height = 500), style = "font-size:80%")),
+                             tags$div(rHandsontableOutput("handsES", height = 500), style = "font-size:80%")),
                            actionButton("edittable", "Open Sesame"),
                            br(),
                            wellPanel(
                              leafletOutput("egmap")),
                            textOutput("calferror"),
                            wellPanel(
-                             div(rHandsontableOutput("handsrf", height = 800), style = "font-size:80%")),
+                             tags$div(rHandsontableOutput("handsrf", height = 800), style = "font-size:80%")),
                            actionButton("save", "Export CSV"),
                            br(),
                            leafletOutput("reportmap"),
