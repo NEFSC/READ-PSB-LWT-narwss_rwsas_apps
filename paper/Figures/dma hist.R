@@ -25,9 +25,15 @@ ggsave('./paper/Fig1.png',dpi = 320, width = 250, height = 100, units = 'mm')
 
 # example data DMAs
 
-example_date = ymd_hms('2021-04-09 00:00:00')
+example_date1 = ymd_hms('2021-02-26 00:00:00')
+example_date2 = ymd_hms('2021-04-07 00:00:00')
+example_date3 = ymd_hms('2021-04-09 00:00:00')
+example_date4 = ymd_hms('2021-05-12 00:00:00')
 
-example_data_slowzones<-dmas_year%>%
-  filter(dmy_hms(TRIGGERDATE) <  example_date & ymd_hms(EXPDATE) > example_date)
+example_data_slowzones<-dmas%>%
+  filter((dmy_hms(TRIGGERDATE) <  example_date1 & ymd_hms(EXPDATE) > example_date1) |
+         (dmy_hms(TRIGGERDATE) <  example_date2 & ymd_hms(EXPDATE) > example_date2) |
+         (dmy_hms(TRIGGERDATE) <  example_date3 & ymd_hms(EXPDATE) > example_date3) | 
+         (dmy_hms(TRIGGERDATE) <  example_date4 & ymd_hms(EXPDATE) > example_date4))
 
 write.csv(example_data_slowzones, paste0('./example_data/example_data_slowzones.csv'), row.names = F)
