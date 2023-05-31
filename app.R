@@ -42,7 +42,7 @@ ui <- dashboardPage(
         tabName = "szone"
       ),
       menuItem(
-        icon = icon("question-circle"),
+        icon = icon("question"),
         text = "Instructions Wiki",
         href = "https://github.com/leahcrowe/narwss_rwsas_apps/wiki"
       )
@@ -50,7 +50,7 @@ ui <- dashboardPage(
   ),
   ## Body content
   dashboardBody(
-    tagList(img(src = 'noaanefsclogo.PNG'), br()),
+    htmltools::tagList(tags$img(src = 'noaanefsclogo.PNG'), br()),
     tags$head(tags$link(
       rel = "icon", type = "image/png", href = "favicon.png"
     )),
