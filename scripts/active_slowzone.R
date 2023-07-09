@@ -39,9 +39,7 @@ if (isolate(criteria$loc) == 'Network') {
   ##action code dataframe to join with results ofvtrigger analysis later
   actioncode <- "select *
             from action"
-  actioncodedf_q <- dbSendQuery(cnxn, actioncode)
-  actioncodedf<-fetch(actioncodedf_q)
-  
+  actioncodedf <- sqlQuery(cnxn, actioncode)
   actioncodedf$ID <- as.numeric(actioncodedf$ID)
   
   #query all relevant DMAs & APZs
@@ -59,9 +57,7 @@ if (isolate(criteria$loc) == 'Network') {
                      and (cancelled not like 'cancel%' or cancelled is null);"
     )
   
-  actdma_q <- dbSendQuery(cnxn, activedmasql)
-  actdma<-fetch(actdma_q)
-  
+  actdma <- sqlQuery(cnxn, activedmasql)
   print(actdma)
   
 } else {
@@ -142,8 +138,8 @@ if (nrow(actdma) == 0) {
                      and (cancelled not like 'cancel%' or cancelled is null);"
     )
     
-    actdma_bounds_q <- dbSendQuery(cnxn, actdma_boundssql)
-    actdma_bounds<-fetch(actdma_bounds_q)
+    actdma_bounds <- sqlQuery(cnxn, actdma_boundssql)
+    print(actdma_bounds)
     
     actdmadf <- actdma %>%
       left_join(actdma_bounds, by = "ID")
