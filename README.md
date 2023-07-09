@@ -1,5 +1,7 @@
 # narwss_rwsas_apps
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8127594.svg)](https://doi.org/10.5281/zenodo.8127594)
+
 Welcome to the [North Atlantic Right Whale Sighting Survey (NARWSS)](https://www.fisheries.noaa.gov/new-england-mid-atlantic/marine-mammal-protection/whale-and-dolphin-research-northeast#north-atlantic-right-whale-sighting-surveys) and the [Right Whale Sighting Advisory System (RWSAS)](https://www.fisheries.noaa.gov/new-england-mid-atlantic/marine-mammal-protection/whale-and-dolphin-research-northeast#right-whale-sighting-advisory-system) apps repository!
 
 The NARWSS 'Aerial Survey Data Processing' tool, and the RWSAS 'Trigger Analysis' tool improve the workflow between data processing and the determination of potential [Right Whale Slow Zones](https://www.fisheries.noaa.gov/national/endangered-species-conservation/reducing-vessel-strikes-north-atlantic-right-whales). These tools provide a platform to efficiently process survey data to help eliminate sources of human error, integrate currently active management zones, determine if trigger criterion for a new dynamic protection zone have been met, calculate the boundaries of a proposed Slow Zone, and compile reports that are then sent on to managers and other stakeholders.
