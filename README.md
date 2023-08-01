@@ -1,5 +1,6 @@
 # narwss_rwsas_apps
 
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.05436/status.svg)](https://doi.org/10.21105/joss.05436)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8127594.svg)](https://doi.org/10.5281/zenodo.8127594)
 
 Welcome to the [North Atlantic Right Whale Sighting Survey (NARWSS)](https://www.fisheries.noaa.gov/new-england-mid-atlantic/marine-mammal-protection/whale-and-dolphin-research-northeast#north-atlantic-right-whale-sighting-surveys) and the [Right Whale Sighting Advisory System (RWSAS)](https://www.fisheries.noaa.gov/new-england-mid-atlantic/marine-mammal-protection/whale-and-dolphin-research-northeast#right-whale-sighting-advisory-system) apps repository!
