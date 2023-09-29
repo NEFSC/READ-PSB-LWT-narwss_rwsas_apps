@@ -41,7 +41,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     egtable <- data.frame(LONGITUDE = -70)
     
     source('./scripts/sma.R', local = TRUE)$value
-    source('./scripts/activedma.R', local = TRUE)$value
+    source('./scripts/active_slowzone.R', local = TRUE)$value
     
     sasdma <-
       leaflet(data = smapresent.sp, options = leafletOptions(zoomControl = FALSE)) %>%
@@ -52,7 +52,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       addPolylines(
         data = NEUS_shiplane.sp,
         weight = 1,
-        color = "green",
+        color = "grey",
         fill = F
       ) %>%
       addPolygons(data = benigndma,

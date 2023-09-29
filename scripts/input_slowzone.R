@@ -18,10 +18,11 @@ observeEvent(input$dmaup, {
   
   ## dma info upload ----
   
-  maxidsql <- "SELECT max(ID)
-  FROM DMAINFO"
+  maxidsql <- "SELECT max(ID) FROM DMAINFO"
   
-  maxid <- sqlQuery(cnxn, maxidsql)
+  #maxid <- sqlQuery(cnxn, maxidsql)
+  maxid_q <- dbSendQuery(cnxn, maxidsql)
+  maxid <- fetch(maxid_q) #HJF sqlQuery replace 9/14/ 20230626
   maxid <- as.integer(maxid)
   print(maxid)
   
@@ -49,12 +50,12 @@ observeEvent(input$dmaup, {
     dplyr::mutate(
       OLDID = ID,
       ID = ID + maxid,
-      EXPDATE = paste0("to_timestamp('", exp, "', 'YYYY-MM-DD HH24:MI:SS')"),
-      TRIGGERDATE = paste0("to_timestamp('", TRIGGERDATE, "', 'YYYY-MM-DD HH24:MI:SS')"),
+      EXPDATE = paste0("to_timestamp('", exp, "', 'YYYY-MM-DD HH24:MI:SS')", sep =""),
+      TRIGGERDATE = paste0("to_timestamp('", TRIGGERDATE, "', 'YYYY-MM-DD HH24:MI:SS')", sep =""),
       STARTDATE = paste0(
         "to_timestamp('",
         ymd_hms(Sys.time()),
-        "', 'YYYY-MM-DD HH24:MI:SS')"
+        "', 'YYYY-MM-DD HH24:MI:SS')", sep =""
       )
     ) %>%
     dplyr::select(
@@ -89,10 +90,11 @@ observeEvent(input$dmaup, {
     extended_dmainfo <- as.list(dma_react$extdfname$ID)
     for (i in extended_dmainfo) {
       print(i)
-      sqlQuery(cnxn,
+      dbExecute(cnxn,
                paste0("UPDATE DMAINFO
                             SET CANCELLED = 'extended'
-                            WHERE ID = ", i, ";"))
+                            WHERE ID = ", i, sep =""))
+      dbCommit(cnxn) #THIS MIGHT ALSO BE ISSUE HJF sqlQuery replace 10/14 20230626
     }
   } else {
   }
@@ -116,15 +118,16 @@ observeEvent(input$dmaup, {
     ##
     print(dmainfovalues)
     
-    sqlQuery(
+    dbExecute(
       cnxn,
       paste0(
         "INSERT INTO DMAINFO(ID, NAME, EXPDATE, TRIGGERDATE, INITOREXT, TRIGGERORG, STARTDATE, TRIGGERGROUPSIZE, TRIGGERTYPE)
                           VALUES(",
         dmainfovalues,
-        ");"
+        ")",sep = ""
       )
     )
+    dbCommit(cnxn) #sqlQuery replace 11/14 HJF 20230626 #Also potential SQL errors and needs sep = ""
   }
   
   ##dma coord upload ----
@@ -138,15 +141,16 @@ observeEvent(input$dmaup, {
     dmacoordvalues <-
       paste0(apply(dmacoordinsert[i, ], 1, function(x)
         paste0("'", paste0(x, collapse = "', '"), "'")), collapse = ", ")
-    sqlQuery(
+    dbExecute(
       cnxn,
       paste0(
         "INSERT INTO DMACOORDS(ID, VERTEX, LAT, LON, ROWNUMBER)
                           VALUES(",
         dmacoordvalues,
-        ");"
+        ")", sep =""
       )
     )
+    dbCommit(cnxn) #HJF sqlQuery replace 12/14 20230626 # ALSO MIGHT BE SQL ERROR ISSUES
   }
   
   print("dma end")

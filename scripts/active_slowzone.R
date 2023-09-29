@@ -37,9 +37,10 @@ querytoshape <- function(x) {
 if (isolate(criteria$loc) == 'Network') {
 
   ##action code dataframe to join with results ofvtrigger analysis later
-  actioncode <- "select *
-            from action"
-  actioncodedf <- sqlQuery(cnxn, actioncode)
+  actioncode <- "select * from action"
+  #actioncodedf <- sqlQuery(cnxn, actioncode)
+  actioncodedf_q <- dbSendQuery(cnxn, actioncode)
+  actioncodedf<-fetch(actioncodedf_q) #HJF 3/14 sqlQuery replace 20230626
   actioncodedf$ID <- as.numeric(actioncodedf$ID)
   
   #query all relevant DMAs & APZs
@@ -54,10 +55,12 @@ if (isolate(criteria$loc) == 'Network') {
                     and to_date('",
       MODAYR,
       "', 'YYYY-MM-DD') > to_date(to_char(TRIGGERDATE, 'YYYY-MM-DD'),'YYYY-MM-DD')
-                     and (cancelled not like 'cancel%' or cancelled is null);"
+                     and (cancelled not like 'cancel%' or cancelled is null)", sep=""
     )
   
-  actdma <- sqlQuery(cnxn, activedmasql)
+  #actdma <- sqlQuery(cnxn, activedmasql)
+  actdma_q <- dbSendQuery(cnxn, activedmasql)
+  actdma<-fetch(actdma_q) #HJF replace 4/14 sqlQuery 20230626
   print(actdma)
   
 } else {
@@ -74,7 +77,7 @@ if (isolate(criteria$loc) == 'Network') {
   
   dmacsv <-
     read.csv(
-      './Aerial and SLOW zone data/DMAINFO export 05Aug2021.csv',
+      './example_data/example_data_slowzones.csv',
       header = T,
       stringsAsFactors = F
     )
@@ -135,10 +138,12 @@ if (nrow(actdma) == 0) {
                      and to_date('",
       MODAYR,
       "', 'YYYY-MM-DD') > to_date(to_char(TRIGGERDATE, 'YYYY-MM-DD'),'YYYY-MM-DD')
-                     and (cancelled not like 'cancel%' or cancelled is null);"
+                     and (cancelled not like 'cancel%' or cancelled is null)", sep =""
     )
     
-    actdma_bounds <- sqlQuery(cnxn, actdma_boundssql)
+    #actdma_bounds <- sqlQuery(cnxn, actdma_boundssql)
+    actdma_bounds_q <- dbSendQuery(cnxn, actdma_boundssql)
+    actdma_bounds<-fetch(actdma_bounds_q) #HJF 5/14 sqlQuery replace 20230626
     print(actdma_bounds)
     
     actdmadf <- actdma %>%
@@ -147,7 +152,7 @@ if (nrow(actdma) == 0) {
   } else {
     actdma_bounds <-
       read.csv(
-        './Aerial and SLOW zone data/DMACOORDS export 05Aug2021.csv',
+        './example_data/example_data_slowzones.csv',
         header = T,
         stringsAsFactors = F
       )

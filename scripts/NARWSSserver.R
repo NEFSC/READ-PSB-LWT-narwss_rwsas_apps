@@ -1729,11 +1729,11 @@ observeEvent(input$edittable, {
         addPolylines(
           data = NEUS_shiplane.sp,
           weight = 1,
-          color = "green",
+          color = "grey",
           fill = F
         ) %>%
         addLegend(
-          colors = c("green", "yellow", "red"),
+          colors = c("grey", "yellow", "red"),
           labels = c(
             "Shipping Lanes",
             "Right Whale SLOW Zone",
@@ -1750,17 +1750,17 @@ observeEvent(input$edittable, {
         addPolygons(
           data = dyna_ship.sp,
           weight = 2,
-          color = "green",
+          color = "grey",
           fill = F
         ) %>%
         addPolygons(data = GSL_shiplane.sp,
                     weight = 2,
-                    color = "green") %>%
+                    color = "grey") %>%
         addPolygons(data = spm.sp,
                     weight = 2,
                     color = "white") %>%
         addLegend(
-          colors = c("green"),
+          colors = c("grey"),
           labels = c("Dynamic Shipping Section"),
           opacity = 0.3
         )

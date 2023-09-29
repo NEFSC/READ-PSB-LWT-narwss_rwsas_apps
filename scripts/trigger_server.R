@@ -51,10 +51,12 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
           "','YYYY-MM-DD')
                 and rightwhalesight.saswmjoin2.action = rightwhalesight.action.ID
                 and SPECIES_CERT = 3
-                order by ID;"
+                order by ID" , sep =""
         )
       
-      dailyeg <- sqlQuery(cnxn, datesql)
+      #dailyeg <- sqlQuery(cnxn, datesql)
+      dailyeg_q <- dbSendQuery(cnxn, datesql)
+      dailyeg<-fetch(dailyeg_q) #HJF sqlQuery replace 13/14 20230626
       
       ## ACOUSTIC DETECTIONS ----
       
@@ -67,10 +69,11 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
                 where trunc(DATETIME_ET) = to_date('",
         dmaevaldate,
         "','YYYY-MM-DD')
-                order by DATETIME_ET;"
+                order by DATETIME_ET", sep="" #HJF added 20230626 and might be why trigger server gets further than rest
       )
-      
-      dailyeg <- sqlQuery(cnxn, datesql)
+      #dailyeg <- sqlQuery(cnxn, datesql)
+      dailyeg_q <- dbSendQuery(cnxn, datesql)
+      dailyeg <- fetch(dailyeg_q) #HJF sqlQuery replace 14/14 20230626
       
     }
     

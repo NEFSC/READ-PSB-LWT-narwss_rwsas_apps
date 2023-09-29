@@ -50,15 +50,16 @@ observeEvent(input$sas, {
           paste0("", paste0(x, collapse = "', '"), "'")), collapse = ", '")
       egvalues <- gsub("'to_", "to_", egvalues)
       egvalues <- gsub("')'", "')", egvalues)
-      sqlQuery(
+      dbExecute(
         cnxn,
         paste0(
           "INSERT INTO SAS(SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD)
                             VALUES(",
           egvalues,
-          ");"
+          ")", sep =""
         )
       )
+      dbCommit(cnxn)  ####THIS COULD VERY WELL BE ISSUE, ADD SEP OR TAKE IT AWAY AND MOVE AROUND EXECUTE AND COMMIT AS NEEDED! HJF SqlQuery replace 8/14 20230626
     }
   }
   

@@ -5,6 +5,7 @@
 
 # Global ----
 
+Sys.setenv(OPENSSL_CONF="/dev/null") #added 202300925 on new container for server use of webshot/phantomjs
 #Sys.setenv(ORACLE_HOME="/ora1/app/oracle/product/11.2.0/dbhome_1") #220707 HJF change with continued ODBC connection issues
 source('./scripts/global_libraries.R', local = TRUE)$value
 

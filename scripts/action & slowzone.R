@@ -97,7 +97,7 @@ sasdma <-
   addPolylines(
     data = NEUS_shiplane.sp,
     weight = 1,
-    color = "green",
+    color = "grey",
     fill = F
   )
 
@@ -1307,7 +1307,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   })
   
   print("a&d 864")
-  #print(egsas)
+  print(egsas)
   
   if ("ID" %in% colnames(egsas)) {
     if (isolate(criteria$DMAapp) == "acoudet") {
@@ -1538,7 +1538,7 @@ if (isolate(criteria$DMAapp) == 'vissig' |
       popup = paste0(egsas$DateTime, ", Group Size:", egsas$GROUP_SIZE)
     ) %>%
     addLegend(
-      colors = c("green", "red", "black"),
+      colors = c("grey", "red", "black"),
       labels = c("Shipping Lanes", "SMA", "Core area of right whale sightings"),
       opacity = 0.4,
       position = "topleft"
@@ -1570,7 +1570,7 @@ if (isolate(criteria$DMAapp) == 'vissig' |
       popup = egsas_dma$DateTime
     ) %>%
     addLegend(
-      colors = c("green", "red", "black", "grey"),
+      colors = c("grey", "red", "black", "grey"),
       labels = c(
         "Shipping Lanes",
         "SMA",
