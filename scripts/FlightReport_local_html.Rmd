@@ -1,3 +1,4 @@
+
 ---
 title: NOAA Northeast Region <br>Right Whale Aerial Survey Report
 params:
@@ -46,4 +47,3 @@ knitr::kable(params$netable, caption = "Species Sighted")%>%kableExtra::kable_cl
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
 knitr::kable(params$egreport, caption = "Right Whale Sighting(s) Details")%>%kableExtra::kable_classic(full_width = F, html_font = "Cambria")
 ```
-
