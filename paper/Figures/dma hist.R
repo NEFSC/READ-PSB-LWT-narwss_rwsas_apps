@@ -4,7 +4,7 @@ dmas<-read.csv("./paper/data/DMAINFO_20230113.csv", header = T, stringsAsFactors
 #dmas<-read.csv("./data/20220523export.csv", header = T, stringsAsFactors = T)
 
 dmas_year<-dmas%>%
-  dplyr::distinct(NAME, TRIGGERDATE, INITOREXT, TRIGGERGROUPSIZE, TRIGGERTYPE, CANCELLED, COMMENTS)%>%
+  dplyr::distinct(NAME, TRIGGERDATE, EXPDATE, INITOREXT, TRIGGERGROUPSIZE, TRIGGERTYPE, CANCELLED, COMMENTS)%>%
   mutate(YEAR = year(dmy_hms(TRIGGERDATE)),
          Type = case_when(
            TRIGGERTYPE == 'a' ~ 'Acoustic SLOW Zone',
@@ -23,3 +23,17 @@ ggplot(dmas_year, aes(x = as.factor(YEAR), fill = Type))+
 
 ggsave('./paper/Fig1.png',dpi = 320, width = 250, height = 100, units = 'mm')  
 
+# example data DMAs
+
+example_date1 = ymd_hms('2021-02-26 00:00:00')
+example_date2 = ymd_hms('2021-04-07 00:00:00')
+example_date3 = ymd_hms('2021-04-09 00:00:00')
+example_date4 = ymd_hms('2021-05-12 00:00:00')
+
+example_data_slowzones<-dmas%>%
+  filter((dmy_hms(TRIGGERDATE) <  example_date1 & ymd_hms(EXPDATE) > example_date1) |
+         (dmy_hms(TRIGGERDATE) <  example_date2 & ymd_hms(EXPDATE) > example_date2) |
+         (dmy_hms(TRIGGERDATE) <  example_date3 & ymd_hms(EXPDATE) > example_date3) | 
+         (dmy_hms(TRIGGERDATE) <  example_date4 & ymd_hms(EXPDATE) > example_date4))
+
+write.csv(example_data_slowzones, paste0('./example_data/example_data_slowzones.csv'), row.names = F)
