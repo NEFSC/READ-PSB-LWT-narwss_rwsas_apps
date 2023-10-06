@@ -26,6 +26,7 @@ observeEvent(input$rawupload, {
     path <- input$filepathinput
     print(path)
     print(typeof(path))
+    criteria$path = path
   }
   
   rawed <- input$rawedits
@@ -1555,9 +1556,11 @@ observeEvent(input$edittable, {
     source('./scripts/sma.R', local = TRUE)$value
     print(file.exists('./scripts/oracleaccess.R'))
     
-    if (file.exists('./scripts/oracleaccess.R') == TRUE) {
+    #HJF deletion 20231002 merge conflict if (file.exists('./scripts/oracleaccess.R') == TRUE | criteria$path == './example_data/') {
+      if (file.exists('./scripts/oracleaccess.R') == TRUE){
       print("oracle")
       source('./scripts/oracleaccess.R', local = TRUE)$value
+      #}
       source('./scripts/active_slowzone.R', local = TRUE)$value
       
       if (nrow(egtable) == 0 |
@@ -1715,7 +1718,7 @@ observeEvent(input$edittable, {
         )
       )
     
-    ##leaflet map with US or Canadian shipping lanes and managament schemes
+    ##leaflet map with US or Canadian shipping lanes and management schemes
     if (nrow(sightings19) >= nrow(sightings20)) {
       #US
       
@@ -1732,12 +1735,19 @@ observeEvent(input$edittable, {
           color = "grey",
           fill = F
         ) %>%
+        addPolylines(
+          data = WEA.sp,
+          weight = 1,
+          color = "green",
+          fill = F
+        ) %>%
         addLegend(
-          colors = c("grey", "yellow", "red"),
+          colors = c("grey", "yellow", "red", "green"),
           labels = c(
             "Shipping Lanes",
             "Right Whale SLOW Zone",
-            "Seasonal Management Area"
+            "Seasonal Management Area",
+            "Wind Energy Lease Areas"
           ),
           opacity = 0.3
         )
@@ -1770,6 +1780,7 @@ observeEvent(input$edittable, {
     #if on network, add in the current DMAs including the ones that are not up for extension (benign) and the ones eligible for extension
     #these are the same color for the flight report, but won't be for the Potential Protection Area report (if applicable)
     if (input$filepathway == 'Network') {
+    #231003 HJF edit with errors post merge if (input$filepathway == 'Network' | criteria$path == './example_data/') {
       reportleaf <- reportleaf %>%
         addPolygons(data = benigndma,
                     weight = 2,

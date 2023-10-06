@@ -48,6 +48,8 @@ dyna_ship <- readOGR(smapath, layer = "NARW_RZs_2020_02_07")
 GSL_shiplane <- readOGR(smapath, layer = "shiplane")
 ##france
 spm <- readOGR(smapath, layer = "spm")
+#WEA <- read_sf(smapath, layer = "Wind_Lease_Outlines_2_2023") #using sf not rgdal doesnt return SPDF
+WEA <- readOGR(smapath, layer = "Wind_Lease_Outlines_2_2023")
 print('line 62')
 
 ##sma projected properly
@@ -56,6 +58,8 @@ ecanada <- sp::spTransform(ecanada, CRS.new)
 dyna_ship.tr <- sp::spTransform(dyna_ship, CRS.new)
 GSL_shiplane.tr <- sp::spTransform(GSL_shiplane, CRS.new)
 spm.tr <- sp::spTransform(spm, CRS.new)
+WEA.tr <- sp::spTransform(WEA, CRS.new)
+#WEA.tr <- st_transform(WEA, CRS.new) #using sf not sp - doesnt return SPDF
 print('line 78')
 
 ##no SEUS
@@ -129,3 +133,5 @@ NEUS_shiplane.sp <- sp::spTransform(NEUS_shiplane.tr, CRS.latlon)
 spm.sp <- sp::spTransform(spm.tr, CRS.latlon)
 dyna_ship.sp <- sp::spTransform(dyna_ship.tr, CRS.latlon)
 GSL_shiplane.sp <- sp::spTransform(GSL_shiplane.tr, CRS.latlon)
+WEA.sp <- sp:: spTransform(WEA.tr, CRS.latlon)
+#WEA.sp <- st_transform(WEA.tr, CRS.latlon) #using st instead of sp not returning SPDF
