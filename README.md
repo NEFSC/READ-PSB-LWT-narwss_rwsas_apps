@@ -36,7 +36,7 @@ in your RStudio environment. Click 'Run App' to get started. In the window that 
 
 To run the offline version of the app that emulates the NEFSC server (for NOAA employees running data post-processing), run
 
-`shiny::runGitHub("READ-PSB-LWT-narwss_rwsas_apps", username = "NEFSC", ref = "container")`
+`shiny::runGitHub("READ-PSB-LWT-narwss_rwsas_apps", username = "NEFSC", ref = "Container")`
 
 ### Example data
 
