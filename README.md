@@ -34,6 +34,10 @@ The app can be launched by running
 
 in your RStudio environment. Click 'Run App' to get started. In the window that pops up, click "Open in Browser". 
 
+To run the offline version of the app that emulates the NEFSC server (for NOAA employees running data post-processing), run
+
+`shiny::runGitHub("READ-PSB-LWT-narwss_rwsas_apps", username = "NEFSC", ref = "Container")`
+
 ### Example data
 
 To take a spin with processing example aerial survey data and evaluating if sightings trigger SLOW zones, chose/enter the following details (NOTE: to download the report, you will have to host the [example data](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/tree/master/example_data/210409) on a local path specific to your machine, and the SLOW zone analysis will then not be available):
