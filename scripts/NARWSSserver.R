@@ -1577,8 +1577,9 @@ observeEvent(input$edittable, {
             "obspeeps",
             "Who even are you?",
             choiceNames = list(
-              "Allison",
               "Alison",
+              "Allison",
+              "Brigid",
               "Christin",
               "Heather",
               "Leah",
@@ -1586,7 +1587,7 @@ observeEvent(input$edittable, {
               "Tim",
               "I don't know"
             ),
-            choiceValues = list(3, 880, 4, 940, 873, 2, 1, 0),
+            choiceValues = list(880, 3, 850, 4, 940, 873, 2, 1, 0),
             selected = "I don't know"
           )
         })
