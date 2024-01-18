@@ -36,4 +36,3 @@ knitr::kable(params$netable, caption = "Species Sighted")
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
 knitr::kable(params$egreport, caption = "Right Whale Sighting(s) Details")
 ```
-
