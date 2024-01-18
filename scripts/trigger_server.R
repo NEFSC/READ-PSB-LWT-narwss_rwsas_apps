@@ -44,12 +44,12 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     if (input$sig_acou == 'Visual Sightings') {
       datesql <-
         paste0(
-          "select rightwhalesight.saswmjoin2.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,rightwhalesight.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
-                from rightwhalesight.saswmjoin2,rightwhalesight.action
+          "select mammals.saswmjoin2.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,mammals.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
+                from mammals.saswmjoin2,mammals.action
                 where trunc(sightdate) = to_date('",
           dmaevaldate,
           "','YYYY-MM-DD')
-                and rightwhalesight.saswmjoin2.action = rightwhalesight.action.ID
+                and mammals.saswmjoin2.action = mammals.action.ID
                 and SPECIES_CERT = 3
                 order by ID" , sep =""
         )
@@ -65,7 +65,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       
       datesql <- paste0(
         "select *
-                from rightwhalesight.acoustic_detections
+                from mammals.acoustic_detections
                 where trunc(DATETIME_ET) = to_date('",
         dmaevaldate,
         "','YYYY-MM-DD')
