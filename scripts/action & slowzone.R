@@ -172,6 +172,7 @@ for (i in 1:nrow(egsas))
         "Soc re bleu! One of these right whales was in France!"
       })
   } else if (isolate(criteria$loc) == 'Network') {
+  #231003 HJF example data errors on network } else if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
     if (egsas$eDMA[i] == TRUE &
         (isolate(criteria$DMAapp) == "vissig" |
          isolate(criteria$DMAapp) == "rwsurv")) {
@@ -1307,7 +1308,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   })
   
   print("a&d 864")
-  print(egsas)
+  #print(egsas)
   
   if ("ID" %in% colnames(egsas)) {
     if (isolate(criteria$DMAapp) == "acoudet") {
@@ -1374,8 +1375,8 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
     }
   }
   
-  
   if (isolate(criteria$loc) == 'Network') {
+  #231003 HJF example data errors if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
     #The shapes that get plotted are independent of the names
     #print("label testing")
     #print(fortify(benigndma))
@@ -1505,6 +1506,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   }
   
   if (isolate(criteria$loc) == 'Network') {
+  #231003 HJF example data errors on network if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
     sasdma <- sasdma %>%
       addPolygons(data = benigndma,
                   weight = 2,
@@ -1607,10 +1609,9 @@ if (isolate(criteria$DMAapp) == 'acoudet') {
 sas_react$egsastab <- egsastab
 
 ## On network ----
-
-if (#input$sig_acou == 'Test'|
-  isolate(criteria$loc) == 'Network') {
-  ##########
+  if (isolate(criteria$loc) == 'Network') {
+#231003 HJF example data errors on network if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
+  
   ###sas on network
   egsastabout <- sas_react$egsastab %>%
     left_join(actioncodedf, by = c("ACTION_NEW" = "ID")) %>%
