@@ -5,7 +5,7 @@
 
 # Global ----
 
-Sys.setenv(OPENSSL_CONF="/dev/null") #added 202300925 on new container for server use of webshot/phantomjs
+Sys.setenv(OPENSSL_CONF="/dev/null") #added 20230925 on new container for server use of webshot/phantomjs
 #Sys.setenv(ORACLE_HOME="/ora1/app/oracle/product/11.2.0/dbhome_1") #220707 HJF change with continued ODBC connection issues
 source('./scripts/global_libraries.R', local = TRUE)$value
 
@@ -43,7 +43,7 @@ ui <- dashboardPage(
         tabName = "szone"
       ),
       menuItem(
-        icon = icon("question-circle"),
+        icon = icon("question"),
         text = "Instructions Wiki",
         href = "https://github.com/leahcrowe/narwss_rwsas_apps/wiki"
       )
@@ -51,7 +51,7 @@ ui <- dashboardPage(
   ),
   ## Body content
   dashboardBody(
-    tagList(img(src = 'noaanefsclogo.PNG'), br()),
+    htmltools::tagList(tags$img(src = 'noaanefsclogo.PNG'), br()),
     tags$head(tags$link(
       rel = "icon", type = "image/png", href = "favicon.png"
     )),
