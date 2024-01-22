@@ -840,6 +840,7 @@ observeEvent(input$edittable, {
     f$SPCODE[which(f$SPCODE == 'scfi')] <- 'SCFI'
     f$SPCODE[which(f$SPCODE == 'bb')] <- 'SEWH'
     f$SPCODE[which(f$SPCODE == 'sb')] <- 'SONO'
+    f$SPCODE[which(f$SPCODE == 'sono')] <- 'SONO'
     f$SPCODE[which(f$SPCODE == 'ss')] <- 'SPDO'
     f$SPCODE[which(f$SPCODE == 'pm')] <- 'SPWH'
     f$SPCODE[which(f$SPCODE == 'pc')] <- 'SPWH'
