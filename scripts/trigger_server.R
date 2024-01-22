@@ -39,9 +39,9 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     
     
     ## VISUAL SIGHTINGS ----
-    
-    
     if (input$sig_acou == 'Visual Sightings') {
+      #source('./scripts/Whalemap_datapull.R', local = TRUE)$value
+      
       datesql <-
         paste0(
           "select mammals.saswmjoin2.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,mammals.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
