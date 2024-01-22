@@ -36,7 +36,7 @@ library(DBI)
 library(sqldf)
 library(shinymanager)
 #library(ssh)
-#library(kableExtra)
+#library(kableExtra) #use only on master version for making html offline
 require(ROracle)
 #library(ROracle)
 # require(shiny)
