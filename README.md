@@ -12,6 +12,7 @@ The tools described here were developed for scientists at the [Northeast Fisheri
 For more info on the suite of apps in this repo, please check out the [Wiki](https://github.com/NEFSC/READ-PSB-LWT-narwss_rwsas_apps/wiki) as well as [this section in this NEFSC Shiny Book](https://nefsc.github.io/NEFSC-shiny-book/shiny-apps.html#northeast-right-whale-shiny-apps). 
 
 ## Getting Started
+Make sure your local machine's Posit/R studio version has all of the packages listed in the global_libraries.R script installed, in addition to kableExtra. Opening the global_libraries.R within Posit/R Studio should notify you which you may be missing and what to click to install them.
 
 ### Additional installations for downloading PDFs
 
