@@ -36,20 +36,23 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     
     dmaevaldate <- input$sasdate
     print(dmaevaldate)
+    #for testing  dmaevaldate <- '2024-01-23'
     
     
     ## VISUAL SIGHTINGS ----
     if (input$sig_acou == 'Visual Sightings') {
-      #source('./scripts/Whalemap_datapull.R', local = TRUE)$value
+      #source('./scripts/Whalemap_datapull.R', local = TRUE)$value THIS IS SEVERLY SLOWING DOWN APP AND CAUSING ISSUES
+      #stick with cronjob and add back in if we can figure it out in a R Env
       
       datesql <-
         paste0(
-          "select mammals.saswmjoin2.ID, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,mammals.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,OBSERVER_COMMENTS
-                from mammals.saswmjoin2,mammals.action
+          "select mammals.saswmjoin.ID, WM_NAME, WM_PLATFORM, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,OBSERVER_COMMENTS,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,mammals.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT
+                from mammals.saswmjoin,mammals.action
                 where trunc(sightdate) = to_date('",
           dmaevaldate,
           "','YYYY-MM-DD')
-                and mammals.saswmjoin2.action = mammals.action.ID
+                and mammals.saswmjoin.action = mammals.action.ID
+                and WM_PLATFORM <> 'buoy' and WM_PLATFORM <> 'slocum'
                 and SPECIES_CERT = 3
                 order by ID" , sep =""
         )
