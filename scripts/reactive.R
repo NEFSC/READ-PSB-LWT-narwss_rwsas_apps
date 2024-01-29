@@ -1,7 +1,10 @@
 criteria = reactiveValues(loc = NULL,
                           DMAapp = NULL,
-                          triggrptrue = NULL)
+                          triggrptrue = NULL,
+                          path = NULL)
+
 sas_react = reactiveValues(egsastab = NULL)
+
 dma_react = reactiveValues(
   egsas = NULL,
   sasdma = NULL,
@@ -10,6 +13,7 @@ dma_react = reactiveValues(
   dmacoord = NULL,
   dmanameout = NULL
 )
+
 date_formats = reactiveValues(
   date1 = NULL,
   day1 = NULL,
