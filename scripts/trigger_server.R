@@ -36,7 +36,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     
     dmaevaldate <- input$sasdate
     print(dmaevaldate)
-    #for testing  dmaevaldate <- '2024-01-23'
+    #for testing  dmaevaldate <- '2024-03-13'
     
     
     ## VISUAL SIGHTINGS ----
@@ -52,11 +52,11 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
           dmaevaldate,
           "','YYYY-MM-DD')
                 and mammals.saswmjoin.action = mammals.action.ID
-                and WM_PLATFORM <> 'buoy' and WM_PLATFORM <> 'slocum'
+                and (WM_PLATFORM not like 'buoy' and WM_PLATFORM not like 'slocum' or WM_PLATFORM is null)
                 and SPECIES_CERT = 3
                 order by ID" , sep =""
         )
-      
+#test to remove this to help get NEFSC sightings back in query 'and WM_PLATFORM <> 'buoy' and WM_PLATFORM <> 'slocum''
       #dailyeg <- sqlQuery(cnxn, datesql)
       dailyeg_q <- dbSendQuery(cnxn, datesql)
       dailyeg<-fetch(dailyeg_q) #HJF sqlQuery replace 13/14 20230626
