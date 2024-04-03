@@ -41,7 +41,7 @@ fluidPage(
                            leafletOutput("reportmap"),
                            tableOutput("egreport"),
                            tableOutput("netable"),
-                           textAreaInput("reportnotes", "Report Notes", "Survey flown in XXX conditions. Beaufort ranged from X to X.", height = 100, width = 500),
+                           textAreaInput("reportnotes", "Report Notes", "Survey flown off of XXX in XXX conditions. Beaufort ranged from X to X.", height = 100, width = 500),
                            textOutput("error3"),
                            textOutput("error4"),
                            downloadButton("report", "Generate Report (pdf - SERVER)"),
