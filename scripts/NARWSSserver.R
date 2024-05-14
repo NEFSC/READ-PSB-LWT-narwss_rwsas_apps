@@ -1691,18 +1691,6 @@ observeEvent(input$edittable, {
     leafpal <-
       colorFactor(
         palette = c(
-          # "khaki1",
-          # "cadetblue1",
-          # "black",
-          # "darkolivegreen3",
-          # "royalblue1",
-          # "firebrick2",
-          # "mediumorchid3",
-          # "antiquewhite3",
-          # "chocolate4",
-          # "darkorange",
-          # "thistle1",
-          # "darkolivegreen2"
           
           "#F0E442",
           "#88CCEE",
