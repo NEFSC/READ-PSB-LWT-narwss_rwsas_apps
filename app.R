@@ -1,7 +1,6 @@
 
 ## App file for NARWSS & RWSAS APPs
-## Leah Crowe                       
-
+## Leah Crowe and Heather Foley              
 
 # Global ----
 
