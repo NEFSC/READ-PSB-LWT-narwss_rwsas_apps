@@ -94,6 +94,12 @@ sasdma <-
   addPolygons(data = smapresent.sp,
               weight = 2,
               color = "red") %>%
+  addPolylines(  #adding for slow zone report maps 20241230 HJF
+    data = WEA.sp,
+    weight = 1,
+    color = "green",
+    fill = F
+  ) %>%
   addPolylines(
     data = NEUS_shiplane.sp,
     weight = 1,
@@ -1555,8 +1561,8 @@ if (isolate(criteria$DMAapp) == 'vissig' |
       popup = paste0(egsas$DateTime, ", Group Size:", egsas$GROUP_SIZE)
     ) %>%
     addLegend(
-      colors = c("grey", "red", "black"),
-      labels = c("Shipping Lanes", "SMA", "Core area of right whale sightings"),
+      colors = c("grey", "red", "black", "green"),
+      labels = c("Shipping Lanes", "SMA", "Core area of right whale sightings", "Wind Energy Areas"),
       opacity = 0.4,
       position = "topleft"
     )
@@ -1587,12 +1593,13 @@ if (isolate(criteria$DMAapp) == 'vissig' |
       popup = egsas_dma$DateTime
     ) %>%
     addLegend(
-      colors = c("grey", "red", "black", "grey"),
+      colors = c("grey", "red", "black", "grey", "green"),
       labels = c(
         "Shipping Lanes",
         "SMA",
         "Right whale acoustic detection - trigger",
-        "Other right whale acoustic detection"
+        "Other right whale acoustic detection",
+        "Wind Energy Areas"
       ),
       opacity = 0.4,
       position = "topleft"

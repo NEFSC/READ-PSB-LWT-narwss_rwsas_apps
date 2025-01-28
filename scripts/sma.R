@@ -48,8 +48,8 @@ dyna_ship <- readOGR(smapath, layer = "NARW_RZs_2020_02_07")
 GSL_shiplane <- readOGR(smapath, layer = "shiplane")
 ##france
 spm <- readOGR(smapath, layer = "spm")
-#WEA <- read_sf(smapath, layer = "Wind_Lease_Outlines_2_2023") #using sf not rgdal doesnt return SPDF
-WEA <- readOGR(smapath, layer = "Wind_Lease_Outlines_2_2023")
+#WEA <- read_sf(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") #using sf not rgdal doesnt return SPDF
+WEA <- readOGR(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") #updated 20241230 HJF
 print('line 62')
 
 ##sma projected properly

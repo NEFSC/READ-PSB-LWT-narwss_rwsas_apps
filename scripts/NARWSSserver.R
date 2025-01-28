@@ -14,7 +14,7 @@ criteria$DMAapp <- "rwsurv"
 
 observeEvent(input$rawupload, {
   survey_date = input$sd
-
+  #survey_date <- 240822 
   yr <- substr(survey_date, 1, 2)
   
   if (input$filepathway == 'Network') {
@@ -1750,7 +1750,7 @@ observeEvent(input$edittable, {
             "Shipping Lanes",
             "Right Whale SLOW Zone",
             "Seasonal Management Area",
-            "Wind Energy Lease Areas"
+            "Wind Energy Areas"
           ),
           opacity = 0.3
         )
