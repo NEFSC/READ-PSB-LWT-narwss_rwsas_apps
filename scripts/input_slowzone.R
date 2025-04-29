@@ -345,7 +345,8 @@ observeEvent(input$dmaup, {
           grepl('Charleston SC', NAME) ~ 'Charleston SC',
           grepl('Savannah GA', NAME) ~ 'Savannah GA',
           grepl('Jacksonville FL', NAME) ~ 'Jacksonville FL',
-          grepl('Cape Canaveral FL', NAME) ~ 'Cape Canaveral FL'
+          grepl('Cape Canaveral FL', NAME) ~ 'Cape Canaveral FL',
+          grepl('Chatham MA', NAME) ~ 'Chatham MA'
         )
       )
     
