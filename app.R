@@ -15,7 +15,6 @@ if (file.exists('./scripts/creds.R') == TRUE) {
 
 # User interface ----
 
-
 ui <- dashboardPage(
   dashboardHeader(title = "NERW Shiny"),
   # Sidebar content
