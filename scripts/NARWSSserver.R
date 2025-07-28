@@ -19,9 +19,12 @@ observeEvent(input$rawupload, {
   
   if (input$filepathway == 'Network') {
     path <-
-      paste0('//net/mmi/Fieldwrk/Aerials/20',
+      #paste0('//net/mmi/Fieldwrk/Aerials/20',    #for location of data on net - to be deleted soon
+             paste0('/mnt/PSD-Whale_Surveys/Aerials/20',        #20250725 HJF added for move to NEFSCDATA THIS WORKS!!!!
+             #paste0('/home/hfoley/PSD-Whale_Surveys/Aerials/20',  #20250728 works for ind container's pathway to data
              yr,
              '/Flights/edit_data/')
+
   } else if (input$filepathway == 'Local') {
     path <- input$filepathinput
     print(path)
@@ -458,7 +461,8 @@ observeEvent(input$edittable, {
     
     if (input$filepathway == 'Network') {
       path <-
-        paste0('//net/mmi/Fieldwrk/Aerials/20',
+        #paste0('//net/mmi/Fieldwrk/Aerials/20',  #previous location on net
+        paste0('/mnt/PSD-Whale_Surveys/Aerials/20',        #20250725 HJF added for move to NEFSCDATA THIS WORKS!!!!
                yr,
                '/Flights/edit_data/')
       criteria$loc <- "Network"
@@ -1259,7 +1263,8 @@ observeEvent(input$edittable, {
     
     if (criteria$loc == 'Network') {
       path <-
-        paste0('//net/mmi/Fieldwrk/Aerials/20',
+        #paste0('//net/mmi/Fieldwrk/Aerials/20',   #previous location on net
+        paste0('/mnt/PSD-Whale_Surveys/Aerials/20',      #added 20250725 for new nefscdata location
                yr,
                '/Flights/edit_data/')
       enable("sas")
