@@ -1,4 +1,3 @@
-
 ## App file for NARWSS & RWSAS APPs
 ## Leah Crowe and Heather Foley              
 
@@ -11,7 +10,6 @@ source('./scripts/global_libraries.R', local = TRUE)$value
 if (file.exists('./scripts/creds.R') == TRUE) {
   source('./scripts/creds.R', local = TRUE)$value
 }
-
 
 # User interface ----
 
