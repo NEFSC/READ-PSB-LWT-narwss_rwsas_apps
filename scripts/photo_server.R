@@ -25,7 +25,7 @@ observeEvent(input$photogo,{
   
   if(phserv == 'Network'){
     #pathway<-paste0('//net/mmi/Fieldwrk/Aerials/',phyear,'/')
-    pathway<-paste0('/mnt/PSD-Whale_Surveys/Aerials/',phyear,'/')
+    pathway<-paste0('/mnt/PSD-Whale_Surveys/Fieldwrk/Aerials/',phyear,'/')
     pathimage<-paste0(pathway,phyear,'_digital_photos/Image Submission/',phfile,'.csv')
   } else if (phserv == 'Local'){
     pathway<-input$filepathinput
@@ -298,7 +298,7 @@ observeEvent(input$photogo,{
     dplyr::rename("Field EGNO" = Field.EGNO, "EG Letter" = EG.Letter, "Local Time" = Local.Time, "Image Type" = Image.Type, "Assoc. Type" = Assoc..Type, "First Edit" = First.Edit, "Second Edit" = Second.Edit, "Final Edit" = Final.Edit)
   
   if (input$filepathway == 'Network'){
-    write.csv(subed, paste0('/mnt/PSD-Whale_Surveys/Aerials/',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'), na = '', row.names = FALSE)
+    write.csv(subed, paste0('/mnt/PSD-Whale_Surveys/Fieldwrk/Aerials/',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'), na = '', row.names = FALSE)
   } else if (input$filepathway == 'Local'){
     write.csv(subed, paste0(input$filepathinput,'NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'), na = '', row.names = FALSE)
     print(paste0(input$filepathinput,'NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'))  
