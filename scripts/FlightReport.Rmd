@@ -10,9 +10,12 @@ params:
   ftypesent: NA
   webshotpath: NA
 output: pdf_document
+header-includes:
+  - \usepackage{titling}
+  - \setlength{\droptitle}{-70pt}
 ---
 <!-- \vspace*{-10mm} -->
-\vspace*{-17mm}
+\vspace*{-25mm}
 \begin{center}\LARGE`r params$date1`\end{center}
 <!-- \vspace*{-4mm} -->
 ```{r, include=FALSE}
