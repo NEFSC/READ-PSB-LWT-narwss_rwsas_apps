@@ -10,10 +10,9 @@ params:
   ftypesent: NA
   webshotpath: NA
 output: pdf_document
-
 ---
 <!-- \vspace*{-10mm} -->
-\vspace*{-7mm}
+\vspace*{-17mm}
 \begin{center}\LARGE`r params$date1`\end{center}
 <!-- \vspace*{-4mm} -->
 ```{r, include=FALSE}
