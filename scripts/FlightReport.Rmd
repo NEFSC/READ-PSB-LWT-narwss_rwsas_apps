@@ -15,7 +15,7 @@ header-includes:
   - \setlength{\droptitle}{-70pt}
 ---
 <!-- \vspace*{-10mm} -->
-\vspace*{-25mm}
+\vspace*{-7mm} 
 \begin{center}\LARGE`r params$date1`\end{center}
 <!-- \vspace*{-4mm} -->
 ```{r, include=FALSE}
