@@ -1588,12 +1588,12 @@ observeEvent(input$edittable, {
               "Brigid",
               "Christin",
               "Heather",
-              "Leah",
+              "Emily",
               "Pete",
               "Tim",
               "I don't know"
             ),
-            choiceValues = list(880, 3, 850, 4, 940, 873, 2, 1, 0),
+            choiceValues = list(880, 3, 850, 4, 940, 935, 2, 1, 0),
             selected = "I don't know"
           )
         })
