@@ -55,7 +55,7 @@ observeEvent(input$dmaup, {
       STARTDATE = paste0(
         "to_timestamp('",
         ymd_hms(Sys.time()),
-        "', 'YYYY-MM-DD HH24:MI:SS')", sep =""
+        "', 'YYYY-MM-DD HH24:MI:SS.FF')", sep =""
       )
     ) %>%
     dplyr::select(
