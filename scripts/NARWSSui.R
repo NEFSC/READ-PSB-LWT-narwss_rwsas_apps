@@ -1,6 +1,6 @@
-
 fluidPage(
   useShinyjs(),
+  useBusyIndicators(spinners = FALSE, pulse = TRUE, fade = TRUE),
   titlePanel("NEFSC Right Whale Aerial Survey Data Processing"),
       splitLayout(radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE),
                   textInput("filepathinput", (HTML(paste("Local pathway where YYMMDD folder is stored", '<br/>', "Example: C:/2022/Flights/edit_data/")))),

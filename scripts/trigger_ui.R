@@ -1,5 +1,6 @@
 fluidPage(
   useShinyjs(),
+  useBusyIndicators(spinners = FALSE, pulse = TRUE, fade = TRUE),
   titlePanel(
     "Trigger analysis for DMAs and other protection areas from visual and acoustic detections"
   ),

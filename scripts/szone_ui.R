@@ -1,5 +1,6 @@
 fluidPage(
   useShinyjs(),
+  useBusyIndicators(spinners = FALSE, pulse=TRUE, fade = TRUE),
   titlePanel("SLOW zone viewer"),
   splitLayout(dateInput("sasdate", "Date:")),
   actionButton("query", "Query Database"),

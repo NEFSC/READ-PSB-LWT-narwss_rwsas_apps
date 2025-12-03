@@ -1,5 +1,6 @@
 fluidPage(
   useShinyjs(),
+  useBusyIndicators(spinners = FALSE, pulse = TRUE, fade = TRUE),
   titlePanel("Where are the whales?"),
   sidebarLayout(
     sidebarPanel(
@@ -12,9 +13,13 @@ fluidPage(
       ),
       textInput("filepathinput", (HTML(
         paste(
-          "Local pathway for edit_data folders and photo submission csv",
+          "Insert Local pathway for edit_data folders and photo submission csv",
           '<br/>',
-          "Example: C:/Users/leah.crowe/Desktop/Canada Data Processing/"
+          "Example: C:/Users/allison.henry/Desktop/Flights/",
+          '<br/>',
+          "NETWORK NOTE: .csv needs to be in Image Submission Folder directly, not a subfolder",
+          '<br/>',
+          "Network path: nefscdata/PSD-Whale_Surveys/Fieldwrk/Aerials/Year/Year_Digital_Photos/Image Submission/"
         )
       ))),
       radioButtons(
