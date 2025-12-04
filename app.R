@@ -4,7 +4,13 @@
 # Global ----
 
 Sys.setenv(OPENSSL_CONF="/dev/null") #added 20230925 on new container for server use of webshot/phantomjs
+#Sys.setenv(CHROMOTE_CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe") 
+#Sys.setenv(CHROMOTE_CHROME = "/home/hfoley/chrome-portable/usr/lib/chromium/chromium") 
+#Sys.setenv(CHROMOTE_CHROME = "~/chrome-portable/usr/lib/chromium/chromium") #2nd try with portable version of chromium one below didnt' work
+#Sys.setenv(CHROMOTE_CHROME = "~/chromium-portable/chrome") #added 20251203 for nothing there no .exe
 #Sys.setenv(ORACLE_HOME="/ora1/app/oracle/product/11.2.0/dbhome_1") #220707 HJF change with continued ODBC connection issues
+#Sys.setenv(TNS_ADMIN = "/usr/lib/oracle/21/client64/lib/network/admin")  #Chevrier rec 20250919 to set TNS_ADMIN before the connection points
+
 source('./scripts/global_libraries.R', local = TRUE)$value
 
 if (file.exists('./scripts/creds.R') == TRUE) {
