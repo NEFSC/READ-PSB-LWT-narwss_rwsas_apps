@@ -250,9 +250,16 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     
     fakeslowzone <- data.frame(long = c(-71,-71,-71,-71,-71),
                                lat = c(42, 42, 42, 42, 42))
-    
-    fakeslowzone <-
+    fakeslowzone <- #sp edit 20251202
       Polygons(list(Polygon(fakeslowzone, hole = as.logical(NA))), ID = 1)
+    
+    # Convert data frame to matrix for polygon construction
+    #coords <- as.matrix(fakeslowzone[, c("long", "lat")])
+    
+    # Build sf polygon (must be nested: list(list(coords)))
+    #fakeslowzone <- st_sf(
+      #geometry = st_sfc(st_polygon(list(coords))),
+      #crs = 4326)   # or CRS.latlon in old code
     
     source('./scripts/sma.R', local = TRUE)$value
     source('./scripts/active_slowzone.R', local = TRUE)$value
