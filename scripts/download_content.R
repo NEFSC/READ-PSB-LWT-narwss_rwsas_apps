@@ -15,9 +15,10 @@ if (ftype == 20) {
 rptnotes <- input$reportnotes
 
 if (file.exists('./scripts/oracleaccess.R') == TRUE) {
-  dmanamesexpsent <-
-    paste0("Active right whale SLOW zone(s): ", dmanamesexp, ".")
-  webshotpath <- paste0(getwd(), "/surveymap.png")
+  dmanamesexpsent <- paste0("Active right whale SLOW zone(s): ", dmanamesexp, ".")
+  webshotpath <- paste0(getwd(), "/surveymap.png") #works with Phantomjs 1/3
+  #webshotpath <- file.path(getwd(), "surveymap.png") #don't think this will work - likely  need to delete
+  
   source('./scripts/oracleaccess.R', local = TRUE)$value
   source('./scripts/input_sas.R', local = TRUE)$value
   source('./scripts/input_slowzone.R', local = TRUE)$value
@@ -29,17 +30,29 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
   disable("dmaletter")
   
   dmanamesexpsent <- ""
-  webshotpath <- paste0(path, "surveymap.png")
-  
+  webshotpath <- paste0(path, "surveymap.png") #works with Phantomjs 2/3
+  #webshotpath <- file.path(path, "surveymap.png") #ChatGPT's attempt with mapview/webshot
 }
 
-webshot::webshot("temp.html", file = webshotpath)
+#Save leaflet map to PNG w/o PhantomJS or Chromium
+#saved as "temp.html" html widget in NARWSSever 1863 and/or input_slowzone 16 selfcontained = FALSE
+
+#mapview::mapshot("temp.html", file = webshotpath,
+  #selfcontained = TRUE
+#   vwidth = 1200,
+#   vheight = 1000
+#)
+
+webshot::webshot("temp.html", file = webshotpath) #works with webshot::phantomjs 3/3
+
+print(paste("Map saved to:", webshotpath))
+print(class(reportmap))
+print(class(date_formats$date1)) #needs to be a string or a date for mapview to work
 print("webshot")
 
 file.copy("FlightReport.Rmd", tempReport, overwrite = FALSE)
 
-params <-
-  list(
+params <- list(
     date1 = date_formats$date1,
     rptnotes = rptnotes,
     reportmap = reportmap,
@@ -52,9 +65,12 @@ params <-
 print(webshotpath)
 print(params)
 print(file)
+
 rmarkdown::render(
   tempReport,
   output_file = file,
   params = params,
   envir = new.env(parent = globalenv())
 )
+
+print(str(params))
