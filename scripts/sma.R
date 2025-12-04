@@ -1,4 +1,3 @@
-
 ## Evaluating over SMAs ----
 
 # UTM unPROJECTED 19 for US, 20 for CA
@@ -7,7 +6,6 @@ sightings20 <- egtable %>%
   filter(LONGITUDE >= -66)
 sightings19 <- egtable %>%
   filter(LONGITUDE < -66)
-
 
 if (nrow(sightings19) >= nrow(sightings20)) {
   ##US
@@ -18,8 +16,8 @@ if (nrow(sightings19) >= nrow(sightings20)) {
   CRS.new <-
     CRS("+proj=utm +zone=20 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
 }
-
-print(CRS.new)
+#print("CRS.new")
+#print(CRS.new)
 
 if (nrow(sightings19) >= nrow(sightings20)) {
   ##US
@@ -30,37 +28,49 @@ if (nrow(sightings19) >= nrow(sightings20)) {
   CRS.utm <-
     CRS("+proj=utm +zone=20 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 }
+#print("CRS.utm")
+#print(CRS.utm)
 
-print(CRS.utm)
+CRS.latlon <- CRS("=epsg:4326 +proj=longlat +datum=WGS84") #251120 changes with getting towards sf
+  #CRS("+init=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_defs +towgs84=0,0,0") #1/2 drop of +init - others in photo_server line 101
+  #CRS("=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_defs +towgs84=0,0,0") #this could be easier I think using WGS84 or EPSG 4326 but unclear 20251118 HJF
+  #might need and st_transform() or something similar? st_as_sf? specify utm of crs? 
+  #CRS("+proj=longlat +datum=WGS84 +no_defs") #another option that might work but unclear
+  
+#print("CRS.latlon")  
+#print(CRS.latlon)
 
-CRS.latlon <-
-  CRS("+init=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_defs +towgs84=0,0,0")
+smapath <- "./SMA ind shp" #THIS MAY NOT WORK WITH SHINY LOCATION look into
+#allSMA <- readOGR(smapath, layer = 'right_whale_SMA_all_po') #delete if update works
+allSMA <- sf::st_read(smapath, layer = 'right_whale_SMA_all_po') #1/7 20251118 HJF edits to sf from rgdal
+#allSMA.tr <- sp::spTransform(allSMA, CRS.new) 1/48 instances to add st_as_sf and transform to sf
+allSMA.tr <- sf::st_transform(allSMA, CRS.new)
 
-smapath <- "./SMA ind shp"
-##shapefile update 18-Mar-2022 lmc
-allSMA <- readOGR(smapath, layer = 'right_whale_SMA_all_po')
-allSMA.tr <- sp::spTransform(allSMA, CRS.new)
-
-NEUS_shiplane <-
-  readOGR(smapath, layer = 'Main traffic Lanes with new TSS')
-ecanada <- readOGR(smapath, layer = "ecanada")
-dyna_ship <- readOGR(smapath, layer = "NARW_RZs_2020_02_07")
-GSL_shiplane <- readOGR(smapath, layer = "shiplane")
+#NEUS_shiplane <- readOGR(smapath, layer = 'Main traffic Lanes with new TSS')
+NEUS_shiplane <- sf::st_read(smapath, layer = 'Main traffic Lanes with new TSS')
+#ecanada <- readOGR(smapath, layer = "ecanada")
+ecanada <- sf::st_read(smapath, layer = "ecanada")
+#dyna_ship <- readOGR(smapath, layer = "NARW_RZs_2020_02_07")
+dyna_ship <- sf::st_read(smapath, layer = "NARW_RZs_2020_02_07")
+#GSL_shiplane <- readOGR(smapath, layer = "shiplane")
+GSL_shiplane <- sf::st_read(smapath, layer = "shiplane")
 ##france
-spm <- readOGR(smapath, layer = "spm")
-#WEA <- read_sf(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") #using sf not rgdal doesnt return SPDF
-WEA <- readOGR(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") #updated 20241230 HJF
+#spm <- readOGR(smapath, layer = "spm")
+spm <- sf::st_read(smapath, layer = "spm")
+WEA <- sf::st_read(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") #using sf::read_sf not rgdal doesnt return SPDF
+#WEA <- readOGR(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") #updated 20241230 HJF
 print('line 62')
 
 ##sma projected properly
-NEUS_shiplane.tr <- sp::spTransform(NEUS_shiplane, CRS.new)
-ecanada <- sp::spTransform(ecanada, CRS.new)
-dyna_ship.tr <- sp::spTransform(dyna_ship, CRS.new)
-GSL_shiplane.tr <- sp::spTransform(GSL_shiplane, CRS.new)
-spm.tr <- sp::spTransform(spm, CRS.new)
-WEA.tr <- sp::spTransform(WEA, CRS.new)
+#as CRSs are defind above using proj strings, batch changing spTransform to st_transform for 2-47 instances
+NEUS_shiplane.tr <- sf::st_transform(NEUS_shiplane, CRS.new)
+ecanada <- sf::st_transform(ecanada, CRS.new)
+dyna_ship.tr <- sf::st_transform(dyna_ship, CRS.new)
+GSL_shiplane.tr <- sf::st_transform(GSL_shiplane, CRS.new)
+spm.tr <- sf::st_transform(spm, CRS.new)
+WEA.tr <- sf::st_transform(WEA, CRS.new)
 #WEA.tr <- st_transform(WEA, CRS.new) #using sf not sp - doesnt return SPDF
-print('line 78')
+print('sma line 73')
 
 ##no SEUS
 ##01Jan - 29Feb CCB, MANO, BI, MASO, seshore
@@ -116,7 +126,7 @@ if (is.null(smapresent)) {
   fakesma <- SpatialPolygons(list(fakeslowzone))
   smapresent.sp <- fakesma
 } else {
-  smapresent.sp <- sp::spTransform(smapresent, CRS.latlon)
+  smapresent.sp <- sf::st_transform(smapresent, CRS.latlon)
 }
 
 smafort <- fortify(smapresent.sp)
@@ -128,10 +138,9 @@ smafort <- cbind(smafort, MA)
 smafort$MA <- as.factor(smafort$MA)
 
 # transform shapes to latlon ----
-print('line139')
-NEUS_shiplane.sp <- sp::spTransform(NEUS_shiplane.tr, CRS.latlon)
-spm.sp <- sp::spTransform(spm.tr, CRS.latlon)
-dyna_ship.sp <- sp::spTransform(dyna_ship.tr, CRS.latlon)
-GSL_shiplane.sp <- sp::spTransform(GSL_shiplane.tr, CRS.latlon)
-WEA.sp <- sp:: spTransform(WEA.tr, CRS.latlon)
-#WEA.sp <- st_transform(WEA.tr, CRS.latlon) #using st instead of sp not returning SPDF
+print('sma line141')
+NEUS_shiplane.sp <- sf::st_transform(NEUS_shiplane.tr, CRS.latlon)
+spm.sp <- sf::st_transform(spm.tr, CRS.latlon)
+dyna_ship.sp <- sf::st_transform(dyna_ship.tr, CRS.latlon)
+GSL_shiplane.sp <- sf::st_transform(GSL_shiplane.tr, CRS.latlon)
+WEA.sp <- sf::st_transform(WEA.tr, CRS.latlon) 
