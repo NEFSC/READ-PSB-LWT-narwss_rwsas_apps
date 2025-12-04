@@ -14,7 +14,7 @@ observeEvent(input$dmaup, {
       max(dma_react$dmacoord$`Lat (Decimal Degrees)`) + 0.5
     )
   htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
-  webshot::webshot("temp.html", file = "dmamap.png")
+  webshot("temp.html", file = "dmamap.png") #251203 change was: webshot::webshot("temp.html", file = "dmamap.png")
   
   ## dma info upload ----
   
