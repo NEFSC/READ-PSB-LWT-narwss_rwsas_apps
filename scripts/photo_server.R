@@ -98,7 +98,8 @@ observeEvent(input$photogo,{
         
       }
   })
-  CRS.latlon<-CRS("+init=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_defs +towgs84=0,0,0")
+  #CRS.latlon<-CRS("+init=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_defs +towgs84=0,0,0") #2/2 drops due to errors 20251118 other in sma line 101
+  CRS.latlon<-CRS("=epsg:4269 +proj=longlat +ellps=GRS80 +datum=NAD83 +no_defs +towgs84=0,0,0")
   CRS.new<-CRS("+proj=utm +zone=19 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
   
   subraw$Latitude[which(is.na(subraw$Latitude))]<-0
@@ -109,7 +110,7 @@ observeEvent(input$photogo,{
   subraw.tr<-subraw
   coordinates(subraw.tr)<-~Longitude+Latitude
   proj4string(subraw.tr)<-CRS.latlon
-  subraw.tr<-spTransform(subraw.tr, CRS.new)
+  subraw.tr<-sf::st_transform(subraw.tr, CRS.new)
   
   bof<-data.frame(
     long = c(-67,-65,-65,-63,-63,-64,-64,-67),
@@ -202,20 +203,20 @@ observeEvent(input$photogo,{
   proj4string(nypoly)<-CRS.latlon
   proj4string(njpoly)<-CRS.latlon
   
-  bofpoly<-spTransform(bofpoly,CRS.new)
-  jlpoly <-spTransform(jlpoly, CRS.new)
-  mbpoly <-spTransform(mbpoly, CRS.new)
-  gscpoly<-spTransform(gscpoly,CRS.new)
-  gompoly<-spTransform(gompoly,CRS.new)
-  gmbpoly<-spTransform(gmbpoly,CRS.new)
-  rbpoly <-spTransform(rbpoly, CRS.new)
-  esspoly<-spTransform(esspoly,CRS.new)
-  gbpoly <-spTransform(gbpoly, CRS.new)
-  snepoly<-spTransform(snepoly,CRS.new)
-  ccbpoly<-spTransform(ccbpoly,CRS.new)
-  gslpoly<-spTransform(gslpoly,CRS.new)
-  nypoly<-spTransform(nypoly, CRS.new)
-  njpoly<-spTransform(njpoly, CRS.new)
+  bofpoly<-sf::st_transform(bofpoly,CRS.new)
+  jlpoly <-sf::st_transform(jlpoly, CRS.new)
+  mbpoly <-sf::st_transform(mbpoly, CRS.new)
+  gscpoly<-sf::st_transform(gscpoly,CRS.new)
+  gompoly<-sf::st_transform(gompoly,CRS.new)
+  gmbpoly<-sf::st_transform(gmbpoly,CRS.new)
+  rbpoly <-sf::st_transform(rbpoly, CRS.new)
+  esspoly<-sf::st_transform(esspoly,CRS.new)
+  gbpoly <-sf::st_transform(gbpoly, CRS.new)
+  snepoly<-sf::st_transform(snepoly,CRS.new)
+  ccbpoly<-sf::st_transform(ccbpoly,CRS.new)
+  gslpoly<-sf::st_transform(gslpoly,CRS.new)
+  nypoly<-sf::st_transform(nypoly, CRS.new)
+  njpoly<-sf::st_transform(njpoly, CRS.new)
   
   BOF<-!is.na(sp::over(subraw.tr, as(bofpoly, "SpatialPolygons")))
   JL<-!is.na(sp::over(subraw.tr, as(jlpoly, "SpatialPolygons")))
@@ -298,7 +299,7 @@ observeEvent(input$photogo,{
     dplyr::rename("Field EGNO" = Field.EGNO, "EG Letter" = EG.Letter, "Local Time" = Local.Time, "Image Type" = Image.Type, "Assoc. Type" = Assoc..Type, "First Edit" = First.Edit, "Second Edit" = Second.Edit, "Final Edit" = Final.Edit)
   
   if (input$filepathway == 'Network'){
-    write.csv(subed, paste0('/mnt/PSD-Whale_Surveys/Fieldwrk/Aerials/',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'), na = '', row.names = FALSE)
+    write.csv(subed, paste0('/mnt/PSD-Whale_Surveys/Fieldwrk/Aerials/20',yr,'/20',yr,'_digital_photos/Image Submission/NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'), na = '', row.names = FALSE)
   } else if (input$filepathway == 'Local'){
     write.csv(subed, paste0(input$filepathinput,'NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'), na = '', row.names = FALSE)
     print(paste0(input$filepathinput,'NEFSC Sighting Data Table_Twin Otter_',Sys.Date(),'.csv'))  
