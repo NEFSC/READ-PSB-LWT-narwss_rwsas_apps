@@ -1,7 +1,9 @@
 criteria = reactiveValues(loc = NULL,
                           DMAapp = NULL,
                           triggrptrue = NULL,
-                          path = NULL)
+                          path = NULL,
+                          yes_mysti = NULL,
+                          gps2 = NULL)
 
 sas_react = reactiveValues(egsastab = NULL)
 
