@@ -20,17 +20,20 @@ observeEvent(input$rawupload, {
   if (input$filepathway == 'Network') {
     path <-
       #paste0('//net/mmi/Fieldwrk/Aerials/20',    #for location of data on net - to be deleted soon
-             paste0('/mnt/PSD-Whale_Surveys/Fieldwrk/Aerials/20',        #20250725 HJF added for move to NEFSCDATA THIS WORKS!!!!
+      paste0('/mnt/PSD-Whale_Surveys/Fieldwrk/Aerials/20',        #20250725 HJF added for move to NEFSCDATA THIS WORKS!!!!
              #paste0('/home/hfoley/PSD-Whale_Surveys/Aerials/20',  #20250728 works for ind container's pathway to data
              yr,
              '/Flights/edit_data/')
-
+    
   } else if (input$filepathway == 'Local') {
     path <- input$filepathinput
     print(path)
     print(typeof(path))
     criteria$path = path
   }
+  
+  mysti_path <- paste0(path, survey_date, "/Integrated Export.csv")
+  criteria$yes_mysti = file.exists(mysti_path)
   
   rawed <- input$rawedits
   vis = 0:35
@@ -42,7 +45,7 @@ observeEvent(input$rawupload, {
   obspos = c("L", "C", "R")
   ang = c(0:89, 89.1, 89.2, 89.3, 89.4, 89.5, 89.6, 89.7, 89.8, 89.9, 90)
   cue = c(1:5, 8, 9)
-
+  
   #Files ----
   ## Error messages ----
   
@@ -73,190 +76,283 @@ observeEvent(input$rawupload, {
           stringsAsFactors = FALSE
         ))
     } else if (rawed == "No") {
-      ## gps ##
-      gps_list <-
-        list.files(paste0(path, survey_date, '/'), "*\\.gps")
-      gps_files <-
-        lapply(gps_list, function (x)
-          read.csv(
-            paste0(path, survey_date, '/', x),
-            header = FALSE,
-            stringsAsFactors = FALSE
-          ))
-      gps_all <- do.call(rbind, gps_files)
-      names(gps_all) <-
-        c('DATETIME_UTC',
-          'LATITUDE',
-          'LONGITUDE',
-          'SPEED',
-          'HEADING',
-          'ALTITUDE',
-          'T1')
-      
-      ## effort ##
-      
-      eff_list <-
-        list.files(paste0(path, survey_date, '/'), "*\\.eff")
-      eff_files <-
-        lapply(eff_list, function (x)
-          read.csv(
-            paste0(path, survey_date, '/', x),
-            header = FALSE,
-            stringsAsFactors = FALSE
-          ))
-      eff_all <- do.call(rbind, eff_files)
-      names(eff_all) <-
-        c(
-          'Trans',
-          'Line',
-          'ABE',
-          'DATETIME_UTC',
-          'BEAUFORT',
-          'VISIBILTY_NM',
-          'CLOUD_CODE',
-          'GLARE_L',
-          'GLARE_R',
-          'QUALITY_L',
-          'QUALITY_R',
-          'EFFORT_COMMENTS'
-        )#,'EDIT1','EDIT2','EDIT3','T1') ##T1=trash
-      
-      ## sightings ##
-      
-      sig_list <-
-        list.files(paste0(path, survey_date, '/'), "*\\.sig")
-      
-      sig_files <- lapply(sig_list, function (x)
+      if (criteria$yes_mysti){
+        mysti_export <- read.csv(mysti_path, stringsAsFactors = FALSE)
+        mysti_df <- as.data.frame(mysti_export)
         
-        if (file.info(paste0(path, survey_date, '/', x))$size > 0) {
-          read.csv(
-            paste0(path, survey_date, '/', x),
-            header = FALSE,
-            stringsAsFactors = FALSE
-          )
-          
-        } else if (file.info(paste0(path, survey_date, '/', x))$size == 0)  {
-          data.frame(
-            V1 = NA,
-            V2 = NA,
-            V3 = NA,
-            V4 = NA,
-            V5 = NA,
-            V6 = NA,
-            V7 = NA,
-            V8 = NA,
-            V9 = NA,
-            V10 = NA,
-            V11 = NA,
-            V12 = NA,
-            V13 = NA,
-            V14 = NA,
-            V15 = NA,
-            V16 = NA,
-            V17 = NA,
-            V18 = NA,
-            V19 = NA,
-            V20 = NA,
-            V21 = NA
-          )
-        })
-      
-      sig_all <- do.call(rbind, sig_files)
-      names(sig_all) <-
-        c(
-          'Trans',
-          'Line',
-          'SIGHTING_NUMBER',
-          'DATETIME_UTC',
-          'OBSERVER',
-          'ANGLE',
-          'SPCODE',
-          'GROUP_SIZE',
-          'CUE',
-          'ACTUAL_HEADING',
-          'T1',
-          'T2',
-          'SIGHTING_COMMENTS',
-          'OBS_POSITION',
-          'LATITUDE',
-          'LONGITUDE',
-          'T3',
-          'CALVES',
-          'T4',
-          'B1_FINAL_CODE',
-          'T5'
-        ) ##T1=trash
-      sig_all$LATITUDE <- as.double(sig_all$LATITUDE)
-      sig_all$LONGITUDE <- as.double(sig_all$LONGITUDE)
-      
-      # Drop Columns
-      
-      eff <- eff_all %>%
-        filter(ABE != "E") %>%  ##remove rows with "E" from eff
-        dplyr::select(-Trans,-Line,-ABE)
-      
-      sig <- sig_all %>%
-        filter(!is.na(Trans)) %>% ##remove rows with no sig data
-        dplyr::select(-Trans,-Line,-T1,-T2,-T3,-T4,-T5)
-      
-      gps <- gps_all %>%
-        dplyr::select(-T1,-ALTITUDE)
-      
-      eff$BEAUFORT <- as.numeric(eff$BEAUFORT)
-      sig$ACTUAL_HEADING <- as.numeric(sig$ACTUAL_HEADING)
-      
-      ##format DateTime
-      gps$DATETIME_UTC <- dmy_hms(gps$DATETIME_UTC)
-      eff$DATETIME_UTC <- dmy_hms(eff$DATETIME_UTC)
-      sig$DATETIME_UTC <- dmy_hms(sig$DATETIME_UTC)
-      
-      # DATETIME link to position, speed, and heading data
-      # package data.table documentation
-      
-      setDT(eff)[,  LATITUDE := setDT(gps)[eff, LATITUDE, on = "DATETIME_UTC", roll = "nearest"]]
-      setDT(eff)[,  LONGITUDE := setDT(gps)[eff, LONGITUDE, on = "DATETIME_UTC", roll = "nearest"]]
-      setDT(eff)[,  SPEED := setDT(gps)[eff, SPEED, on = "DATETIME_UTC", roll = "nearest"]]
-      setDT(eff)[,  HEADING := setDT(gps)[eff, HEADING, on = "DATETIME_UTC", roll = "nearest"]]
-      
-      setDT(sig)[,  SPEED := setDT(gps)[sig, SPEED, on = "DATETIME_UTC", roll = "nearest"]]
-      setDT(sig)[,  HEADING := setDT(gps)[sig, HEADING, on = "DATETIME_UTC", roll = "nearest"]]
-      
-      ## merge effort and sighting files
-      ## merge and add columns
-      ## the below came out of an error thrown 8/3/2019 where eff$LONGITUDE were characters for some reason
-      eff$LATITUDE <- as.double(eff$LATITUDE)
-      eff$LONGITUDE <- as.double(eff$LONGITUDE)
-      
-      eff_sig <-
-        merge(
-          eff,
-          sig,
-          by = c(
-            "DATETIME_UTC",
-            "LATITUDE",
-            "LONGITUDE",
-            "SPEED",
-            "HEADING"
-          ),
-          all = TRUE
+        # format and rename columns
+        colnames(mysti_df)[1] <- "datetime"
+        mysti_df$datetime <- sub("T"," ",mysti_df$datetime)
+        mysti_df$datetime_et <- as.POSIXct(
+          mysti_df$datetime,
+          format = "%Y-%m-%d %H:%M:%S",
+          tz = "America/New_York"
         )
-      eff_sig <- eff_sig %>%
-        filter(!is.na(DATETIME_UTC))
-      eff_sig <- data.frame(
-        eff_sig,
-        ALTITUDE = NA,
-        B2_FINAL_CODE = NA,
-        B3_FINAL_CODE = NA,
-        B4_FINAL_CODE = NA,
-        B5_FINAL_CODE = NA,
-        PHOTOS = NA,
-        EDIT1 = NA,
-        EDIT2 = NA,
-        EDIT3 = NA
-      )
-      
-      #eff_sig<-cbind(eff_sig, ALTITUDE, B2_FINAL_CODE, B3_FINAL_CODE, B4_FINAL_CODE, B5_FINAL_CODE, PHOTOS, EDIT1, EDIT2, EDIT3)
-      
+        
+        # convert to UTC
+        mysti_df$datetime_utc <- with_tz(mysti_df$datetime_et, "UTC")
+        
+        # select necessary columns, remove delete = yes sightings
+        mysti_df2 <- mysti_df %>% 
+          filter(`delete` == "False" | !is.na(datetime_utc)) %>% 
+          mutate(sighting_number = as.numeric(gsub("S","", sighting_number)),
+                 photos = NA,
+                 edit1 = NA,
+                 edit2 = NA,
+                 edit3 = NA) %>% 
+          dplyr::rename(
+            latitude  = TrkLatitude,
+            longitude = TrkLongitude,
+            altitude  = TrkAltitude..ft.,
+            heading   = HeadingPlatTrue..T.,
+            speed     = PlatformSpeed..kts.
+          ) %>% 
+          dplyr::select(
+            datetime_utc,
+            latitude,
+            longitude,
+            altitude,
+            heading,
+            speed,
+            visibilty_nm,
+            beaufort,
+            cloud_code,
+            glare_L,
+            glare_R,
+            quality_L,
+            quality_R,
+            effort_comments,
+            sighting_number,
+            spcode,
+            group_size,
+            calves,
+            actual_heading,
+            observer,
+            obs_position,
+            angle,
+            cue,
+            b1_final_code,
+            b2_final_code,
+            b3_final_code,
+            b4_final_code,
+            b5_final_code,
+            photos,
+            sighting_comments,
+            edit1,
+            edit2,
+            edit3
+          )
+        
+        # need to fix the efforts autofill on the mysti end
+        eff_sig <- mysti_df2 %>%
+          filter(if_any(7:24, ~ !is.na(.) & . != "")) %>% 
+          rename_with(toupper)
+        
+        eff_sig$LATITUDE <-
+          sprintf("%.5f", round(eff_sig$LATITUDE, digits = 5))
+        eff_sig$LONGITUDE <-
+          sprintf("%.5f", round(eff_sig$LONGITUDE, digits = 5))
+        
+        criteria$mysti_df2 <- mysti_df2 
+        
+        gps2 <- mysti_df2 %>% 
+          dplyr::select(datetime_utc, latitude, longitude, speed, heading) %>% 
+          rename_with(toupper)
+        
+        criteria$gps2 <- gps2
+        
+        write.csv(
+          gps2,
+          paste0(path, survey_date, '/', 'gps_', survey_date, '.csv'),
+          na = '',
+          row.names = FALSE
+        )
+        
+      } else {  
+        ## gps ##
+        gps_list <-
+          list.files(paste0(path, survey_date, '/'), "*\\.gps")
+        gps_files <-
+          lapply(gps_list, function (x)
+            read.csv(
+              paste0(path, survey_date, '/', x),
+              header = FALSE,
+              stringsAsFactors = FALSE
+            ))
+        gps_all <- do.call(rbind, gps_files)
+        names(gps_all) <-
+          c('DATETIME_UTC',
+            'LATITUDE',
+            'LONGITUDE',
+            'SPEED',
+            'HEADING',
+            'ALTITUDE',
+            'T1')
+        
+        ## effort ##
+        
+        eff_list <-
+          list.files(paste0(path, survey_date, '/'), "*\\.eff")
+        eff_files <-
+          lapply(eff_list, function (x)
+            read.csv(
+              paste0(path, survey_date, '/', x),
+              header = FALSE,
+              stringsAsFactors = FALSE
+            ))
+        eff_all <- do.call(rbind, eff_files)
+        names(eff_all) <-
+          c(
+            'Trans',
+            'Line',
+            'ABE',
+            'DATETIME_UTC',
+            'BEAUFORT',
+            'VISIBILTY_NM',
+            'CLOUD_CODE',
+            'GLARE_L',
+            'GLARE_R',
+            'QUALITY_L',
+            'QUALITY_R',
+            'EFFORT_COMMENTS'
+          )#,'EDIT1','EDIT2','EDIT3','T1') ##T1=trash
+        
+        ## sightings ##
+        
+        sig_list <-
+          list.files(paste0(path, survey_date, '/'), "*\\.sig")
+        
+        sig_files <- lapply(sig_list, function (x)
+          
+          if (file.info(paste0(path, survey_date, '/', x))$size > 0) {
+            read.csv(
+              paste0(path, survey_date, '/', x),
+              header = FALSE,
+              stringsAsFactors = FALSE
+            )
+            
+          } else if (file.info(paste0(path, survey_date, '/', x))$size == 0)  {
+            data.frame(
+              V1 = NA,
+              V2 = NA,
+              V3 = NA,
+              V4 = NA,
+              V5 = NA,
+              V6 = NA,
+              V7 = NA,
+              V8 = NA,
+              V9 = NA,
+              V10 = NA,
+              V11 = NA,
+              V12 = NA,
+              V13 = NA,
+              V14 = NA,
+              V15 = NA,
+              V16 = NA,
+              V17 = NA,
+              V18 = NA,
+              V19 = NA,
+              V20 = NA,
+              V21 = NA
+            )
+          })
+        
+        sig_all <- do.call(rbind, sig_files)
+        names(sig_all) <-
+          c(
+            'Trans',
+            'Line',
+            'SIGHTING_NUMBER',
+            'DATETIME_UTC',
+            'OBSERVER',
+            'ANGLE',
+            'SPCODE',
+            'GROUP_SIZE',
+            'CUE',
+            'ACTUAL_HEADING',
+            'T1',
+            'T2',
+            'SIGHTING_COMMENTS',
+            'OBS_POSITION',
+            'LATITUDE',
+            'LONGITUDE',
+            'T3',
+            'CALVES',
+            'T4',
+            'B1_FINAL_CODE',
+            'T5'
+          ) ##T1=trash
+        sig_all$LATITUDE <- as.double(sig_all$LATITUDE)
+        sig_all$LONGITUDE <- as.double(sig_all$LONGITUDE)
+        
+        # Drop Columns
+        
+        eff <- eff_all %>%
+          filter(ABE != "E") %>%  ##remove rows with "E" from eff
+          dplyr::select(-Trans,-Line,-ABE)
+        
+        sig <- sig_all %>%
+          filter(!is.na(Trans)) %>% ##remove rows with no sig data
+          dplyr::select(-Trans,-Line,-T1,-T2,-T3,-T4,-T5)
+        
+        gps <- gps_all %>%
+          dplyr::select(-T1,-ALTITUDE)
+        
+        eff$BEAUFORT <- as.numeric(eff$BEAUFORT)
+        sig$ACTUAL_HEADING <- as.numeric(sig$ACTUAL_HEADING)
+        
+        ##format DateTime
+        gps$DATETIME_UTC <- dmy_hms(gps$DATETIME_UTC)
+        eff$DATETIME_UTC <- dmy_hms(eff$DATETIME_UTC)
+        sig$DATETIME_UTC <- dmy_hms(sig$DATETIME_UTC)
+        
+        # DATETIME link to position, speed, and heading data
+        # package data.table documentation
+        
+        setDT(eff)[,  LATITUDE := setDT(gps)[eff, LATITUDE, on = "DATETIME_UTC", roll = "nearest"]]
+        setDT(eff)[,  LONGITUDE := setDT(gps)[eff, LONGITUDE, on = "DATETIME_UTC", roll = "nearest"]]
+        setDT(eff)[,  SPEED := setDT(gps)[eff, SPEED, on = "DATETIME_UTC", roll = "nearest"]]
+        setDT(eff)[,  HEADING := setDT(gps)[eff, HEADING, on = "DATETIME_UTC", roll = "nearest"]]
+        
+        setDT(sig)[,  SPEED := setDT(gps)[sig, SPEED, on = "DATETIME_UTC", roll = "nearest"]]
+        setDT(sig)[,  HEADING := setDT(gps)[sig, HEADING, on = "DATETIME_UTC", roll = "nearest"]]
+        
+        ## merge effort and sighting files
+        ## merge and add columns
+        ## the below came out of an error thrown 8/3/2019 where eff$LONGITUDE were characters for some reason
+        eff$LATITUDE <- as.double(eff$LATITUDE)
+        eff$LONGITUDE <- as.double(eff$LONGITUDE)
+        
+        eff_sig <-
+          merge(
+            eff,
+            sig,
+            by = c(
+              "DATETIME_UTC",
+              "LATITUDE",
+              "LONGITUDE",
+              "SPEED",
+              "HEADING"
+            ),
+            all = TRUE
+          )
+        eff_sig <- eff_sig %>%
+          filter(!is.na(DATETIME_UTC))
+        eff_sig <- data.frame(
+          eff_sig,
+          ALTITUDE = NA,
+          B2_FINAL_CODE = NA,
+          B3_FINAL_CODE = NA,
+          B4_FINAL_CODE = NA,
+          B5_FINAL_CODE = NA,
+          PHOTOS = NA,
+          EDIT1 = NA,
+          EDIT2 = NA,
+          EDIT3 = NA
+        )
+        
+        #eff_sig<-cbind(eff_sig, ALTITUDE, B2_FINAL_CODE, B3_FINAL_CODE, B4_FINAL_CODE, B5_FINAL_CODE, PHOTOS, EDIT1, EDIT2, EDIT3)
+      } 
       ##reorder for editing ease
       eff_sig <-
         eff_sig %>% dplyr::select(
@@ -297,10 +393,10 @@ observeEvent(input$rawupload, {
       
       ##format for rhandsontable
       ##round lat/lon for show
-      eff_sig$LATITUDE <-
-        sprintf("%.5f", round(eff_sig$LATITUDE, digits = 5))
-      eff_sig$LONGITUDE <-
-        sprintf("%.5f", round(eff_sig$LONGITUDE, digits = 5))
+      # eff_sig$LATITUDE <-
+      #   sprintf("%.5f", round(eff_sig$LATITUDE, digits = 5))
+      # eff_sig$LONGITUDE <-
+      #   sprintf("%.5f", round(eff_sig$LONGITUDE, digits = 5))
     }
     
     eff_sig$DATETIME_UTC <- as.character.Date(eff_sig$DATETIME_UTC)
@@ -480,6 +576,8 @@ observeEvent(input$edittable, {
     
     ##reformat out of hot
     eff_sig2$DATETIME_UTC <- ymd_hms(eff_sig2$DATETIME_UTC)
+    eff_sig2$LATITUDE <- as.numeric(eff_sig2$LATITUDE)
+    eff_sig2$LONGITUDE <- as.numeric(eff_sig2$LONGITUDE)
     eff_sig2$ALTITUDE <- as.numeric(eff_sig2$ALTITUDE)
     eff_sig2$VISIBILTY_NM <- as.numeric(eff_sig2$VISIBILTY_NM)
     eff_sig2$BEAUFORT <- as.numeric(eff_sig2$BEAUFORT)
@@ -500,75 +598,98 @@ observeEvent(input$edittable, {
     eff_sig2$PHOTOS <- as.numeric(eff_sig2$PHOTOS)
     
     eff_sig2$SPCODE[eff_sig2$SPCODE == ''] <- NA
-    
-    gps_list2 <-
-      list.files(paste0(path, survey_date, '/'), "*\\.gps")
-    gps_files2 <-
-      lapply(gps_list2, function (x)
-        read.csv(
-          paste0(path, survey_date, '/', x),
-          header = FALSE,
-          stringsAsFactors = FALSE
-        ))
-    gps_all2 <- do.call(rbind, gps_files2)
-    names(gps_all2) <-
-      c('DATETIME_UTC',
-        'LATITUDE',
-        'LONGITUDE',
-        'SPEED',
-        'HEADING',
-        'ALTITUDE',
-        'T1')
-    gps2 <- gps_all2
-    
-    gps2$DATETIME_UTC <- dmy_hms(gps2$DATETIME_UTC)
-    gps2$T1 <- NULL
-    gps2$ALTITUDE <- NULL
-    
-    #DATETIME link to position, spead, and heading data
-    #package data.table documentation
-    
-    setDT(eff_sig2)[,  LATITUDE := setDT(gps2)[eff_sig2, LATITUDE, on = "DATETIME_UTC", roll = "nearest"]]
-    setDT(eff_sig2)[,  LONGITUDE := setDT(gps2)[eff_sig2, LONGITUDE, on = "DATETIME_UTC", roll = "nearest"]]
-    setDT(eff_sig2)[,  SPEED := setDT(gps2)[eff_sig2, SPEED, on = "DATETIME_UTC", roll = "nearest"]]
-    setDT(eff_sig2)[,  HEADING := setDT(gps2)[eff_sig2, HEADING, on = "DATETIME_UTC", roll = "nearest"]]
-    
-    
-    # GPS filter ----
-    ##get bin list using seq for every 8 seconds
-    gpsbin <-
-      cut(gps2$DATETIME_UTC, breaks = c(
-        seq(
-          from = gps2$DATETIME_UTC[1],
-          to = gps2$DATETIME_UTC[nrow(gps2)],
-          by = 8
+    if (criteria$yes_mysti){
+      gps2 <-  criteria$gps2
+      
+      f <-
+        merge(
+          eff_sig2,
+          gps2,
+          by = c(
+            "DATETIME_UTC",
+            "LATITUDE",
+            "LONGITUDE",
+            "SPEED",
+            "HEADING"
+          ),
+          all = TRUE
         )
-      ))
-    ##bind bin list to gps
-    gpsplus <- cbind(gps2, gpsbin)
-    ##order by DateTime and rank
-    gpsrank <-
-      gpsplus %>% arrange(DATETIME_UTC, gpsbin) %>% group_by(gpsbin) %>% mutate(rank =
-                                                                                  rank(DATETIME_UTC, ties.method = "first"))
-    ##select for 1st in the bin
-    gpsfil <- gpsrank %>% filter(rank == 1)
-    
-    f <-
-      merge(
-        eff_sig2,
-        gpsfil,
-        by = c(
-          "DATETIME_UTC",
-          "LATITUDE",
-          "LONGITUDE",
-          "SPEED",
-          "HEADING"
-        ),
-        all = TRUE
-      )
-    f <- f[order(f$DATETIME_UTC, -f$EFFORT_COMMENTS),]
+      
+      
+    } else {    
+      gps_list2 <-
+        list.files(paste0(path, survey_date, '/'), "*\\.gps")
+      gps_files2 <-
+        lapply(gps_list2, function (x)
+          read.csv(
+            paste0(path, survey_date, '/', x),
+            header = FALSE,
+            stringsAsFactors = FALSE
+          ))
+      gps_all2 <- do.call(rbind, gps_files2)
+      names(gps_all2) <-
+        c('DATETIME_UTC',
+          'LATITUDE',
+          'LONGITUDE',
+          'SPEED',
+          'HEADING',
+          'ALTITUDE',
+          'T1')
+      gps2 <- gps_all2
+      
+      gps2$DATETIME_UTC <- dmy_hms(gps2$DATETIME_UTC)
+      gps2$T1 <- NULL
+      gps2$ALTITUDE <- NULL
+      
+      #DATETIME link to position, spead, and heading data
+      #package data.table documentation
+      
+      setDT(eff_sig2)[,  LATITUDE := setDT(gps2)[eff_sig2, LATITUDE, on = "DATETIME_UTC", roll = "nearest"]]
+      setDT(eff_sig2)[,  LONGITUDE := setDT(gps2)[eff_sig2, LONGITUDE, on = "DATETIME_UTC", roll = "nearest"]]
+      setDT(eff_sig2)[,  SPEED := setDT(gps2)[eff_sig2, SPEED, on = "DATETIME_UTC", roll = "nearest"]]
+      setDT(eff_sig2)[,  HEADING := setDT(gps2)[eff_sig2, HEADING, on = "DATETIME_UTC", roll = "nearest"]]
+      
+      
+      # GPS filter ----
+      ##get bin list using seq for every 8 seconds
+      gpsbin <-
+        cut(gps2$DATETIME_UTC, breaks = c(
+          seq(
+            from = gps2$DATETIME_UTC[1],
+            to = gps2$DATETIME_UTC[nrow(gps2)],
+            by = 8
+          )
+        ))
+      ##bind bin list to gps
+      gpsplus <- cbind(gps2, gpsbin)
+      ##order by DateTime and rank
+      gpsrank <-
+        gpsplus %>% arrange(DATETIME_UTC, gpsbin) %>% group_by(gpsbin) %>% mutate(rank =
+                                                                                    rank(DATETIME_UTC, ties.method = "first"))
+      ##select for 1st in the bin
+      gpsfil <- gpsrank %>% filter(rank == 1)
+      
+      f <-
+        merge(
+          eff_sig2,
+          gpsfil,
+          by = c(
+            "DATETIME_UTC",
+            "LATITUDE",
+            "LONGITUDE",
+            "SPEED",
+            "HEADING"
+          ),
+          all = TRUE
+        )
+    }
+    # f <- f[order(f$DATETIME_UTC, -f$EFFORT_COMMENTS),]
+    f <- f[order(f$DATETIME_UTC),]
     
     #ALTITUDE ----
+    if (is.na(f$ALTITUDE[1])) {
+      f$ALTITUDE[1] <- 1000
+    }
     
     f$ALTITUDE = na.locf(f$ALTITUDE, na.rm = FALSE)
     f$ALTITUDE[which(is.na(f$ALTITUDE))] <- 1000
@@ -1563,7 +1684,7 @@ observeEvent(input$edittable, {
     print(file.exists('./scripts/oracleaccess.R'))
     
     #HJF deletion 20231002 merge conflict if (file.exists('./scripts/oracleaccess.R') == TRUE | criteria$path == './example_data/') {
-      if (file.exists('./scripts/oracleaccess.R') == TRUE){
+    if (file.exists('./scripts/oracleaccess.R') == TRUE){
       print("oracle")
       source('./scripts/oracleaccess.R', local = TRUE)$value
       #}
@@ -1788,7 +1909,7 @@ observeEvent(input$edittable, {
     #if on network, add in the current DMAs including the ones that are not up for extension (benign) and the ones eligible for extension
     #these are the same color for the flight report, but won't be for the Potential Protection Area report (if applicable)
     if (input$filepathway == 'Network') {
-    #231003 HJF edit with errors post merge if (input$filepathway == 'Network' | criteria$path == './example_data/') {
+      #231003 HJF edit with errors post merge if (input$filepathway == 'Network' | criteria$path == './example_data/') {
       reportleaf <- reportleaf %>%
         addPolygons(data = benigndma,
                     weight = 2,
