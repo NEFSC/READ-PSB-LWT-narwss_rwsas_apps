@@ -40,37 +40,28 @@ CRS.latlon <- CRS("=epsg:4326 +proj=longlat +datum=WGS84") #251120 changes with 
 #print("CRS.latlon")  
 #print(CRS.latlon)
 
-smapath <- "./SMA ind shp" #THIS MAY NOT WORK WITH SHINY LOCATION look into
-#allSMA <- readOGR(smapath, layer = 'right_whale_SMA_all_po') #delete if update works
+smapath <- "./SMA ind shp" 
 allSMA <- sf::st_read(smapath, layer = 'right_whale_SMA_all_po') #1/7 20251118 HJF edits to sf from rgdal
-#allSMA.tr <- sp::spTransform(allSMA, CRS.new) 1/48 instances to add st_as_sf and transform to sf
 allSMA.tr <- sf::st_transform(allSMA, CRS.new)
 
-#NEUS_shiplane <- readOGR(smapath, layer = 'Main traffic Lanes with new TSS')
 NEUS_shiplane <- sf::st_read(smapath, layer = 'Main traffic Lanes with new TSS')
-#ecanada <- readOGR(smapath, layer = "ecanada")
 ecanada <- sf::st_read(smapath, layer = "ecanada")
-#dyna_ship <- readOGR(smapath, layer = "NARW_RZs_2020_02_07")
 dyna_ship <- sf::st_read(smapath, layer = "NARW_RZs_2020_02_07")
-#GSL_shiplane <- readOGR(smapath, layer = "shiplane")
 GSL_shiplane <- sf::st_read(smapath, layer = "shiplane")
 ##france
-#spm <- readOGR(smapath, layer = "spm")
 spm <- sf::st_read(smapath, layer = "spm")
 WEA <- sf::st_read(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") #using sf::read_sf not rgdal doesnt return SPDF
-#WEA <- readOGR(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") #updated 20241230 HJF
-print('line 62')
+#print('sma line 58')
 
 ##sma projected properly
-#as CRSs are defind above using proj strings, batch changing spTransform to st_transform for 2-47 instances
+#as CRSs are defined above using proj strings, batch changing spTransform to st_transform for 2-47 instances
 NEUS_shiplane.tr <- sf::st_transform(NEUS_shiplane, CRS.new)
 ecanada <- sf::st_transform(ecanada, CRS.new)
 dyna_ship.tr <- sf::st_transform(dyna_ship, CRS.new)
 GSL_shiplane.tr <- sf::st_transform(GSL_shiplane, CRS.new)
 spm.tr <- sf::st_transform(spm, CRS.new)
 WEA.tr <- sf::st_transform(WEA, CRS.new)
-#WEA.tr <- st_transform(WEA, CRS.new) #using sf not sp - doesnt return SPDF
-print('sma line 73')
+#print('sma line 68')
 
 ##no SEUS
 ##01Jan - 29Feb CCB, MANO, BI, MASO, seshore
@@ -92,6 +83,9 @@ sma7 <- subset(allSMA.tr, ID %in% 1:7)
 
 smapresent <- NULL
 smaname <- NULL
+
+print(str(MODA))
+MODA <- as.character(MODA) #20251208 added  - poss from function in other script
 
 if (between(MODA, "01-01", "02-29")) {
   smapresent <- sma1
@@ -129,6 +123,9 @@ if (is.null(smapresent)) {
   smapresent.sp <- sf::st_transform(smapresent, CRS.latlon)
 }
 
+print(class(smapresent.sp))
+print(str(smapresent.sp))
+
 smafort <- fortify(smapresent.sp)
 MA = NULL
 for (i in 1:nrow(smafort)) {
@@ -138,7 +135,7 @@ smafort <- cbind(smafort, MA)
 smafort$MA <- as.factor(smafort$MA)
 
 # transform shapes to latlon ----
-print('sma line141')
+print('sma line 142')
 NEUS_shiplane.sp <- sf::st_transform(NEUS_shiplane.tr, CRS.latlon)
 spm.sp <- sf::st_transform(spm.tr, CRS.latlon)
 dyna_ship.sp <- sf::st_transform(dyna_ship.tr, CRS.latlon)
