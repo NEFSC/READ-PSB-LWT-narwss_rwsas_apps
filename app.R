@@ -4,7 +4,7 @@
 # Global ----
 
 Sys.setenv(OPENSSL_CONF="/dev/null") #added 20230925 on new container for server use of webshot/phantomjs
-#Sys.setenv(CHROMOTE_CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe") 
+Sys.setenv(CHROMOTE_CHROME = "/usr/bin/chromium-broswer") 
 #Sys.setenv(CHROMOTE_CHROME = "/home/hfoley/chrome-portable/usr/lib/chromium/chromium") 
 #Sys.setenv(CHROMOTE_CHROME = "~/chrome-portable/usr/lib/chromium/chromium") #2nd try with portable version of chromium one below didnt' work
 #Sys.setenv(CHROMOTE_CHROME = "~/chromium-portable/chrome") #added 20251203 for nothing there no .exe

@@ -1,4 +1,3 @@
-
 ## ACTIVE Slow zones ----
 
 #queries for active dmas/acoustic protection zones and their bounds. Also identifies if zones are within time period where they could be extended.
@@ -209,7 +208,7 @@ if (nrow(actdma) == 0) {
   } else {
     benigndma <- querytoshape(dmanoth)
   }
-
+  print("benigndma")
   print(benigndma)
   #evaluate extension triggers DMAs
 
@@ -218,6 +217,7 @@ if (nrow(actdma) == 0) {
   } else {
     ##all polys together
     extensiondma <- querytoshape(dmaext)
+    print("extenstiondma")
     print(extensiondma)
 
     ##change projection, extension
@@ -253,11 +253,18 @@ if (nrow(actdma) == 0) {
     for (i in names(IDlist)) {
       proj4string(extdma.sp[[i]]) <- CRS.latlon
     }
-
+    
+    #NEEDS 2025 CLEANUP!! Similar function should be in action and slow zone
+    #attempting same thing but to make sf objects via st_as_sf or # Convert each SpatialPolygons object in the list to an sf object 
+    extdma.sp <- lapply(extdma.sp, st_as_sf)
+    #for (i in names(IDlist)) {
+     # extdma.sp[[i]] <- st_as_sf(extdma.sp[[i]], coords = c("longitude", "latitude"), remove = FALSE, crs = 4326) #was CRS.latlon
+    #}
+    
     ##change projection
     extdma.tr <-
       lapply(extdma.sp, function (x) {
-        spTransform(x, CRS.new)
+      st_transform(x, crs = 26919) #was CRS.new added crs = 
       })
   }
 
@@ -310,11 +317,20 @@ if (nrow(actdma) == 0) {
     for (i in names(IDlist)) {
       proj4string(extapz.sp[[i]]) <- CRS.latlon
     }
+    #update 20251119 for sf objects, getting rid of rgdal
+    #extapz.tr <- lapply(extapz.sp, function(p) {
+     # sp_obj <- SpatialPolygons(list(p), proj4string = CRS.latlon)
+      #st_as_sf(sp_obj)
+    #})
+    extapz.sp <- lapply(extapz.sp, st_as_sf)
+    #for (i in names(IDlist)) {
+     # extapz.sp[[i]] <- st_as_sf(extapz.sp[[i]], coords = c("longitude", "latitude"), remove = FALSE, crs = 4326) #changed from CRS.latlon
+    #}
 
     ##change projection
     extapz.tr <-
-      lapply(extapz.sp, function (x) {
-        spTransform(x, CRS.new)
+     lapply(extapz.sp, function (x) {
+      st_transform(x, crs = 26919) #changed from CRS.new
       })
   }
 
@@ -324,34 +340,41 @@ if (nrow(actdma) == 0) {
 
 #DMA
 
-benigndma.sp <- benigndma
-##declare what kind of projection thy are in
-proj4string(benigndma.sp) <- CRS.latlon
+#benigndma.sp <- benigndma #can delete?
+##declare what kind of projection they are in
+#proj4string(benigndma.sp) <- CRS.latlon
+benigndma.sp <- st_as_sf(benigndma) #251120 update to sf/ditch rgdal
+st_crs(benigndma.sp) <- CRS.latlon
 ##change projection
-benigndma.tr <- spTransform(benigndma.sp, CRS.new)
+benigndma.tr <- sf::st_transform(benigndma.sp, CRS.new)
 
-extensiondma.sp <- extensiondma
-##declare what kind of projection thy are in
-proj4string(extensiondma.sp) <- CRS.latlon
+#extensiondma.sp <- extensiondma can delete?
+##declare what kind of projection they are in
+#proj4string(extensiondma.sp) <- CRS.latlon
+extensiondma.sp <- st_as_sf(extensiondma) #251120 update to sf/ditch rgdal
+st_crs(extensiondma.sp) <- CRS.latlon
 ##change projection
-extensiondma.tr <- spTransform(extensiondma.sp, CRS.new)
+extensiondma.tr <- sf::st_transform(extensiondma.sp, CRS.new)
 
 #APZ
 
-benignapz.sp <- benignapz
-##declare what kind of projection thy are in
-proj4string(benignapz.sp) <- CRS.latlon
+#benignapz.sp <- benignapz
+##declare what kind of projection they are in
+#proj4string(benignapz.sp) <- CRS.latlon
+benignapz.sp <- st_as_sf(benignapz) #251120 update to sf/ditch rgdal
+st_crs(benignapz.sp) <- CRS.latlon
 ##change projection
-benignapz.tr <- spTransform(benignapz.sp, CRS.new)
+benignapz.tr <- sf::st_transform(benignapz.sp, CRS.new)
 
-extensionapz.sp <- extensionapz
-##declare what kind of projection thy are in
-proj4string(extensionapz.sp) <- CRS.latlon
+#extensionapz.sp <- extensionapz
+##declare what kind of projection they are in
+#proj4string(extensionapz.sp) <- CRS.latlon
+extensionapz.sp <- st_as_sf(extensionapz) #251120 update to sf/ditch rgdal
+st_crs(extensionapz.sp) <- CRS.latlon
 ##change projection
-extensionapz.tr <- spTransform(extensionapz.sp, CRS.new)
+extensionapz.tr <- sf::st_transform(extensionapz.sp, CRS.new)
 
 # ## ACTIVE SLOW zones ----
-# 
 # #queries for active dmas/acoustic protection zones and their bounds. Also identifies if zones are within time period where they could be extended.
 # ##a lot of variables are named with "dma" even if they refer to both kinds of protection zones (acoustic vs. visual) because the original code for DMAs was modifed in 2020 to accommodate the new acoustic protection zone program
 # 
@@ -600,7 +623,7 @@ extensionapz.tr <- spTransform(extensionapz.sp, CRS.new)
 #     ##change projection
 #     extdma.tr <-
 #       lapply(extdma.sp, function (x) {
-#         spTransform(x, CRS.new)
+#         sf::st_transform(x, CRS.new)
 #       })
 #   }
 #   
@@ -657,7 +680,7 @@ extensionapz.tr <- spTransform(extensionapz.sp, CRS.new)
 #     ##change projection
 #     extapz.tr <-
 #       lapply(extapz.sp, function (x) {
-#         spTransform(x, CRS.new)
+#         sf::st_transform(x, CRS.new)
 #       })
 #   }
 #   
@@ -671,13 +694,13 @@ extensionapz.tr <- spTransform(extensionapz.sp, CRS.new)
 # ##declare what kind of projection thy are in
 # proj4string(benigndma.sp) <- CRS.latlon
 # ##change projection
-# benigndma.tr <- spTransform(benigndma.sp, CRS.new)
+# benigndma.tr <- sf::st_transform(benigndma.sp, CRS.new)
 # 
 # extensiondma.sp <- extensiondma
 # ##declare what kind of projection thy are in
 # proj4string(extensiondma.sp) <- CRS.latlon
 # ##change projection
-# extensiondma.tr <- spTransform(extensiondma.sp, CRS.new)
+# extensiondma.tr <- sf::st_transform(extensiondma.sp, CRS.new)
 # 
 # #APZ
 # 
@@ -685,10 +708,10 @@ extensionapz.tr <- spTransform(extensionapz.sp, CRS.new)
 # ##declare what kind of projection thy are in
 # proj4string(benignapz.sp) <- CRS.latlon
 # ##change projection
-# benignapz.tr <- spTransform(benignapz.sp, CRS.new)
+# benignapz.tr <- sf::st_transform(benignapz.sp, CRS.new)
 # 
 # extensionapz.sp <- extensionapz
 # ##declare what kind of projection thy are in
 # proj4string(extensionapz.sp) <- CRS.latlon
 # ##change projection
-# extensionapz.tr <- spTransform(extensionapz.sp, CRS.new)
+# extensionapz.tr <- sf::st_transform(extensionapz.sp, CRS.new)

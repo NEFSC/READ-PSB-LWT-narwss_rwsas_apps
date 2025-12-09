@@ -13,8 +13,20 @@ observeEvent(input$dmaup, {
       max(dma_react$dmacoord$`Lon (Decimal Degrees)`) - 0.5,
       max(dma_react$dmacoord$`Lat (Decimal Degrees)`) + 0.5
     )
-  htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE)
-  webshot("temp.html", file = "dmamap.png") #251203 change was: webshot::webshot("temp.html", file = "dmamap.png")
+  
+  htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = FALSE) #works with phantomjs 4/5
+  webshot::webshot("temp.html", file = "dmamap.png") #Works with phantomjs 5/5 (other 3 in dl_content)
+  
+  
+  #htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = TRUE) #for  mapview::mapshot2 and chromium
+  #mapview:mapshot2(dmareportmap, file = "dmamap.png", selcontained = TRUE) #251203 attempts with mapview and webshot2 look at mapshot2 wants widget NOT "temp.html"
+  
+  #webshot2::webshot(
+    #url = "temp.html",
+    #file = dmamap.png,
+    #vwidth = 1200,
+    #vheight = 1000
+  #)
   
   ## dma info upload ----
   

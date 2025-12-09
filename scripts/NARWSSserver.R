@@ -1981,7 +1981,9 @@ observeEvent(input$edittable, {
       egreport
     })
     print("html1")
-    htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE)
+    
+    htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE) #works with phantomjs 1/1 (others in dl_cont and input_SZ)
+    #htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = TRUE) #attempts with mapview::mapshot2
     print("html2")
     
     #PDF ----
