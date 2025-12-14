@@ -36,7 +36,7 @@ querytoshape <- function(x) {
 
 if (isolate(criteria$loc) == 'Network') {
 
-  ##action code dataframe to join with results ofvtrigger analysis later
+  ##action code dataframe to join with results of trigger analysis later
   actioncode <- "select * from action"
   #actioncodedf <- sqlQuery(cnxn, actioncode)
   actioncodedf_q <- dbSendQuery(cnxn, actioncode)
@@ -61,7 +61,8 @@ if (isolate(criteria$loc) == 'Network') {
   #actdma <- sqlQuery(cnxn, activedmasql)
   actdma_q <- dbSendQuery(cnxn, activedmasql)
   actdma<-fetch(actdma_q) #HJF replace 4/14 sqlQuery 20230626
-  print(actdma)
+  #print("actdma")
+  #print(actdma)
 
 } else {
   print("else")
@@ -90,13 +91,13 @@ if (isolate(criteria$loc) == 'Network') {
     dplyr::select(NAME, EXPDATE, ID, TRIGGERTYPE) %>%
     #distinct(NAME, EXPDATE, ID, TRIGGERTYPE) %>%
     mutate(EXT = EXPDATE - days(7))
-
 }
-
+print("actdma")
 print(actdma)
 
+#NEEDS UPDATE AS same name zones across V and A get lumped and don't extend accordingly (i.e Cape Cod Bay)
 actdma <- actdma %>%
-  group_by(NAME) %>%
+  group_by(NAME, TRIGGERTYPE) %>%  #20251213 added trigger type for CCB issues - test to see if it still works in all scenarios
   arrange(EXPDATE) %>%
   top_n(n = 1, EXPDATE) %>% #selects for later dma if there are two technically active because of an extension
   ungroup()
@@ -193,6 +194,7 @@ if (nrow(actdma) == 0) {
     dplyr::select(ID, VERTEX, LAT, LON)
   print("apznoth")
   print(apznoth)
+  
   ## apz up for extension
   apzext <- actdmadf %>%
     filter(EXT <= MODAYR & TRIGGERTYPE == "a") %>%
@@ -254,7 +256,7 @@ if (nrow(actdma) == 0) {
       proj4string(extdma.sp[[i]]) <- CRS.latlon
     }
     
-    #NEEDS 2025 CLEANUP!! Similar function should be in action and slow zone
+    #NEEDS 2025 CLEANUP/APPLY COORDINATES!! Similar function should be in action and slow zone
     #attempting same thing but to make sf objects via st_as_sf or # Convert each SpatialPolygons object in the list to an sf object 
     extdma.sp <- lapply(extdma.sp, st_as_sf)
     #for (i in names(IDlist)) {
@@ -317,12 +319,13 @@ if (nrow(actdma) == 0) {
     for (i in names(IDlist)) {
       proj4string(extapz.sp[[i]]) <- CRS.latlon
     }
-    #update 20251119 for sf objects, getting rid of rgdal
+    #update 20251119 for sf objects, getting rid of rgdal ##this makesa spatail object which is not desired
     #extapz.tr <- lapply(extapz.sp, function(p) {
      # sp_obj <- SpatialPolygons(list(p), proj4string = CRS.latlon)
       #st_as_sf(sp_obj)
     #})
     extapz.sp <- lapply(extapz.sp, st_as_sf)
+    ## NEED TO APPLY COORDINATES SOMEWHERE
     #for (i in names(IDlist)) {
      # extapz.sp[[i]] <- st_as_sf(extapz.sp[[i]], coords = c("longitude", "latitude"), remove = FALSE, crs = 4326) #changed from CRS.latlon
     #}
