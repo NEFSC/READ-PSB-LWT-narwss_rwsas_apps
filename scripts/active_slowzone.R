@@ -95,9 +95,9 @@ if (isolate(criteria$loc) == 'Network') {
 print("actdma")
 print(actdma)
 
-#NEEDS UPDATE AS same name zones across V and A get lumped and don't extend accordingly (i.e Cape Cod Bay)
+
 actdma <- actdma %>%
-  group_by(NAME, TRIGGERTYPE) %>%  #20251213 added trigger type for CCB issues - test to see if it still works in all scenarios
+  group_by(NAME, TRIGGERTYPE) %>%  #20251213 added trigger type to group_by for CCB issues
   arrange(EXPDATE) %>%
   top_n(n = 1, EXPDATE) %>% #selects for later dma if there are two technically active because of an extension
   ungroup()
