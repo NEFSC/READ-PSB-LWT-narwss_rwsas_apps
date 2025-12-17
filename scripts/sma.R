@@ -50,8 +50,9 @@ dyna_ship <- sf::st_read(smapath, layer = "NARW_RZs_2020_02_07")
 GSL_shiplane <- sf::st_read(smapath, layer = "shiplane")
 ##france
 spm <- sf::st_read(smapath, layer = "spm")
-WEA <- sf::st_read(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") #using sf::read_sf not rgdal doesnt return SPDF
-#print('sma line 58')
+WEA <- sf::st_read(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") 
+EEZ <- sf::st_read(smapath, layer = "EEZ_NWAtl") #20251216 add for glider detections near border to visualize it is in Canada
+
 
 ##sma projected properly
 #as CRSs are defined above using proj strings, batch changing spTransform to st_transform for 2-47 instances
@@ -61,7 +62,7 @@ dyna_ship.tr <- sf::st_transform(dyna_ship, CRS.new)
 GSL_shiplane.tr <- sf::st_transform(GSL_shiplane, CRS.new)
 spm.tr <- sf::st_transform(spm, CRS.new)
 WEA.tr <- sf::st_transform(WEA, CRS.new)
-#print('sma line 68')
+EEZ.tr <- sf::st_transform(EEZ, CRS.new)
 
 ##no SEUS
 ##01Jan - 29Feb CCB, MANO, BI, MASO, seshore
@@ -135,9 +136,10 @@ smafort <- cbind(smafort, MA)
 smafort$MA <- as.factor(smafort$MA)
 
 # transform shapes to latlon ----
-print('sma line 142')
+print('sma line 139')
 NEUS_shiplane.sp <- sf::st_transform(NEUS_shiplane.tr, CRS.latlon)
 spm.sp <- sf::st_transform(spm.tr, CRS.latlon)
 dyna_ship.sp <- sf::st_transform(dyna_ship.tr, CRS.latlon)
 GSL_shiplane.sp <- sf::st_transform(GSL_shiplane.tr, CRS.latlon)
 WEA.sp <- sf::st_transform(WEA.tr, CRS.latlon) 
+EEZ.sp <- sf::st_transform(EEZ.tr, CRS.latlon)
