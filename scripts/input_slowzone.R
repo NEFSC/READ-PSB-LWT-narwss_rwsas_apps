@@ -18,7 +18,7 @@ observeEvent(input$dmaup, {
   #webshot::webshot("temp.html", file = "dmamap.png") #Works with phantomjs 5/5 (other 1 in dl_content and 1958 in NARWSSS)
   
   htmlwidgets::saveWidget(dmareportmap, "temp.html", selfcontained = TRUE) #for  mapview::mapshot2 and chromium
-  mapview:mapshot2(dmareportmap, file = "dmamap.png", selfcontained = TRUE) #251203 attempts with mapview and webshot2 look at mapshot2 wants widget NOT "temp.html"
+  mapview::mapshot2(dmareportmap, file = "dmamap.png", selfcontained = TRUE) #251203 attempts with mapview and webshot2 look at mapshot2 wants widget NOT "temp.html"
   
   #webshot2::webshot(
     #url = "temp.html",
