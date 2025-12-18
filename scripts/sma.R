@@ -124,8 +124,8 @@ if (is.null(smapresent)) {
   smapresent.sp <- sf::st_transform(smapresent, CRS.latlon)
 }
 
-print(class(smapresent.sp))
-print(str(smapresent.sp))
+#print(class(smapresent.sp))
+#print(str(smapresent.sp))
 
 smafort <- fortify(smapresent.sp)
 MA = NULL
