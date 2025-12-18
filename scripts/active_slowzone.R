@@ -5,7 +5,7 @@
 
 ## declare function ----
 
-print("beg activedma")
+print("begin active slowzone")
 querytoshape <- function(x) {
   #dmaquery = x
 
@@ -92,8 +92,8 @@ if (isolate(criteria$loc) == 'Network') {
     #distinct(NAME, EXPDATE, ID, TRIGGERTYPE) %>%
     mutate(EXT = EXPDATE - days(7))
 }
-print("actdma")
-print(actdma)
+#print("actdma")
+#print(actdma)
 
 
 actdma <- actdma %>%
@@ -101,7 +101,7 @@ actdma <- actdma %>%
   arrange(EXPDATE) %>%
   top_n(n = 1, EXPDATE) %>% #selects for later dma if there are two technically active because of an extension
   ungroup()
-
+print("actdma")
 print(actdma)
 
 ##do we have ANY dmas?
@@ -121,6 +121,7 @@ if (nrow(actdma) == 0) {
       EXPDATE = format(EXPDATE, format = "%d %B %Y"),
       sentence = paste(NAME, "expires on", EXPDATE)
     )
+  print("repdma")
   print(repdma)
   dmalist <- as.list(repdma$sentence)
   dmanamesexp <-
@@ -192,15 +193,15 @@ if (nrow(actdma) == 0) {
   apznoth <- actdmadf %>%
     filter(EXT > MODAYR & TRIGGERTYPE == "a") %>%
     dplyr::select(ID, VERTEX, LAT, LON)
-  print("apznoth")
-  print(apznoth)
+  #print("apznoth")
+  #print(apznoth)
   
   ## apz up for extension
   apzext <- actdmadf %>%
     filter(EXT <= MODAYR & TRIGGERTYPE == "a") %>%
     dplyr::select(ID, VERTEX, LAT, LON)
-  print("apzext")
-  print(apzext)
+  #print("apzext")
+  #print(apzext)
 
   #evaluate DMAs ----
   #benign
@@ -210,8 +211,8 @@ if (nrow(actdma) == 0) {
   } else {
     benigndma <- querytoshape(dmanoth)
   }
-  print("benigndma")
-  print(benigndma)
+  #print("benigndma")
+  #print(benigndma)
   #evaluate extension triggers DMAs
 
   if (nrow(dmaext) == 0) {
@@ -219,8 +220,8 @@ if (nrow(actdma) == 0) {
   } else {
     ##all polys together
     extensiondma <- querytoshape(dmaext)
-    print("extenstiondma")
-    print(extensiondma)
+    #print("extensiondma")
+    #print(extensiondma)
 
     ##change projection, extension
     ##distinct polys for DMA extension
