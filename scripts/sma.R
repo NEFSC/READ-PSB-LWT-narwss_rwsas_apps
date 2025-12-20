@@ -127,13 +127,13 @@ if (is.null(smapresent)) {
 #print(class(smapresent.sp))
 #print(str(smapresent.sp))
 
-smafort <- fortify(smapresent.sp)
-MA = NULL
-for (i in 1:nrow(smafort)) {
-  MA = 'Seasonal Management Area'
-}
-smafort <- cbind(smafort, MA)
-smafort$MA <- as.factor(smafort$MA)
+# smafort <- fortify(smapresent.sp)  #smafort is never used again in the app. Commenting for now - delete it no continued errors
+# MA = NULL
+# for (i in 1:nrow(smafort)) {
+#   MA = 'Seasonal Management Area'
+# }
+# smafort <- cbind(smafort, MA)
+# smafort$MA <- as.factor(smafort$MA)
 
 # transform shapes to latlon ----
 print('sma line 139')
