@@ -1,95 +1,154 @@
 ## Action & Slow Zone analysis
 
 ## Sighting dataframe cluster FUNCTION ----
-
+##Original from LMC commented out until below works correctly with sf objects when called below
 ### clustering overlapping sightings in sp
 
-clustdf_fun <- function(x, y) {
+# clustdf_fun <- function(x, y) {
+# 
+#   if (length(names(x)) > 1) {
+#     ##Overlap of whale density core area analysis
+#     polycomb <- data.frame(poly1 = NA,
+#                            poly2 = NA,
+#                            overlap = NA)
+#     ##creates a list of 2 combinations to compare
+#     #print(names(x))
+#     combos <- combn(names(x), 2)
+#     ##compares the list
+#     for (i in seq_along(combos[1, ])) {
+#       poly1 <- combos[1, i]
+#       poly2 <- combos[2, i]
+#       #if they don't overlap, the result of the below "if statement" is NULL
+#       # uses rgeos fix or update entire function
+#       if (!is.null(gIntersection(y[poly1], y[poly2], byid = TRUE))) {
+#         overlap = 'yes'
+#       } else {
+#         overlap = 'no'
+#       }
+#       if (st_is_valid(y[poly1, ]) & st_is_valid(y[poly2, ])) {
+#       overlap_bool <- as.logical(st_intersects(y[poly1, ], y[poly2, ], sparse = FALSE))
+#       overlap <- ifelse(overlap_bool, 'yes', 'no')
+#       } else {
+#         overlap <- 'no'
+#       }
+#     df <- data.frame(poly1 = poly1,
+#                     poly2 = poly2,
+#                     overlap = overlap)
+#     polycomb <- rbind(polycomb, df)
+#     }
+# 
+#     polycomb$poly1 <- as.numeric(polycomb$poly1)
+#     polycomb$poly2 <- as.numeric(polycomb$poly2)
+#     polycluster <- polycomb %>% filter(!is.na(poly1))
+#   } else if (length(names(x)) == 1) {
+#     polycluster <- data.frame(poly1 = 1,
+#                               poly2 = 1,
+#                               overlap = 'no')
+#   }
+# 
+#   ##clustering polygons that overlap
+#   polycluster_yes <- polycluster %>%
+#     filter(overlap == "yes")
+# 
+#   ##transitive property of overlapping core areas
+#   polymat = graph_from_edgelist(as.matrix(polycluster_yes[, 1:2]), directed = FALSE)
+#   #unique polygons
+#   upoly = sort(unique(c(
+#     polycluster_yes$poly1, polycluster_yes$poly2
+#   )))
+#   (cluster = components(polymat)$membership[upoly])
+#   #final cluster assignment df for overlap = yes
+#   (polyassign = data.frame(upoly, cluster, row.names = NULL))
+# 
+#   poly12 <- rbind(unlist(polycluster$poly1), unlist(polycluster$poly2))
+#   poly12 <- data.frame(upoly = c(polycluster$poly1, polycluster$poly2))
+# 
+#   ##these sightings are NOT triggering on their own (or are trigger by one sighting of 3+ without overlapping sightings) are assigned a cluster of -1
+#   not <- poly12 %>%
+#     filter((!poly12$upoly %in% polyassign$upoly) |
+#              (!poly12$upoly %in% polyassign$upoly)) %>%
+#     distinct() %>%
+#     mutate(cluster = -1)
+# 
+#   ##put together the trigger sightings that don't overlap with any other sightings, with those that do with assigned clusters
+#   totpolyassign <- rbind(polyassign, not)
+#   totpolyassign$cluster <- as.numeric(totpolyassign$cluster)
+#   print(totpolyassign)
+#   ##clustmin is for a totpolyassign df without any overlapping triggers
+#   clustmin = 0
+#   ##assigns consecutive cluster numbers to those sightings that don't overlap, but are triggering all on their own
+#   for (i in 1:nrow(totpolyassign))
+#     if (totpolyassign$cluster[i] == -1 &
+#         max(totpolyassign$cluster) > 0) {
+#       totpolyassign$cluster[i] <- max(totpolyassign$cluster) + 1
+#     } else if (totpolyassign$cluster[i] == -1 &
+#                max(totpolyassign$cluster) < 0) {
+#       totpolyassign$cluster[i] <- clustmin + 1
+#     } else {
+# 
+#     }
+#   ##
+#   print("totpolyassign")
+#   print(totpolyassign)
+#   totpolyassign
+# }
 
-  if (length(names(x)) > 1) {
-    ##Overlap of whale density core area analysis
-    polycomb <- data.frame(poly1 = NA,
-                           poly2 = NA,
-                           overlap = NA)
-    ##creates a list of 2 combinations to compare
-    #print(names(x))
-    combos <- combn(names(x), 2)
-    ##compares the list
-    for (i in seq_along(combos[1, ])) {
-      poly1 <- combos[1, i]
-      poly2 <- combos[2, i]
-      #if they don't overlap, the result of the below "if statement" is NULL
-      # uses rgeos 
-      #if (!is.null(gIntersection(y[poly1], y[poly2], byid = TRUE))) {
-        #overlap = 'yes'
-      #} else {
-        #overlap = 'no'
-      #}
-      if (st_is_valid(y[poly1, ]) & st_is_valid(y[poly2, ])) {
-      overlap_bool <- as.logical(st_intersects(y[poly1, ], y[poly2, ], sparse = FALSE))
-      overlap <- ifelse(overlap_bool, 'yes', 'no')
-      } else {
-        overlap <- 'no'
-      }
-    df <- data.frame(poly1 = poly1,
-                    poly2 = poly2,
-                    overlap = overlap)
-    polycomb <- rbind(polycomb, df)
-    }
-
-    polycomb$poly1 <- as.numeric(polycomb$poly1)
-    polycomb$poly2 <- as.numeric(polycomb$poly2)
-    polycluster <- polycomb %>% filter(!is.na(poly1))
-  } else if (length(names(x)) == 1) {
-    polycluster <- data.frame(poly1 = 1,
-                              poly2 = 1,
-                              overlap = 'no')
+##ChatGPT rewrite of above function while also vectorizing to speed up double for loop
+clustdf_fun_sf <- function(x, y) {
+  
+  # If only one polygon
+  if (length(names(x)) == 1) {
+    return(data.frame(upoly = 1, cluster = 1))
   }
-
-  ##clustering polygons that overlap
-  polycluster_yes <- polycluster %>%
-    filter(overlap == "yes")
-
-  ##transitive property of overlapping core areas
-  polymat = graph_from_edgelist(as.matrix(polycluster_yes[, 1:2]), directed = FALSE)
-  #unique polygons
-  upoly = sort(unique(c(
-    polycluster_yes$poly1, polycluster_yes$poly2
-  )))
-  (cluster = components(polymat)$membership[upoly])
-  #final cluster assignment df for overlap = yes
-  (polyassign = data.frame(upoly, cluster, row.names = NULL))
-
-  poly12 <- rbind(unlist(polycluster$poly1), unlist(polycluster$poly2))
-  poly12 <- data.frame(upoly = c(polycluster$poly1, polycluster$poly2))
-
-  ##these sightings are NOT triggering on their own (or are trigger by one sighting of 3+ without overlapping sightings) are assigned a cluster of -1
+  
+  # Generate all pairwise combinations of polygon names
+  combos <- t(combn(names(x), 2)) %>% as.data.frame()
+  names(combos) <- c("poly1", "poly2")
+  
+  # Convert to numeric
+  combos$poly1 <- as.numeric(combos$poly1)
+  combos$poly2 <- as.numeric(combos$poly2)
+  
+  # Vectorized intersection check using st_intersects
+  intersects_matrix <- st_intersects(y[combos$poly1, ], y[combos$poly2, ], sparse = FALSE)
+  combos$overlap <- ifelse(diag(intersects_matrix) | rowSums(intersects_matrix) > 0, "yes", "no")
+  combos$overlap <- ifelse(is.na(combos$overlap), "no", combos$overlap)
+  
+  # Filter only overlapping polygons
+  polycluster_yes <- combos %>% filter(overlap == "yes")
+  
+  # If any overlaps exist, build graph and assign clusters
+  if (nrow(polycluster_yes) > 0) {
+    polymat <- graph_from_edgelist(as.matrix(polycluster_yes[, 1:2]), directed = FALSE)
+    upoly <- sort(unique(c(polycluster_yes$poly1, polycluster_yes$poly2)))
+    cluster <- components(polymat)$membership[upoly]
+    polyassign <- data.frame(upoly, cluster, row.names = NULL)
+  } else {
+    polyassign <- data.frame(upoly = numeric(0),
+                             cluster = numeric(0))
+  }
+  
+  # Find polygons that don’t overlap with any other
+  poly12 <- data.frame(upoly = c(combos$poly1, combos$poly2))
   not <- poly12 %>%
-    filter((!poly12$upoly %in% polyassign$upoly) |
-             (!poly12$upoly %in% polyassign$upoly)) %>%
+    filter(!(upoly %in% polyassign$upoly)) %>%
     distinct() %>%
     mutate(cluster = -1)
-
-  ##put together the trigger sightings that don't overlap with any other sightings, with those that do with assigned clusters
+  
+  # Combine overlapping and non-overlapping polygons
   totpolyassign <- rbind(polyassign, not)
   totpolyassign$cluster <- as.numeric(totpolyassign$cluster)
-  print(totpolyassign)
-  ##clustmin is for a totpolyassign df without any overlapping triggers
-  clustmin = 0
-  ##assigns consecutive cluster numbers to those sightings that don't overlap, but are triggering all on their own
-  for (i in 1:nrow(totpolyassign))
-    if (totpolyassign$cluster[i] == -1 &
-        max(totpolyassign$cluster) > 0) {
+  
+  # Assign new cluster IDs for isolated polygons
+  clustmin <- 0
+  for (i in 1:nrow(totpolyassign)) {
+    if (totpolyassign$cluster[i] == -1 & max(totpolyassign$cluster) > 0) {
       totpolyassign$cluster[i] <- max(totpolyassign$cluster) + 1
-    } else if (totpolyassign$cluster[i] == -1 &
-               max(totpolyassign$cluster) < 0) {
+    } else if (totpolyassign$cluster[i] == -1 & max(totpolyassign$cluster) < 0) {
       totpolyassign$cluster[i] <- clustmin + 1
-    } else {
-
     }
-  ##
+  }
   print("totpolyassign")
-  print(totpolyassign)
   totpolyassign
 }
 
@@ -137,7 +196,7 @@ clustdf_fun <- function(x, y) {
 sasdma <-
   leaflet(data = egsas, options = leafletOptions(zoomControl = FALSE)) %>%
   addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
-  addPolygons(data = smapresent.sp,
+  addPolygons(data = smapresent.sp, 
               weight = 2,
               color = "red") %>%
   addPolylines(  #adding for slow zone report maps 20241230 HJF
@@ -151,14 +210,20 @@ sasdma <-
     weight = 1,
     color = "grey",
     fill = F
-  )
+  ) %>%
+  addPolylines(  #adding Hague for easy Canada visualizations 20251216 HJF
+    data = EEZ.sp,
+    weight = 1,
+    color = "black",
+    fill = F
+    )
 
 ## ACTION ----
 
 egsas$GROUP_SIZE <- as.numeric(egsas$GROUP_SIZE)
 ##copy for spatializing
 eg <- egsas
-print("eg")
+print("eg line 167 a&sz")
 print(eg)
 ##declare which columns are coordinates
 #coordinates(eg) <-  ~ LONGITUDE + LATITUDE #can be deleted
@@ -166,7 +231,6 @@ print(eg)
 #proj4string(eg) <- CRS.latlon
 #make an sf object 20251118 HJF
 eg.sp <- st_as_sf(eg, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs = 4326) #251120 update to sf/ditch rgdal
-st_crs(eg.sp) <- CRS.latlon #likely redundant
 ##change projection
 eg.tr <- sf::st_transform(eg.sp, CRS.new) #sf
 #eg.tr <- spTransform(eg, CRS.new) #old sp
@@ -249,8 +313,8 @@ bAPZ <- lengths(sf::st_intersects(eg.tr, benignapz.tr)) > 0  #sf 251121
 eAPZ <- lengths(sf::st_intersects(eg.tr, extensionapz.tr)) > 0  #sf 251121
 
 egsas <- cbind(egsas, bDMA, eDMA, bAPZ, eAPZ)
-print("egsas")
-print(egsas)
+#print("egsas")
+#print(egsas)
 
 ##
 
@@ -289,10 +353,10 @@ for (i in 1:nrow(egsas))
   } else if (egsas$inoutsma[i] == FALSE) {
     egsas$ACTION_NEW[i] = NA
   }
-print("A&SZ line 245") #was 77 LMC days
+print("egsas A&SZ line 356") 
 print(egsas)
 
-## dma eval ----
+## slow zone evaluation ----
 
 #spatial analysis
 ## 1 nautical mile is 1852 meters
@@ -308,7 +372,7 @@ dmanameout <- NULL
 ## animals potential for DMA extension ----
 
 if (55 %in% egsas$ACTION_NEW) {
-  print("beg 55 line 264 A&SZ")
+  print("beg 55 line 375 A&SZ")
   
   if (isolate(criteria$DMAapp) == "acoudet") {
     prot.tr <- extapz.tr
@@ -348,7 +412,7 @@ if (55 %in% egsas$ACTION_NEW) {
   #   }
   # }
   
-  ##assess which DMA they are in using sf 251121 chatgpt rewrite - lets hope this works
+  ##assess which DMA they are in using sf 251121 rewrite - lets hope this works
   #helper: return 1/NA like sp::over()
   inside_flag <- function(points, polys) {
     r <- lengths(st_intersects(points, polys))
@@ -381,12 +445,12 @@ if (55 %in% egsas$ACTION_NEW) {
       actionext_indlist <- list.append(actionext_indlist, actionext_sig)
     }
   }
-  #print("actionext_indlist")
-  #print(actionext_indlist)
+  print("actionext_indlist")
+  print(actionext_indlist)
   
   ##cycle through all animals for each extension Slow Zone
   fullextlist <- lapply(actionext_indlist, function(x) {
-    print("enter the ext list")
+    #print("enter the ext list")
     actionext_ind <- x
     ##animals that are in a Slow Zone up for extension
     ##factor to numeric -- maybe not be necessary
@@ -395,22 +459,23 @@ if (55 %in% egsas$ACTION_NEW) {
     #filter out the sightings that aren't in any of these Slow Zones up for extension
     actionext_ind %>% filter(!is.na(indDMA))
   })
-  #print("fullextlist")
-  #print(fullextlist)
+  print("fullextlist")
+  print(fullextlist)
   
   uniqueextlist <- lapply(fullextlist, function(x) {
     x %>%
       distinct(indDMA)
   })
-  #print("uniqueextlist")
-  #print(uniqueextlist)
+  print("uniqueextlist")
+  print(uniqueextlist)
   uniqueext <- bind_rows(uniqueextlist)
-  #print(uniqueext)
+  print("uniqueext")
+  print(uniqueext)
   DMAlist <- as.list(uniqueext$indDMA)
-  #print("DMAlist")
-  #print(DMAlist)
+  print("DMAlist")
+  print(DMAlist)
   
-  #test if the sightings in each DMA will trigger an extension (are there enough within the right distance to eachother) #SF REWRITE?
+  #test if the sightings in each DMA will trigger an extension (are there enough within the right distance to each other) #this OG code - no sf rewrites as of 251220
   comboext <- lapply(fullextlist, function(x) {
     #print(x)
     actionfil <- x
@@ -425,6 +490,7 @@ if (55 %in% egsas$ACTION_NEW) {
         "indDMA2")
     comboext$GROUP_SIZE <- as.character(comboext$GROUP_SIZE)
     comboext$GROUP_SIZE <- as.numeric(comboext$GROUP_SIZE)
+    
     ##calculates core area
     
     if (isolate(criteria$DMAapp) == "acoudet") {
@@ -436,17 +502,17 @@ if (55 %in% egsas$ACTION_NEW) {
     ##calculates distance between points in nautical miles
     setDT(comboext)[, dist_nm := geosphere::distVincentyEllipsoid(
       matrix(c(LONGITUDE, LATITUDE), ncol = 2),
-      matrix(c(LONGITUDE2, LATITUDE2), ncol =
-               2),
+      matrix(c(LONGITUDE2, LATITUDE2), ncol = 2),
       a = 6378137,
       f = 1 / 298.257222101
     ) * m_nm]
     comboext
   })
   print("comboext")
-  print(comboext)
-  names(comboext) <- DMAlist
   #print(comboext)
+  names(comboext) <- DMAlist
+  print(comboext)
+  
   #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
   #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
   #I don't remember why I named this dmacand -- maybe dma combo and... then some?
@@ -459,12 +525,13 @@ if (55 %in% egsas$ACTION_NEW) {
                        x$dist_nm <= x$corer) | (x$GROUP_SIZE > 2 & x$dist_nm == 0))
     #print(dmacandext)
     DMAid <- unique(x$indDMA)
+    #print("DMAid")
     #print(DMAid)
     ##filters for distinct sightings that should be considered for DMA calculation
     dmaextsightID <-
       data.frame(sightID = c(dmacandext$sightID, dmacandext$sightID2)) %>%
       distinct()
-    print("A&SZ line 420")
+    #print("dmaextsightID")
     #print(dmaextsightID)
     
     #blank df for the dmas to enter
@@ -529,14 +596,14 @@ if (55 %in% egsas$ACTION_NEW) {
             OBSERVER_ORG = 1
           ) #1 is NEFSC
       }
-      print("extension total")
-      print(exttot)
+      #print("extension total")
+      #print(exttot)
     }
     
     ##DMAid will pass into the next for loop
     ##the below doesn't mean anything going forward for egsas
     ##this is all part of the lapply to make the extdf_list
-    print("#1 line 492 A&SZ")
+    print("dmaextsightID #1 line 606 A&SZ")
     print(dmaextsightID)
     
     for (i in 1:nrow(egsas))
@@ -551,7 +618,7 @@ if (55 %in% egsas$ACTION_NEW) {
           TRIGGERDATE = exttot$TRIGGERDATE,
           TRIGGERORG = exttot$OBSERVER_ORG
         )
-        print("A&SZ line 550")
+        print("A&SZ line 621")
         #print(df)
         extdf_list <- rbind(extdf_list, df)
         
@@ -560,7 +627,7 @@ if (55 %in% egsas$ACTION_NEW) {
         #print("3")
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
-    
+    print("extdf_list")
     extdf_list
   })
   
@@ -600,6 +667,7 @@ if (55 %in% egsas$ACTION_NEW) {
   print("extension details")
   print(extdf_list)
   extdf <- bind_rows(extdf_list, .id = "column_label")
+  print("extdf")
   #print(extdf)
   
   extdf <- extdf %>%
@@ -608,6 +676,7 @@ if (55 %in% egsas$ACTION_NEW) {
   
   print(dplyr::left_join(extdf, actdmadf, by = c("extDMAs" = "ID")))
   extdf$extDMAs <- as.integer(extdf$extDMAs)
+  
   extdfname <-
     dplyr::left_join(extdf, actdmadf, by = c("extDMAs" = "ID")) %>%
     mutate(INITOREXT = "e") %>%
@@ -625,6 +694,7 @@ if (55 %in% egsas$ACTION_NEW) {
     dplyr::select(extDMAs, VERTEX, LAT, LON) %>%
     dplyr::rename("ID" = "extDMAs") %>%
     distinct()
+  print("extdfbounds")
   print(extdfbounds)
   
   print("end 55")
@@ -641,8 +711,9 @@ if (55 %in% egsas$ACTION_NEW) {
   
   allcomboext <- bind_rows(comboext, .id = "column_label")
   alldmaextsightID <- bind_rows(dmaextsightID, .id = "column_label")
-  
+  print("allcomboext")
   print(allcomboext)
+  print("alldmaextsightID")
   print(alldmaextsightID)
   
   ##
@@ -663,74 +734,101 @@ if (55 %in% egsas$ACTION_NEW) {
       mutate(extcorer_m = dmaextsights$corer * 1852,
              extPolyID = 1:nrow(dmaextsights))
     
-    #copy for spatializing
+    ###copy for spatializing
     dmaextdf <- dmaextsights
+    print("dmaextdf")
+    print(dmaextdf)
     
     ## df to spatial object ----
     ##declare which values are coordinates
-    print("A&SZ line 671") #was 250 LMC days
+    print("A&SZ line 743") 
     #coordinates(dmaextdf) <-  ~ LONGITUDE + LATITUDE
     ##declare what projection they are in
-    #proj4string(dmaextdf) <- CRS.latlon #delete? unnecessary now
+    #proj4string(dmaextdf) <- CRS.latlon #delete - unnecessary now
     dmaextdf.sp <- st_as_sf(dmaextdf, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs = 4326)
-    st_crs(dmaextdf.sp)<- CRS.latlon #likely redundant from above and can be deleted
     ##transform projection
-    dmaextdf.tr <- sf::st_transform(dmaextdf.sp, CRS.utm) #or set UTM zone with crs = xxxx
+    dmaextdf.tr <- sf::st_transform(dmaextdf.sp, 32619) #or set UTM zone with crs = xxxx was CRS.utm
+    print("dmaextdf.tr") #coords should be in m for buffering
+    print(dmaextdf.tr)
     
     ##gbuffer/st_buffer both need utm to calculate radius in meters
-    dmaextbuff <- st_buffer(dmaextdf.tr, dist = dmaextdf$extcorer_m)
+    dmaextbuff <- st_buffer(dmaextdf.tr, dist = dmaextdf.tr$extcorer_m) #251218 was dmaextdf$extcorer_m
       #gBuffer(dmaextdf.tr,byid = TRUE, width = dmaextdf$extcorer_m,capStyle = "ROUND") #old sp way
     print("dmaextbuff")
-    print(dmaextbuff)
+    print(dmaextbuff) #simple feature collection (polygons) X features and X fields
       
-    ##data back to latlon dataframe
+    ##buffer data back to latlon dataframe
     ##this will be used later when sightings are clustered by overlapping core radiis
-    extclustdf <- sf::st_transform(dmaextdf.tr, st_crs(CRS.latlon))  #combining 2 lines of code above here
+    extclustdf <- sf::st_transform(dmaextdf.tr, 4326) 
+    #extclustdf_sf <- extclustdf #this should also work for display of the buffers in leaflet with below lines unneeded in sf but needed for downstream joins
+    extclustdf <- st_drop_geometry(extclustdf) #to send back to a df only should still have lat and long columns
     extclustdf <- as.data.frame(extclustdf)
-    #print("extclustdf")
-    #print(extclustdf)
+    print("extclustdf")
+    print(extclustdf)
+    print(str(extclustdf)) #does it need to be latlon dataframe or something different?
     
     ##creates a dataframe from the density buffers put around sightings considered for DMA analysis
-    extpolycoord <-
-      dmaextbuff %>% 
-      #fortify() %>% dplyr::select("long", "lat", "id")  #THIS NEEDS TO BE REWRITEN - FORTIFY IS FOR SP OBJECTS SEE BELOW FOR NEW DMA SECTION
-      sf::st_drop_geometry() %>%
-      dplyr::select("LONGITUDE", "LATITUDE", "extPolyID") %>%
-      mutate(id = row_number())
-    print("extpolycoord")
-    print(extpolycoord)
-    print(str(extpolycoord))
+    #extpolycoord <- dmaextbuff %>% 
+       #fortify() %>% dplyr::select("long", "lat", "id")  #THIS NEEDS TO BE REWRITEN - FORTIFY IS FOR SP OBJECTS SEE BELOW FOR NEW DMA SECTION
+     #  sf::st_drop_geometry() %>%
+      #dplyr::select("LONGITUDE", "LATITUDE", "extPolyID") %>%
+      #mutate(id = row_number())
+
+    #print("extpolycoord")
+    #print(extpolycoord)
+    #print(str(extpolycoord))
     
-    ##poly coordinates out of utm spatial stuff here seems unneeeded - just take extpolycoord and data frameify it
-    print("A&SZ line 702") #was 297 with LMC
+    ##poly coordinates out of utm spatial stuff here seems unneeeded - just take the lat long sf object above and make polys therefrom
+    print("A&SZ line 782") 
     #coordinates(extpolycoord) <-  ~ long + lat #named correctly?
     #proj4string(extpolycoord) <- CRS.utm
     #extpolycoord.sp <- st_as_sf(extpolycoord, coords = c("LONGITDUE", "LATITUDE"), remove = FALSE, crs = 32619) 
     #st_crs(extpolycoord.sp) <- CRS.utm
     #extpolycoord.tr <- sf::st_transform(extpolycoord, CRS.latlon)
-    extpolycoorddf <- as.data.frame(extpolycoord)
-    extpolycoorddf$id <- as.numeric(extpolycoorddf$id)
-    extpolycoorddf$extPolyID <- as.numeric(extpolycoorddf$extPolyID)
+    #extpolycoorddf <- as.data.frame(extpolycoord)
+    #extpolycoorddf$id <- as.numeric(extpolycoorddf$id)
+    #extpolycoorddf$extPolyID <- as.numeric(extpolycoorddf$extPolyID)
     
+    #trying easier version
+    extpolycoorddf <- st_transform(dmaextbuff, 4326) #THIS COULD BE VERY WRONG but isn't a dataframer version despite name
+    # Preserve ID and extPolyID for downstream joins
+    extpolycoorddf$id <- as.numeric(extpolycoorddf$extPolyID) #making it have an id column despite changing the extidpoly < - split() line below
+    extpolycoorddf$extPolyID <- dmaextdf.tr$extPolyID
+    print("extpolycoorddf")
+    print(extpolycoorddf) #check columns for id!
     
-    ## the circular core areas are the polygons in the below section  #this repeats belows ~line 891 and need rewrite for sf
-    extidpoly <- split(extpolycoorddf, extpolycoorddf$id)
+    # Transform buffers back to lat/lon for Leaflet display (renamed but same as extpolycoorddf above)
+    extpolycoorddf_sp <- st_transform(dmaextbuff, 4326)
+    
+    # Preserve ID and extPolyID for downstream joins
+    extpolycoorddf_sp$id <- dmaextdf.tr$id #.tr doesn't have id so this shouldn't work
+    extpolycoorddf_sp$extPolyID <- dmaextdf.tr$extPolyID
+    
+    print("extpolycoorddf_sp")
+    print(extpolycoorddf_sp) #THIS IS WHAT GETS SENT TO LEAFLET
+    print(str(extpolycoorddf_sp)) #CHECK TO MAKE SURE THIS IS THE CORRECT OUTPUT SF Collection with VALID CRS, POLY GEOMETRY, X features and Y field
+    
+    ## the circular core areas are the polygons in the below section  #this repeats belows for new dma - needed same rewrites
+    extidpoly <- split(extpolycoorddf, extpolycoorddf$extPolyID) #was split(extpolycoorddf, extpolycoorddf$id)
     extidpoly <- lapply(extidpoly, function(x) {
       x["id"] <- NULL
       x
     })
+    print("extidpoly")
+    print(extidpoly)
     
-    extpcoord <- lapply(extidpoly, function(df) {
-      # convert data-frame columns to numeric matrix (LONG then LAT)
-      coords <- as.matrix(df[, c("LONGITUDE", "LATITUDE")])
-      storage.mode(coords) <- "double"
-      st_polygon(list(coords))
-    })
-    poly_sfc <- try(st_sfc(extpcoord, crs = 4326), silent = FALSE)
-    extpolycoorddf_sp <- st_sf(
-      ID = names(extidpoly),
-      geometry = poly_sfc
-    )
+    #think this is unnecessary now     
+    # extpcoord <- lapply(extidpoly, function(df) {
+    #   # convert data-frame columns to numeric matrix (LONG then LAT)
+    #   coords <- as.matrix(df[, c("LONGITUDE", "LATITUDE")])
+    #   storage.mode(coords) <- "double"
+    #   st_polygon(list(coords))
+    # })
+    # poly_sfc <- try(st_sfc(extpcoord, crs = 4326), silent = FALSE)
+    # extpolycoorddf_sp <- st_sf(
+    #   ID = names(extidpoly),
+    #   geometry = poly_sfc
+    # )
     
     # extpcoord <- lapply(extidpoly, Polygon)
     # extpcoord_ <-
@@ -740,18 +838,15 @@ if (55 %in% egsas$ACTION_NEW) {
     #   SpatialPolygons(extpcoord_, proj4string = CRS.latlon) #sp
     # #sf rewrite converting
     
-    print("extpolycoorddf_sp")
-    print(extpolycoorddf_sp)
-    print(str(extpolycoorddf_sp)) #CHECK TO MAKE SURE THIS IS THE CORRECT OUTPUT SF Collection with POLY GEOMETRY
-    
-    ext_clustdf_fun_out <- clustdf_fun(extidpoly, extpolycoorddf_sp) 
+    ##CALLS FUNCTION AT TOP OF SCRIPT (lines 7-95) hopefully sf re-write works correctly here as well
+    ext_clustdf_fun_out <- clustdf_fun_sf(extidpoly, extpolycoorddf_sp) #y must be sf
     extclustdf$extPolyID <- as.numeric(extclustdf$extPolyID)
     
-    extclustdf <-
-      full_join(ext_clustdf_fun_out,
+    extclustdf <- full_join(ext_clustdf_fun_out,
                 extclustdf,
                 by = c("upoly" = "extPolyID"))
-    #print(extclustdf)
+    print("extclustdf")
+    print(extclustdf)
     
     extclusty <- extclustdf %>%
       group_by(cluster) %>%
@@ -763,6 +858,7 @@ if (55 %in% egsas$ACTION_NEW) {
       filter(totes < 3)
     
     print("yes")
+    print("extclusty")
     print(extclusty)
     #print(extclustn)
     #print(egsas)
@@ -773,6 +869,7 @@ if (55 %in% egsas$ACTION_NEW) {
       group_by(indDMA) %>%
       summarise (n = sum(totes))
     
+    print("totalnew")
     print(totalnew)
     
     for (i in 1:nrow(egsas))
@@ -788,6 +885,7 @@ if (55 %in% egsas$ACTION_NEW) {
       } else {
         egsas$ACTION_NEW[i] = egsas$ACTION_NEW[i]
       }
+    print("egsas")
     print(egsas)
     
   } #276
@@ -796,7 +894,7 @@ if (55 %in% egsas$ACTION_NEW) {
 
 ## animals potential for new DMA ----
 if (NA %in% egsas$ACTION_NEW) {
-  print("beg new slow zone")
+  print("beg ACTION_NEW NAs")
   ##only taking ACTION_NEW = na
   actionna <- egsas %>%
     filter(is.na(egsas$ACTION_NEW)) %>%
@@ -820,9 +918,9 @@ if (NA %in% egsas$ACTION_NEW) {
       "corer2")
   combo$GROUP_SIZE <- as.character(combo$GROUP_SIZE)
   combo$GROUP_SIZE <- as.numeric(combo$GROUP_SIZE)
-  print("combo1")
-  print(combo)
-  print(summary(combo))
+  #print("combo")
+  #print(combo)
+  #print(summary(combo))
   
   ##calculates distance between points in nautical miles and the radii distance between points for trigger
   combo <- combo %>%
@@ -835,7 +933,7 @@ if (NA %in% egsas$ACTION_NEW) {
       ) * m_nm,
       total_corer = corer + corer2
     )
-  print("combo2")
+  print("combo")
   print(combo)
   #filters out points compared where core radius is less than the distance between them (meaning that the position combo will not have overlapping core radii) and
   #keeps the single sightings where group size would be enough to trigger a DMA (0 nm dist means it is compared to itself)
@@ -856,8 +954,8 @@ if (NA %in% egsas$ACTION_NEW) {
                        dist_nm <= total_corer) | (GROUP_SIZE > 2 & dist_nm == 0))
     
   }
-  print("dmacand")
-  print(dmacand)
+  #print("dmacand")
+  #print(dmacand)
   
   ##filters for distinct sightings that should be considered for DMA calculation
   dmasightID <-
@@ -884,122 +982,140 @@ if (NA %in% egsas$ACTION_NEW) {
 
 ## Create DMA ----
 #only sightings with an action of 4 will be evaluated here for DMA
-print("egsas line 864 A&SZ")
+print("egsas line 984 A&SZ")
 print(egsas)
 if (44 %in% egsas$ACTION_NEW) {
   ## CREATING A DMA
   
   ##the below gets you all the sightings you need for DMA analysis from the combo matrix above
   dmasig <- inner_join(combo, dmasightID, by = "sightID")
-  print("dmasig")
-  print(dmasig)
+  #print("dmasig")
+  #print(dmasig)
   
   dmasights <- dmasig %>%
     dplyr::select(DateTime, LATITUDE, LONGITUDE, GROUP_SIZE, sightID) %>%
     distinct(DateTime, LATITUDE, LONGITUDE, GROUP_SIZE, sightID) %>%
     mutate(corer = round(sqrt(GROUP_SIZE / (pi * egden)), 2)) %>%
     as.data.frame()
-  print(dmasights)
+  #print(dmasights)
   dmasights$GROUP_SIZE <- as.numeric(dmasights$GROUP_SIZE)
   
   PolyID <- rownames(dmasights)
   #print(PolyID)
+  
   #core radius in meters
   corer_m <- dmasights$corer * 1852
   dmasights <- cbind(dmasights, corer_m, PolyID)
   
-  #copy for spatializing
+  ###copy for spatializing
   dmadf <- dmasights
   #print("dmadf")
   #print(dmadf)
   
   ## df to spatial object ----
   ##declare which values are coordinates
-  print("A&SZ line 889") #was 359 LMC
-  #coordinates(dmadf) <-  ~ LONGITUDE + LATITUDE
-  ##declare what projection they are in
-  #proj4string(dmadf) <- CRS.latlon
+  print("A&SZ line 1015") 
   dmadf.sp <- st_as_sf(dmadf, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs = 4326) #251120 update to sf/ditch rgdal
-  #st_crs(dmadf.sp) <- CRS.latlon #may be needed?
   ##transform projection
-  dmadf.tr <- sf::st_transform(dmadf.sp, 32619) #should it go back to , CRS.utm or just define directly above?
+  dmadf.tr <- sf::st_transform(dmadf.sp, 32619) 
   print("dmadf.tr") #coordinates should be in m for buffering
   print(dmadf.tr)
   
   ##st_buffer (formerly gbuffer) needs utm to calculate radius in meters goes from point to polygon sf collection
-  dmabuff <- st_buffer(dmadf.tr, dist = dmadf$corer_m)
+  dmabuff <- st_buffer(dmadf.tr, dist = dmadf.tr$corer_m)
     #gBuffer(dmadf.tr, byid = TRUE, width = dmadf$corer_m, capStyle = "ROUND") #sp
-  #print("dmabuff")
-  #print(dmabuff)
+  print("dmabuff")
+  print(dmabuff)
   
-  ##dmadf.tr data back to latlon dataframe
+  ##buffer data/dmadf.tr data back to latlon dataframe
   ##this will be used later when sightings are clustered by overlapping core radiis
-  clustdf <- st_transform(dmadf.tr, 4326) #or st_crs(CRS.latlon)
+  clustdf <- st_transform(dmadf.tr, 4326) 
   clustdf <- st_drop_geometry(clustdf) #to send it back to a df only should still have lat and long columns
+  clustdf <- as.data.frame(clustdf)
   print("clustdf")
   print(clustdf)
-  print(str(clustdf))
+  print(str(clustdf)) 
   
-  ##creates a dataframe from the density buffers put around sightings considered for DMA analysis OR JUST USE st_drop_geometry to make df from dmabuff above?
-  polycoord <- dmabuff %>% 
-    sf::st_drop_geometry() %>%
-    dplyr::select("LONGITUDE", "LATITUDE", "PolyID") %>%
-    mutate(id = row_number())
-    #fortify() %>% dplyr::select("long", "lat", "id") #fortify only works for sp objects can delete once above works
+  ##creates a dataframe from the density buffers put around sightings considered for DMA analysis
+  # polycoord <- dmabuff %>% 
+  #   sf::st_drop_geometry() %>%
+  #   dplyr::select("LONGITUDE", "LATITUDE", "PolyID") %>%
+  #   mutate(id = row_number())
+    #fortify() %>% dplyr::select("long", "lat", "id") #fortify only works for sp objects needs sf rewrite
   
   #poly coordinates out of utm
-  print("polycoord A&SZ line 928") #was 378 LMC times
-  print(str(polycoord))
-  print(polycoord)
-  polycoorddf <- polycoord #seems like a lot of code to just drop the geom from dmabuff and make data frame - think the crses can be left out
+  print("polycoord A&SZ line 1045") 
+  #print(str(polycoord))
+  #print(polycoord)
+  #polycoorddf <- polycoord 
+  
   #coordinates(polycoord) <-  ~ long + lat
   #proj4string(polycoord) <- CRS.utm
-  #spolycoord.sp <- st_as_sf(polycoord) #251121 update to sf/ditch rgdal
+  #polycoord.sp <- st_as_sf(polycoord) #251121 update to sf/ditch rgdal
   #st_crs(polycoord.sp) <- 32619 # was CRS.utm
   #polycoord.tr <- sf::st_transform(polycoord.sp, 4326) #was CRS.latlon
   #polycoorddf <- as.data.frame(polycoord.tr) 
-  polycoorddf$id <- as.numeric(polycoorddf$id) #these isn't just id unless we make it above unclear where line 771 of github script grabs it
+  #polycoorddf$id <- as.numeric(polycoorddf$id) #these isn't just id unless we make it above unclear where line 771 of github script grabs it
   #polycoorddf$sightID <- as.numeric(polycoorddf$sightID)
-  polycoorddf$PolyID <- as.numeric(polycoorddf$PolyID)
+  #polycoorddf$PolyID <- as.numeric(polycoorddf$PolyID)
+  
+  #updated version that worked above for extensions
+  polycoorddf <- st_transform(dmabuff, 4326) #despite name, this is NOT a df
+  polycoorddf$id <- as.numeric(polycoorddf$PolyID) #back up - hopefully this doesn't screw up number at all but should be better downstream
+  polycoorddf$PolyID <- dmadf.tr$PolyID
+  
   print("polycoorddf")
   print(str(polycoorddf))
   print(polycoorddf)
   
+  # Transform buffers back to lat/lon for Leaflet display (renamed but same as polycoorddf above)
+  polycoorddf_sp <- st_transform(dmabuff, 4326)
+  
+  # Preserve ID and PolyID for downstream joins
+  polycoorddf_sp$id <- dmadf.tr$id  #.tr doesn't have id so this won't work can make from PolyID, if necessary
+  polycoorddf_sp$PolyID <- dmadf.tr$PolyID
+  
+  print("polycoorddf_sp")
+  print(polycoorddf_sp) #THIS IS WHAT GETS SENT TO LEAFLET
+  print(str(polycoorddf_sp)) #CHECK TO MAKE SURE THIS IS THE CORRECT OUTPUT SF Collection with VALID CRS, POLY GEOMETRY, X features and Y field
+  
+
   ## the circular core areas are the polygons in the below section
-  idpoly <- split(polycoorddf, polycoorddf$id)
+  idpoly <- split(polycoorddf, polycoorddf$PolyID) #251219 changed from $id but should it be 'extPolyID'? Or just PolyID?
   idpoly <- lapply(idpoly, function(x) {
     x["id"] <- NULL
     x
   })
   print("idpoly")
-  #print(idpoly)
+  print(idpoly)
   print(str(idpoly))
   
+  #below seems unnecessary and can be deleted after confirming all above works
   #pcoord <- lapply(idpoly, Polygon) #making sp objects needs editing below #sp
 
-  #make them polygons with sf returning sf object output to match code below for idpoly #REWRITE AS DESIRED LIKELY NOT AS DIFFICULT AND CHAT GPT MADE IT
-  pcoord <- lapply(idpoly, function(df) {
-    # convert data-frame columns to numeric matrix (LONG then LAT)
-    coords <- as.matrix(df[, c("LONGITUDE", "LATITUDE")])
-    storage.mode(coords) <- "double"
-    st_polygon(list(coords))
-  })
-  poly_sfc <- try(st_sfc(pcoord, crs = 4326), silent = FALSE)
-  polycoorddf_sp <- st_sf(
-    ID = names(idpoly),
-    geometry = poly_sfc
-  )
+  #make them polygons with sf returning sf object output to match code below for idpoly
+  # pcoord <- lapply(idpoly, function(df) {
+  #   # convert data-frame columns to numeric matrix (LONG then LAT)
+  #   coords <- as.matrix(df[, c("LONGITUDE", "LATITUDE")])
+  #   storage.mode(coords) <- "double"
+  #   st_polygon(list(coords))
+  # })
+  # poly_sfc <- try(st_sfc(pcoord, crs = 4326), silent = FALSE)
+  # polycoorddf_sp <- st_sf(
+  #   ID = names(idpoly),
+  #   geometry = poly_sfc
+  # )
   
   #pcoord_ <- #OLD SP WAY
    #lapply(seq_along(pcoord), function(i)
-    #Polygons(list(pcoord[[i]]), ID = names(idpoly)[i]))  #is this needed - can't really tell what it does but in from LMC days
+    #Polygons(list(pcoord[[i]]), ID = names(idpoly)[i]))  #is this still needed -
   #polycoorddf_sp <- SpatialPolygons(pcoord, proj4string = CRS.latlon) #251125 update to sf language
-  print("polycoorddf_sp")
-  print(polycoorddf_sp)
-  print(str(polycoorddf_sp)) #CHECK TO MAKE SURE THIS IS THE CORRECT OUTPUT SF Collection with POLY GEOMETRY
+  # print("polycoorddf_sp")
+  # print(polycoorddf_sp)
+  # print(str(polycoorddf_sp)) #CHECK TO MAKE SURE THIS IS THE CORRECT OUTPUT SF Collection with POLY GEOMETRY AND VALID CRS!
   
-  #sp -> sf rewrites for function is at top of script - takes out gIntersection
-  clustdf_fun_out <- clustdf_fun(idpoly, polycoorddf_sp) #was clustdf_fun_out <- clustdf_fun(idpoly, polycoorddf_sp) 
+  #sp -> sf rewrites for function is at top of script (lines 7-95) - takes out gIntersection uses sf::st_intersects()
+  clustdf_fun_out <- clustdf_fun_sf(idpoly, polycoorddf_sp) #y must be sf
   print("clustdf_fun_out")
   print(clustdf_fun_out)
   clustdf$PolyID <- as.numeric(clustdf$PolyID)
@@ -1031,30 +1147,45 @@ if (44 %in% egsas$ACTION_NEW) {
   print(clusty)
   
   if (4 %in% egsas$ACTION_NEW) {
-    polycoorddf$id <- as.numeric(polycoorddf$id)
-    corepoly <- right_join(polycoorddf, clusty, by = c('id' = 'PolyID')) 
-    print("corepoly")
-    print(corepoly)
-    corepoly <- corepoly%>%
+    poly_clean <- polycoorddf %>%
       dplyr::select(
-        "LONGITUDE.x",
-        "LATITUDE.x",
-        "id",
-        "DateTime",
-        "GROUP_SIZE",
-        "corer",
-        "corer_m",
-        #"LONGITUDE.y",
-        #"LATITUDE.y",
-        "cluster") %>%
-        dplyr::rename(
-          LONGITUDE = LONGITUDE.x,
-          LATITUDE = LATITUDE.x
-          #LONGITUDE = LONGITUDE.y,
-          #LATITUDE = LATITUDE.y
+        id,
+        LONGITUDE,
+        LATITUDE,
+        DateTime,
+        GROUP_SIZE,
+        corer,
+        corer_m,
+        geometry
       )
+    poly_clean$id <- as.numeric(poly_clean$id)
+    corepoly <- poly_clean %>%
+      right_join(clusty %>% dplyr::select(PolyID, cluster),
+                 by = c("id" = "PolyID"))
+    
+    #corepoly <- right_join(polycoorddf, clusty, by = c('id' = 'PolyID')) 
     print("corepoly")
     print(corepoly)
+    # corepoly <- corepoly%>%
+    #   dplyr::select(
+    #     "LONGITUDE.x",
+    #     "LATITUDE.x",
+    #     "id",
+    #     "DateTime",
+    #     "GROUP_SIZE",
+    #     "corer",
+    #     "corer_m",
+    #     #"LONGITUDE.y",
+    #     #"LATITUDE.y",
+    #     "cluster") %>%
+    #     dplyr::rename(
+    #       LONGITUDE = LONGITUDE.x,
+    #       LATITUDE = LATITUDE.x
+    #       #LONGITUDE = LONGITUDE.y,
+    #       #LATITUDE = LATITUDE.y
+     # )
+    #print("corepoly")
+    #print(corepoly)
     
     ## for DMA insert ----
     
@@ -1069,6 +1200,7 @@ if (44 %in% egsas$ACTION_NEW) {
       group_by(cluster) %>%
       summarise(TRIGGER_GROUPSIZE = sum(GROUP_SIZE),
                 TRIGGERDATE = min(DateTime))
+    print("trigsize")
     print(trigsize)
     
     ##gets to the core for the cluster
@@ -1083,7 +1215,7 @@ if (44 %in% egsas$ACTION_NEW) {
       as.data.frame()
     print("polymaxmin")
     print(polymaxmin)
-    print("A&SZ line 1061")
+    print("A&SZ line 1218")
     
     if (isolate(criteria$DMAapp) == "acoudet") {
       #20 is the nm radius that we want for the acoustic buffer, but the acoustic positions are filled as group_size of 3 by default, which already gives a 4.79 buffer
@@ -1093,7 +1225,7 @@ if (44 %in% egsas$ACTION_NEW) {
       buffnm <- 15
       
     }
-    ##spatialize the corners #REDO WITH SF
+    ##spatialize the corners #REDO WITH SF?
     corebounds_nw <- polymaxmin
     coordinates(corebounds_nw) <-  ~ minlon + maxlat
     proj4string(corebounds_nw) <- CRS.latlon
@@ -1152,36 +1284,80 @@ if (44 %in% egsas$ACTION_NEW) {
     print(dma15)
     
     dma15 <- dma15 %>%
-      dplyr::select(cluster, lon, lat)
+      dplyr::select(cluster, lon, lat) #%>%
+      #st_as_sf(coords = c("lon", "lat"), crs = 4326) #sf additions 251218
     
-    IDclust <- split(dma15, dma15$cluster)
+    IDclust <- split(dma15, dma15$cluster) #used below in name section
     
     IDclust <- lapply(IDclust, function(x) {
-      x["cluster"] <- NULL
-      x
+     x["cluster"] <- NULL
+    x
     })
     
     polyclust <- lapply(IDclust, Polygon)
     
-    polyclust_ <-
-      lapply(seq_along(polyclust), function(i)
-        Polygons(list(polyclust[[i]]), ID = names(IDclust)[i]))
+    polyclust_ <- #is this still needed?
+     lapply(seq_along(polyclust), function(i)
+      Polygons(list(polyclust[[i]]), ID = names(IDclust)[i]))
     
-    polyclust_sp <-
-      SpatialPolygons(polyclust_, proj4string = CRS.latlon)
+    #print("polyclust_")
+    #print(polyclust_)
     
-    polyclust_sp_df <-
-      SpatialPolygonsDataFrame(polyclust_sp, data.frame(
-        id = unique(dma15$cluster),
-        row.names = unique(dma15$cluster)
-      ))
+    polyclust_sp <- dma15 %>% #new sf rewrite of SpatialPolygons Dec 2025
+      group_by(cluster)%>%
+      reframe(
+        geometry = list({
+          coords <- cbind(.data$lon, .data$lat)
+          #ensure poly ring is closed
+          if (!all(coords[1, ] == coords[nrow(coords), ])) {
+            coords <- rbind(coords, coords[1, ])
+          }
+          st_polygon(list(coords))
+        })
+      ) %>%
+      st_as_sf(crs = 4326)  # cluster is preserved as a column
+    
+    polyclust_sp <- polyclust_sp %>%
+      mutate(id = as.character(cluster))
+    
+    #print("polyclust_sp")
+    #print(polyclust_sp)
     
     print("new dma bounds")
-    dmabounds <- polyclust_sp %>%
-      fortify() %>%
-      mutate(LAT = round(lat, 2), LON = round(long, 2)) %>%
-      dplyr::select(id, order, LAT, LON) %>%
-      dplyr::rename("ID" = "id", "VERTEX" = "order")
+    #replace fortify and extract polygon vertices
+    polyclust_sp_coords <- st_coordinates(polyclust_sp) %>% as.data.frame()
+    
+    dmabounds <- polyclust_sp_coords %>%
+      #st_coordinates() %>%
+      #as.data.frame() %>%
+      mutate(
+        ID = polyclust_sp$cluster[L1]
+      ) %>%
+      group_by(ID) %>%                     # per polygon
+      mutate(
+        VERTEX = row_number(),             #tried vertex = L1 and it just repeated 1 for each vertex
+        LAT = round(Y, 2),
+        LON = round(X, 2)
+      ) %>%
+      ungroup() %>%
+      dplyr::select(ID, VERTEX, LAT, LON)
+    
+    #Former SP version - keep until above works and displays correctly
+    #polyclust_sp <-   ##NEEDS SF REWRITE ASAP
+     # SpatialPolygons(polyclust_, proj4string = CRS.latlon)
+    
+    #polyclust_sp_df <- ##NEEDS SF REWRITE ASAP
+     # SpatialPolygonsDataFrame(polyclust_sp, data.frame(
+      #  id = unique(dma15$cluster),
+       # row.names = unique(dma15$cluster)
+      #))
+    
+    # print("new dma bounds")
+    # dmabounds <- polyclust_sp %>% ##NEEDS SF REWRITE ASAP
+    #   fortify() %>%
+    #   mutate(LAT = round(lat, 2), LON = round(long, 2)) %>%
+    #   dplyr::select(id, order, LAT, LON) %>%
+    #   dplyr::rename("ID" = "id", "VERTEX" = "order")
     
     kmlcoord <- dmabounds#%>%
     #filter(Vertex != 5)
@@ -1259,17 +1435,23 @@ if (44 %in% egsas$ACTION_NEW) {
       )
     #needs sf rewrite asap   
     dmadist <- dmaname
-    print("A&SZ 1262")
+    print("A&SZ 1423")
     coordinates(dmadist) <-  ~ lon + lat
     proj4string(dmadist) <- CRS.latlon
     
     names(polyclust_) <- names(IDclust)
     
     for (i in names(polyclust_)) {
-      x <- list(polyclust_[[i]])
-      
-      x_sp <- SpatialPolygons(x, proj4string = CRS.latlon)
-      center <- rgeos::gCentroid(x_sp) #sf:st_centroid()
+      #x <- list(polyclust_[[i]])
+      x <- polyclust_[[i]]   
+      x_sp <- SpatialPolygons(list(x), proj4string = CRS.latlon) #convert to sp first from oject of class Polygons (polyclust_)
+      x_sf <- st_as_sf(x_sp) #convert to sf for centroid calcs
+      #sf replacement for gCentroid
+      center_sf <- st_centroid(x_sf)
+      center <- as(center_sf, "Spatial") #convert it back to spatial points for geosphere::distVincentyEllipsoid below
+      #old sp calls - keep until above 2 lines work and displays correctly 
+      # x_sp <- SpatialPolygons(x, proj4string = CRS.latlon)
+      # center <- rgeos::gCentroid(x_sp) #sf:st_centroid()
       
       dmaname <- dmaname %>%
         mutate(
@@ -1282,7 +1464,7 @@ if (44 %in% egsas$ACTION_NEW) {
               f = 1 / 298.257222101
             ) * m_nm
           ),
-          bearing = bearingRhumb(dmadist, center)
+          bearing = bearingRhumb(dmadist, center) #dmadist calculated as sp but okay as bearingRhumb takes that - could update eventually 
         ) %>%
         dplyr::select(ID, everything())
       
@@ -1318,6 +1500,7 @@ if (44 %in% egsas$ACTION_NEW) {
     
     ##combine list of multiple dma names
     dmanamedf <- rbindlist(dmanamedf)
+    print("dmanamedf")
     print(dmanamedf)
     ## paste together the title
     dmanamedf <- dmanamedf %>%
@@ -1419,10 +1602,12 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
     slice_max(TRIGGERORG) %>%
     ungroup()
   
+  print("alldmas_trig")
   print(alldmas_trig)
   
   alldmas <- alldmas_trig %>%
     mutate(ID = dense_rank(ID))
+  print("alldmas")
   print(alldmas)
   
   print("do bounds exist?")
@@ -1434,11 +1619,17 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
     alldmabounds <- dmabounds
   }
   
+  print("alldmabounds1")
   print(alldmabounds)
+  
+  alldmabounds <- alldmabounds %>% mutate(ID = as.character(ID))
+  alldmas_trig <- alldmas_trig %>% mutate(ID = as.character(ID))
+  
   alldmabounds <- alldmabounds %>%
-    right_join(alldmas_trig, by = "ID") %>%
+    dplyr::right_join(alldmas_trig, by = "ID") %>% #ID NEED TO BE BOTH DOUBLE OR BOTH CHAR FIX FROM BOTH ALLDMABOUNDS AND ALLDMAS
     mutate(ID = dense_rank(ID)) %>%
     dplyr::select(ID, VERTEX, LAT, LON)
+  print("alldmabounds2")
   print(alldmabounds)
   
   ##for database (excludes the 5th point to close the polygon)
@@ -1459,6 +1650,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
     dplyr::rename("Lat (Decimal Degrees)" = LAT,
                   "Lon (Decimal Degrees)" = LON) %>%
     filter(VERTEX != 5)
+  print("dmacoord")
   print(dmacoord)
   
   if (exists("kmlcoord")) {
@@ -1542,6 +1734,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   
   dmanameout <- alldmas %>%
     dplyr::rename("GROUP_SIZE" = "TRIGGER_GROUPSIZE")
+  print("dmanameout")
   print(dmanameout)
   dmanameout$TRIGGERDATE <- as.character(dmanameout$TRIGGERDATE)
   dmanameout$GROUP_SIZE <-
@@ -1562,7 +1755,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
     dmacoord
   })
   
-  print("a&sz 1550")
+  print("a&sz 1641")
   #print(egsas)
   
   if ("ID" %in% colnames(egsas)) {
@@ -1634,7 +1827,6 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   #231003 HJF example data errors if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
     #The shapes that get plotted are independent of the names
     #print("label testing")
-    #print(fortify(benigndma))
     
     sasdma <- sasdma %>%
       addPolygons(data = benigndma,
@@ -1643,29 +1835,27 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
       addPolygons(data = extensiondma,
                   weight = 2,
                   color = "orange") %>%
-      addPolygons(
-        data = benignapz,
-        weight = 2,
-        color = "yellow",
-        dashArray = "4 8"
-      ) %>%
-      addPolygons(
-        data = extensionapz,
-        weight = 2,
-        color = "orange",
-        dashArray = "4 8"
-      ) %>%
+      addPolygons(data = benignapz,
+                  weight = 2,
+                  color = "yellow",
+                  dashArray = "4 8"
+                  ) %>%
+      addPolygons(data = extensionapz,
+                  weight = 2,
+                  color = "orange",
+                  dashArray = "4 8"
+                  ) %>%
       addLegend(
-        title = "Dynamic Management: solid border = DMA, dashed border = Acoustic",
-        colors = c("yellow", "orange", "blue"),
-        labels = c(
-          "Active zone",
-          "Active zone eligible for extension",
-          "Potential zone"
-        ),
-        opacity = 0.4,
-        position = "topleft"
-      )
+                  title = "Dynamic Management: solid border = DMA, dashed border = Acoustic",
+                  colors = c("yellow", "orange", "blue"),
+                  labels = c(
+                  "Active zone",
+                  "Active zone eligible for extension",
+                  "Potential zone"
+                  ),
+                  opacity = 0.4,
+                  position = "topleft"
+                  )
   }
   
   ##display core areas for visual sightings
@@ -1681,15 +1871,24 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
       addPolygons(data = extpolycoorddf_sp,
                   weight = 2,
                   color = "black")
+      #sf attempt with reprojected back to latlong after buffering sf object 
+      # addPolygons(data = polyclust_sp,
+      #             weight = 2,
+      #             color = "blue") %>%
+      # addPolygons(data = clustdf_sf,
+      #             weight = 2,
+      #             color = "black") %>%
+      # addPolygons(data = extclustdf_sf,
+      #             weight = 2,
+      #             color = "black")
     
   } else {
     sasdma <- sasdma %>%
-      addPolygons(
-        data = polyclust_sp,
-        weight = 2,
-        color = "blue",
-        dashArray = "4 8"
-      )
+      addPolygons(data = polyclust_sp,
+                  weight = 2,
+                  color = "blue",
+                  dashArray = "4 8"
+                  )
   }
   
 } else {
@@ -1785,7 +1984,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
 if (isolate(criteria$DMAapp) == 'vissig' |
     isolate(criteria$DMAapp) == 'rwsurv') {
   sasdma <- sasdma %>%
-    addCircleMarkers(
+      addCircleMarkers(
       lng = ~ egsas$LONGITUDE,
       lat = ~ egsas$LATITUDE,
       radius = 5,
