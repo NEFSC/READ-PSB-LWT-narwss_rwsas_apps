@@ -1,7 +1,8 @@
 ## ACTIVE Slow zones ----
 
 #queries for active dmas/acoustic protection zones and their bounds. Also identifies if zones are within time period where they could be extended.
-##a lot of variables are named with "dma" even if they refer to both kinds of protection zones (acoustic vs. visual) because the original code for DMAs was modifed in 2020 to accomodate the new acoustic protection zone program
+##a lot of variables are named with "dma" even if they refer to both kinds of protection zones (acoustic vs. visual) because the original code for DMAs 
+#was modifed in 2020 to accomodate the new acoustic protection zone program
 
 ## declare function ----
 
@@ -148,7 +149,8 @@ if (nrow(actdma) == 0) {
     #actdma_bounds <- sqlQuery(cnxn, actdma_boundssql)
     actdma_bounds_q <- dbSendQuery(cnxn, actdma_boundssql)
     actdma_bounds<-fetch(actdma_bounds_q) #HJF 5/14 sqlQuery replace 20230626
-    print(actdma_bounds)
+    #print("actdma_bounds")
+    #print(actdma_bounds)
 
     actdmadf <- actdma %>%
       left_join(actdma_bounds, by = "ID")
@@ -250,8 +252,8 @@ if (nrow(actdma) == 0) {
 
     ## declare projection
     extdma.sp <- extdma_list
-    print("ext dma")
-    print(extdma.sp)
+    #print("ext dma")
+    #print(extdma.sp)
     #made this a loop because I could not figure out how to apply it over a list 3/21
     for (i in names(IDlist)) {
       proj4string(extdma.sp[[i]]) <- CRS.latlon
@@ -314,8 +316,8 @@ if (nrow(actdma) == 0) {
 
     ## declare projection
     extapz.sp <- extapz_list
-    print("ext apz")
-    print(extapz.sp)
+    #print("ext apz")
+    #print(extapz.sp)
     #made this a loop because I could not figure out how to apply it over a list 3/21
     for (i in names(IDlist)) {
       proj4string(extapz.sp[[i]]) <- CRS.latlon
@@ -326,7 +328,6 @@ if (nrow(actdma) == 0) {
       #st_as_sf(sp_obj)
     #})
     extapz.sp <- lapply(extapz.sp, st_as_sf)
-    ## NEED TO APPLY COORDINATES SOMEWHERE
     #for (i in names(IDlist)) {
      # extapz.sp[[i]] <- st_as_sf(extapz.sp[[i]], coords = c("longitude", "latitude"), remove = FALSE, crs = 4326) #changed from CRS.latlon
     #}
