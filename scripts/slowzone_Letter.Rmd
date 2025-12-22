@@ -45,7 +45,7 @@ knitr::include_graphics("triggerletter.png")
 \hspace*{200pt}National Oceanic and Atmospheric Administration\newline
 \hspace*{200pt}National Marine Fisheries Service\newline
 \hspace*{200pt}Northeast Fisheries Science Center\newline
-\hspace*{200pt}Protected Species Branch\newline
+\hspace*{200pt}Protected Species Division\newline
 \hspace*{200pt}166 Water Street\newline
 \hspace*{200pt}Woods Hole, MA 02543\newline
 \newline
@@ -58,7 +58,7 @@ MEMORANDUM FOR:	\hspace*{28pt} Alicia Schuler\newline
 	              \hspace*{141pt}{\it Shipping Liaison, GARFO}\newline
 \newline
 FROM:	\hspace*{101pt} Tim Cole\newline
-      \hspace*{141pt}{\it Protected Species Branch, NEFSC}\newline
+      \hspace*{141pt}{\it Protected Species Division, NEFSC}\newline
 \newline
 SUBJECT: \hspace*{87pt}	Materials documenting `r params$date1` North Atlantic right whale sightings\newline 
 \newline
