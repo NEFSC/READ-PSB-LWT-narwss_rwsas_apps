@@ -1,6 +1,6 @@
 ## App file for NARWSS & RWSAS APPs
 ## Leah Crowe Heather Foley Brigid McKenna contributors 
-#test push
+
 # Global ----
 
 Sys.setenv(OPENSSL_CONF="/dev/null") #added 20230925 on new container for server use of webshot/phantomjs
