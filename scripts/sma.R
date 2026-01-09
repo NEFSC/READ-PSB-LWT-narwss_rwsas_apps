@@ -41,17 +41,20 @@ CRS.latlon <- CRS("=epsg:4326 +proj=longlat +datum=WGS84") #251120 changes with 
 #print(CRS.latlon)
 
 smapath <- "./SMA ind shp" 
-allSMA <- sf::st_read(smapath, layer = 'right_whale_SMA_all_po') #1/7 20251118 HJF edits to sf from rgdal
+allSMA <- sf::st_read(smapath, layer = 'right_whale_SMA_all_po', quiet = TRUE) #1/7 20251118 HJF edits to sf from rgdal
+#print("st_crs(allSMA)")
+#print(st_crs(allSMA)) 
 allSMA.tr <- sf::st_transform(allSMA, CRS.new)
 
-NEUS_shiplane <- sf::st_read(smapath, layer = 'Main traffic Lanes with new TSS')
-ecanada <- sf::st_read(smapath, layer = "ecanada")
-dyna_ship <- sf::st_read(smapath, layer = "NARW_RZs_2020_02_07")
-GSL_shiplane <- sf::st_read(smapath, layer = "shiplane")
+
+NEUS_shiplane <- sf::st_read(smapath, layer = 'Main traffic Lanes with new TSS', quiet = TRUE)
+ecanada <- sf::st_read(smapath, layer = "ecanada", quiet = TRUE)
+dyna_ship <- sf::st_read(smapath, layer = "NARW_RZs_2020_02_07", quiet = TRUE)
+GSL_shiplane <- sf::st_read(smapath, layer = "shiplane", quiet = TRUE)
 ##france
-spm <- sf::st_read(smapath, layer = "spm")
-WEA <- sf::st_read(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024") 
-EEZ <- sf::st_read(smapath, layer = "EEZ_NWAtl") #20251216 add for glider detections near border to visualize it is in Canada
+spm <- sf::st_read(smapath, layer = "spm", quiet = TRUE)
+WEA <- sf::st_read(smapath, layer = "BOEM_Wind_Lease_Outlines_06_06_2024", quiet = TRUE) 
+EEZ <- sf::st_read(smapath, layer = "EEZ_NWAtl", quiet = TRUE) #20251216 add for glider detections near border to visualize it is in Canada
 
 
 ##sma projected properly
@@ -64,7 +67,9 @@ spm.tr <- sf::st_transform(spm, CRS.new)
 WEA.tr <- sf::st_transform(WEA, CRS.new)
 EEZ.tr <- sf::st_transform(EEZ, CRS.new)
 
-##no SEUS
+#print("allSMA.tr")
+#print(allSMA.tr) #sf collection with 10 features and 2 fields IDs 1-10, name, and geom
+##no SEUS  ##2025 - error on 121225 saying DMA when should be in SMA - is there a clustering errors of overlapping sights?
 ##01Jan - 29Feb CCB, MANO, BI, MASO, seshore
 sma1 <- subset(allSMA.tr, ID %in% 1:8)
 ##01MAR - 31MAR CCB, MANO, BI, RACE, seshore
@@ -75,9 +80,9 @@ sma3.1 <- subset(allSMA.tr, ID %in% 1:10)
 sma3.2 <- subset(allSMA.tr, ID %in% 3:10)
 ##01MAY - 15MAY CCB, GSC
 sma4 <- subset(allSMA.tr, ID %in% c(8, 10))
-##16MAY-31JULY
+##16MAY-31JULY GSC
 sma5 <- subset(allSMA.tr, ID == 10)
-##01NOv-14Nov
+##01NOV-14Nov
 sma6 <- subset(allSMA.tr, ID %in% 2:7)
 ##15Nov-31Dec
 sma7 <- subset(allSMA.tr, ID %in% 1:7)
@@ -86,7 +91,7 @@ smapresent <- NULL
 smaname <- NULL
 
 print(str(MODA))
-MODA <- as.character(MODA) #20251208 added  - poss from function in other script
+#MODA <- as.character(MODA) #20251208 added  - poss from function in other script
 
 if (between(MODA, "01-01", "02-29")) {
   smapresent <- sma1
@@ -116,15 +121,21 @@ if (between(MODA, "01-01", "02-29")) {
   smapresent <- smapresent
   smaname <- "none"
 }
+print("smapresent") #sf collection with X features and 2 fields (based on date)
+print(smapresent)
+print("smaname") #name only
+print(smaname)
 
+##MIXING SP AND SF HERE AND LIKELY CAUSING 121225 errors and not showing as in an SMA
 if (is.null(smapresent)) {
-  fakesma <- SpatialPolygons(list(fakeslowzone))
+  fakesma <- SpatialPolygons(list(fakeslowzone)) #sp
   smapresent.sp <- fakesma
+  #smapresent.sp <- st_sf(geometry = st_sfc(fakeslowzone, crs = CRS.latlon)) #20260108 sf addition
 } else {
   smapresent.sp <- sf::st_transform(smapresent, CRS.latlon)
 }
-
-#print(class(smapresent.sp))
+print("smapresent.sp") #sf collection with X features and x fields (IF a date with smas present)
+print(smapresent.sp)
 #print(str(smapresent.sp))
 
 # smafort <- fortify(smapresent.sp)  #smafort is never used again in the app. Commenting for now - delete it no continued errors
@@ -136,7 +147,7 @@ if (is.null(smapresent)) {
 # smafort$MA <- as.factor(smafort$MA)
 
 # transform shapes to latlon ----
-print('sma line 139')
+print('sma line 146')
 NEUS_shiplane.sp <- sf::st_transform(NEUS_shiplane.tr, CRS.latlon)
 spm.sp <- sf::st_transform(spm.tr, CRS.latlon)
 dyna_ship.sp <- sf::st_transform(dyna_ship.tr, CRS.latlon)
