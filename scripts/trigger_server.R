@@ -254,7 +254,10 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       Polygons(list(Polygon(fakeslowzone, hole = as.logical(NA))), ID = 1)
     
     # Convert data frame to matrix for polygon construction
-    #coords <- as.matrix(fakeslowzone[, c("long", "lat")])
+    #fszcoords <- as.matrix(fakeslowzone[, c("long", "lat")])
+    
+    #fakeslowzone <- sf::st_polygon(list(fszcoords))
+    
     
     # Build sf polygon (must be nested: list(list(coords)))
     #fakeslowzone <- st_sf(
