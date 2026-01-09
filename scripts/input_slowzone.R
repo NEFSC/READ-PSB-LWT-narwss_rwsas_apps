@@ -21,10 +21,10 @@ observeEvent(input$dmaup, {
   mapview::mapshot2(dmareportmap, file = "dmamap.png", selfcontained = TRUE) #251203 attempts with mapview and webshot2 look at mapshot2 wants widget NOT "temp.html"
   
   #webshot2::webshot(
-    #url = "temp.html",
-    #file = dmamap.png,
-    #vwidth = 1200,
-    #vheight = 1000
+  #url = "temp.html",
+  #file = dmamap.png,
+  #vwidth = 1200,
+  #vheight = 1000
   #)
   
   ## dma info upload ----
@@ -102,10 +102,10 @@ observeEvent(input$dmaup, {
     for (i in extended_dmainfo) {
       print(i)
       dbExecute(cnxn,
-               paste0("UPDATE DMAINFO
+                paste0("UPDATE DMAINFO
                             SET CANCELLED = 'extended'
                             WHERE ID = ", i, sep =""))
-      dbCommit(cnxn) #THIS MIGHT ALSO BE ISSUE HJF sqlQuery replace 10/14 20230626
+      dbCommit(cnxn) #HJF sqlQuery replace 10/14 20230626
     }
   } else {
   }
@@ -138,7 +138,7 @@ observeEvent(input$dmaup, {
         ")",sep = ""
       )
     )
-    dbCommit(cnxn) #sqlQuery replace 11/14 HJF 20230626 #Also potential SQL errors and needs sep = ""
+    dbCommit(cnxn) #sqlQuery replace 11/14 HJF 20230626 -potential SQL errors and needs sep = ""
   }
   
   ##dma coord upload ----
@@ -161,7 +161,7 @@ observeEvent(input$dmaup, {
         ")", sep =""
       )
     )
-    dbCommit(cnxn) #HJF sqlQuery replace 12/14 20230626 # ALSO MIGHT BE SQL ERROR ISSUES
+    dbCommit(cnxn) #HJF sqlQuery replace 12/14 20230626 needs sep = ""
   }
   
   print("dma end")
@@ -389,7 +389,7 @@ observeEvent(input$dmaup, {
   if ('e' %in% ie & 'i' %in% ie) {
     neworextlet <-
       paste0(
-        "Since whales were detected both in a region where there are no protections in place, as well as within a region where the protections are due to expire in a week or less,
+        "Since whales were detected both in a region where there are no analogous protections in place, as well as within a region where the analogous protections are due to expire in a week or less,
     we recommend a ",
         pztype,
         " be initiated/extended at the following bounds:"
@@ -397,14 +397,14 @@ observeEvent(input$dmaup, {
   } else if ('i' %in% ie) {
     neworextlet <-
       paste0(
-        "Since no protections are in place in this region at this time, we recommend a(n) ",
+        "Since no analogous protections are in place in this region at this time, we recommend a(n) ",
         pztype,
         " be initiated that is bounded by the following:"
       )
   } else if ('e' %in% ie) {
     neworextlet <-
       paste0(
-        "Since the current protections in this region are due to expire in a week or less, we recommend an extension of the ",
+        "Since the current analogous protections in this region are due to expire in a week or less, we recommend an extension of the ",
         pztype,
         "(s) that is/are bounded by the following:"
       )
