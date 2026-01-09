@@ -93,30 +93,109 @@
 #   totpolyassign
 # }
 
-##ChatGPT rewrite of above function while also vectorizing to speed up double for loop
+##ChatGPT rewrite - doesn't show core areas - possible to revamp it up
+# clustdf_fun_sf <- function(x, y) {
+#   
+#   n <- length(x)
+#   
+#   # --- 1. If only one polygon, assign cluster 1 ---
+#   if (n == 1) {
+#     return(data.frame(upoly = 1, cluster = 1))
+#   }
+#   
+#   # Ensure polygon names are numeric row indices
+#   if (!is.numeric(names(x))) names(x) <- seq_len(n)
+#   
+#   # --- 2. Generate all pairwise combinations ---
+#   combos <- t(combn(names(x), 2)) %>% as.data.frame()
+#   names(combos) <- c("poly1", "poly2")
+#   combos$poly1 <- as.numeric(combos$poly1)
+#   combos$poly2 <- as.numeric(combos$poly2)
+#   
+#   # --- 3. Compute pairwise overlaps safely ---
+#   overlap_vec <- logical(nrow(combos))
+#   
+#   for (i in seq_len(nrow(combos))) {
+#     p1 <- y[combos$poly1[i], ]
+#     p2 <- y[combos$poly2[i], ]
+#     
+#     valid1 <- st_is_valid(p1)
+#     valid2 <- st_is_valid(p2)
+#     valid1 <- ifelse(is.na(valid1), FALSE, valid1)
+#     valid2 <- ifelse(is.na(valid2), FALSE, valid2)
+#     
+#     if (valid1 & valid2) {
+#       tmp <- lengths(st_intersects(p1, p2))
+#       overlap_vec[i] <- ifelse(is.na(tmp) | tmp == 0, FALSE, TRUE)
+#     } else {
+#       overlap_vec[i] <- FALSE
+#     }
+#   }
+#   combos$overlap <- ifelse(overlap_vec, "yes", "no")
+#   
+#   # --- 4. Keep only overlapping pairs ---
+#   polycluster_yes <- combos %>% filter(overlap == "yes")
+#   
+#   # --- 5. Assign clusters via graph ---
+#   if (nrow(polycluster_yes) > 0) {
+#     polymat <- graph_from_edgelist(as.matrix(polycluster_yes[, 1:2]), directed = FALSE)
+#     upoly <- sort(unique(c(polycluster_yes$poly1, polycluster_yes$poly2)))
+#     cluster <- components(polymat)$membership[as.character(upoly)]
+#     polyassign <- data.frame(upoly, cluster, row.names = NULL)
+#   } else {
+#     polyassign <- data.frame(upoly = numeric(0), cluster = numeric(0))
+#   }
+#   
+#   # --- 6. Add isolated polygons (not in any overlap) ---
+#   poly12 <- data.frame(upoly = seq_len(n))
+#   not <- poly12 %>%
+#     filter(!(upoly %in% polyassign$upoly)) %>%
+#     mutate(cluster = -1)
+#   
+#   # --- 7. Combine overlapping and isolated polygons ---
+#   totpolyassign <- rbind(polyassign, not)
+#   
+#   # --- 8. NA-safe: replace any remaining NAs with -1 ---
+#   totpolyassign$cluster <- as.numeric(totpolyassign$cluster)
+#   totpolyassign$cluster[is.na(totpolyassign$cluster)] <- -1
+#   
+#   # --- 9. Assign new cluster IDs for isolated polygons ---
+#   isolated_idx <- which(totpolyassign$cluster == -1)
+#   for (i in isolated_idx) {
+#     totpolyassign$cluster[i] <- max(totpolyassign$cluster, na.rm = TRUE) + 1
+#   }
+#   
+#   # --- 10. Sort by polygon index ---
+#   totpolyassign <- totpolyassign %>% arrange(upoly)
+#   
+#   return(totpolyassign)
+# }
+
+#CHatGPT rewrite of function to cluster overlapping sightings using sf & vectorizing to speed up double for loop 
+#doesn't work correctly for 121225 - figure out clustering of nonoverlapping sightings
 clustdf_fun_sf <- function(x, y) {
-  
+
   # If only one polygon
   if (length(names(x)) == 1) {
     return(data.frame(upoly = 1, cluster = 1))
   }
-  
+
   # Generate all pairwise combinations of polygon names
   combos <- t(combn(names(x), 2)) %>% as.data.frame()
   names(combos) <- c("poly1", "poly2")
-  
+
   # Convert to numeric
   combos$poly1 <- as.numeric(combos$poly1)
   combos$poly2 <- as.numeric(combos$poly2)
-  
+
   # Vectorized intersection check using st_intersects
   intersects_matrix <- st_intersects(y[combos$poly1, ], y[combos$poly2, ], sparse = FALSE)
   combos$overlap <- ifelse(diag(intersects_matrix) | rowSums(intersects_matrix) > 0, "yes", "no")
   combos$overlap <- ifelse(is.na(combos$overlap), "no", combos$overlap)
-  
+
   # Filter only overlapping polygons
   polycluster_yes <- combos %>% filter(overlap == "yes")
-  
+
   # If any overlaps exist, build graph and assign clusters
   if (nrow(polycluster_yes) > 0) {
     polymat <- graph_from_edgelist(as.matrix(polycluster_yes[, 1:2]), directed = FALSE)
@@ -127,18 +206,18 @@ clustdf_fun_sf <- function(x, y) {
     polyassign <- data.frame(upoly = numeric(0),
                              cluster = numeric(0))
   }
-  
+
   # Find polygons that don’t overlap with any other
   poly12 <- data.frame(upoly = c(combos$poly1, combos$poly2))
   not <- poly12 %>%
     filter(!(upoly %in% polyassign$upoly)) %>%
     distinct() %>%
     mutate(cluster = -1)
-  
+
   # Combine overlapping and non-overlapping polygons
   totpolyassign <- rbind(polyassign, not)
   totpolyassign$cluster <- as.numeric(totpolyassign$cluster)
-  
+
   # Assign new cluster IDs for isolated polygons
   clustmin <- 0
   for (i in 1:nrow(totpolyassign)) {
@@ -151,45 +230,6 @@ clustdf_fun_sf <- function(x, y) {
   print("totpolyassign")
   totpolyassign
 }
-
-##ChatGPT rewrite of clustdf_fun_sp using sf
-# clustdf_fun_sf <- function(poly_sf) {
-#   n <- nrow(poly_sf)
-#   ids <- seq_len(n)
-#   
-#   # pairwise intersections matrix
-#   mat <- st_intersects(poly_sf, poly_sf, sparse = FALSE)
-#   
-#   # Build edge list only for i<j with overlap == TRUE and i != j
-#   edges <- which(mat & upper.tri(mat), arr.ind = TRUE)
-#   
-#   if (nrow(edges) == 0) {
-#     # no overlaps at all → each polygon isolated
-#     return(data.frame(upoly = ids, cluster = ids))
-#   }
-#   
-#   # Build graph of overlaps
-#   g <- graph_from_edgelist(edges, directed = FALSE)
-#   memb <- igraph::components(g)$membership
-#   # some polygons may not be in the graph (no edges)
-#   present <- as.numeric(names(memb))
-#   absent <- ids[!ids %in% present]
-#   
-#   # for absent nodes, assign unique clusters (same logic as original)
-#   if (length(absent) > 0) {
-#     next_cluster <- max(memb) + 1
-#     extra <- seq(next_cluster, length.out = length(absent))
-#     names(extra) <- absent
-#     memb <- c(memb, extra)
-#   }
-#   
-#   out <- data.frame(
-#     upoly = as.numeric(names(memb)),
-#     cluster = as.numeric(memb)
-#   )
-#   
-#   out[order(out$upoly), ]
-# }
 
 ## LEAFLET BASE ----
 
@@ -223,7 +263,7 @@ sasdma <-
 egsas$GROUP_SIZE <- as.numeric(egsas$GROUP_SIZE)
 ##copy for spatializing
 eg <- egsas
-print("eg line 167 a&sz")
+print("eg line 226 a&sz")
 print(eg)
 ##declare which columns are coordinates
 #coordinates(eg) <-  ~ LONGITUDE + LATITUDE #can be deleted
@@ -234,6 +274,7 @@ eg.sp <- st_as_sf(eg, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs =
 ##change projection
 eg.tr <- sf::st_transform(eg.sp, CRS.new) #sf
 #eg.tr <- spTransform(eg, CRS.new) #old sp
+print(str(MODA))
 
 ## in or out of active sma? TRUE = in ----
 #inoutsma <- NULL
@@ -267,33 +308,81 @@ eg.tr <- sf::st_transform(eg.sp, CRS.new) #sf
 
 ##20251121 chatgpt rewrite to see if eg sights are in our out of active sma #IS THIS WORKING CORRECTLY? check all instances
 # Convert MODA ("MM-DD") to a date in dummy year 2000
-d <- as.Date(paste0("2000-", MODA))
+MODA_clean <- format(as.Date(MODA, "%m-%d"), "%m-%d")
+d <- as.Date(paste0("2000-", MODA_clean))
 # Helper function to replace !is.na(sp::over())
+#inside <- function(points, polys) {
+ # lengths(st_intersects(points, polys)) > 0
+#}
 inside <- function(points, polys) {
+  if (nrow(points) == 0) return(logical(0))  # handle empty subsets
   lengths(st_intersects(points, polys)) > 0
 }
 # Initialize
-inoutsma <- NULL
-
-if (between(d, as.Date("2000-01-01"), as.Date("2000-02-29"))) {
-  inoutsma <- inside(eg.tr, sma1)
-} else if (between(d, as.Date("2000-03-01"), as.Date("2000-03-31"))) {
-  inoutsma <- inside(eg.tr, sma2)
-} else if (between(d, as.Date("2000-04-01"), as.Date("2000-04-15"))) {
-  inoutsma <- inside(eg.tr, sma3.1)
-} else if (between(d, as.Date("2000-04-16"), as.Date("2000-04-30"))) {
-  inoutsma <- inside(eg.tr, sma3.2)
-} else if (between(d, as.Date("2000-05-01"), as.Date("2000-05-15"))) {
-  inoutsma <- inside(eg.tr, sma4)
-} else if (between(d, as.Date("2000-05-16"), as.Date("2000-07-31"))) {
-  inoutsma <- inside(eg.tr, sma5)
-} else if (between(d, as.Date("2000-11-01"), as.Date("2000-12-31"))) {
-  inoutsma <- inside(eg.tr, sma6)
-} else {
-  # If date does not fall in any SMA period, return all FALSE
-  inoutsma <- rep(FALSE, nrow(eg.tr))
+#inoutsma <- NULL #20260108 comment from previous code with this line includeed - delete if below works
+# Initialize result #20260108 new with 121225 errors
+inoutsma <- rep(FALSE, nrow(eg.tr))
+# helper to avoid empty idx issues
+safe_assign <- function(idx, polys) {
+  if (any(idx)) inoutsma[idx] <<- inside(eg.tr[idx, ], polys)
 }
 
+safe_assign(between(d, as.Date("2000-01-01"), as.Date("2000-02-29")), sma1)
+safe_assign(between(d, as.Date("2000-03-01"), as.Date("2000-03-31")), sma2)
+safe_assign(between(d, as.Date("2000-04-01"), as.Date("2000-04-15")), sma3.1)
+safe_assign(between(d, as.Date("2000-04-16"), as.Date("2000-04-30")), sma3.2)
+safe_assign(between(d, as.Date("2000-05-01"), as.Date("2000-05-15")), sma4)
+safe_assign(between(d, as.Date("2000-05-16"), as.Date("2000-07-31")), sma5)
+safe_assign(between(d, as.Date("2000-11-01"), as.Date("2000-12-31")), sma6)
+# # Jan 1 – Feb 29
+# idx <- between(d, as.Date("2000-01-01"), as.Date("2000-02-29"))
+# inoutsma[idx] <- inside(eg.tr[idx, ], sma1)
+# 
+# # Mar 1 – Mar 31
+# idx <- between(d, as.Date("2000-03-01"), as.Date("2000-03-31"))
+# inoutsma[idx] <- inside(eg.tr[idx, ], sma2)
+# 
+# # Apr 1 – Apr 15
+# idx <- between(d, as.Date("2000-04-01"), as.Date("2000-04-15"))
+# inoutsma[idx] <- inside(eg.tr[idx, ], sma3.1)
+# 
+# # Apr 16 – Apr 30
+# idx <- between(d, as.Date("2000-04-16"), as.Date("2000-04-30"))
+# inoutsma[idx] <- inside(eg.tr[idx, ], sma3.2)
+# 
+# # May 1 – May 15
+# idx <- between(d, as.Date("2000-05-01"), as.Date("2000-05-15"))
+# inoutsma[idx] <- inside(eg.tr[idx, ], sma4)
+# 
+# # May 16 – Jul 31
+# idx <- between(d, as.Date("2000-05-16"), as.Date("2000-07-31"))
+# inoutsma[idx] <- inside(eg.tr[idx, ], sma5)
+# 
+# # Nov 1 – Dec 31
+# idx <- between(d, as.Date("2000-11-01"), as.Date("2000-12-31"))
+# inoutsma[idx] <- inside(eg.tr[idx, ], sma6)
+
+#20260108 below commented out with 121225 errors delete if all instances work correctly
+# if (between(d, as.Date("2000-01-01"), as.Date("2000-02-29"))) {
+#   inoutsma <- inside(eg.tr, sma1)
+# } else if (between(d, as.Date("2000-03-01"), as.Date("2000-03-31"))) {
+#   inoutsma <- inside(eg.tr, sma2)
+# } else if (between(d, as.Date("2000-04-01"), as.Date("2000-04-15"))) {
+#   inoutsma <- inside(eg.tr, sma3.1)
+# } else if (between(d, as.Date("2000-04-16"), as.Date("2000-04-30"))) {
+#   inoutsma <- inside(eg.tr, sma3.2)
+# } else if (between(d, as.Date("2000-05-01"), as.Date("2000-05-15"))) {
+#   inoutsma <- inside(eg.tr, sma4)
+# } else if (between(d, as.Date("2000-05-16"), as.Date("2000-07-31"))) {
+#   inoutsma <- inside(eg.tr, sma5)
+# } else if (between(d, as.Date("2000-11-01"), as.Date("2000-12-31"))) {
+#   inoutsma <- inside(eg.tr, sma6)
+# } else {
+#   # If date does not fall in any SMA period, return all FALSE
+#   inoutsma <- rep(FALSE, nrow(eg.tr))
+# }
+print("inoutsma")
+print(inoutsma)
 #Canada <- !is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons"))) #sp
 Canada <- lengths(sf::st_intersects(eg.tr, ecanada)) > 0 #sf 251121 defined in sma script as sf obj
 #SPM <- !is.na(sp::over(eg.tr, as(spm.tr, "SpatialPolygons"))) #sp
