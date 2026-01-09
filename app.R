@@ -3,7 +3,7 @@
 
 # Global ----
 
-Sys.setenv(OPENSSL_CONF="/dev/null") #added 20230925 on new container for server use of webshot/phantomjs
+#Sys.setenv(OPENSSL_CONF="/dev/null") #added 20230925 on new container for server use of webshot/phantomjs
 Sys.setenv(CHROMOTE_CHROME = "/usr/bin/chromium") #251217 with chromium install via ITD
 #Sys.setenv(ORACLE_HOME="/ora1/app/oracle/product/11.2.0/dbhome_1") #220707 HJF change with continued ODBC connection issues
 #Sys.setenv(TNS_ADMIN = "/usr/lib/oracle/21/client64/lib/network/admin")  #Chevrier rec 20250919 to set TNS_ADMIN before the connection points
