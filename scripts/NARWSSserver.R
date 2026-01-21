@@ -14,7 +14,7 @@ criteria$DMAapp <- "rwsurv"
 
 observeEvent(input$rawupload, {
   survey_date = input$sd
-  #survey_date <- 240822 
+  #survey_date <- 260110
   yr <- substr(survey_date, 1, 2)
   
   if (input$filepathway == 'Network') {
@@ -53,7 +53,8 @@ observeEvent(input$rawupload, {
     output$error <- renderText({
       "Enter a survey date"
     })
-  } else if (length(list.files(paste0(path, survey_date, '/'), "*\\.gps")) == 0) {
+  } else if (!criteria$yes_mysti &&  #added to accommodate mysticetus exports (no .gps file) 202512 bem
+             length(list.files(paste0(path, survey_date, '/'), "*\\.gps")) == 0) {
     output$error2 <-
       renderText({
         "Uh oh! Those files can't be found! Double check your connection to the network, the local network pathway, your data, and/or your survey date entry."
@@ -75,8 +76,20 @@ observeEvent(input$rawupload, {
           header = TRUE,
           stringsAsFactors = FALSE
         ))
-    } else if (rawed == "No") {
       if (criteria$yes_mysti){
+        gps2 <- as.data.frame(read.csv(
+          paste0(path, survey_date, '/', 'gps_', survey_date, '.csv'),
+          header = TRUE,
+          stringsAsFactors = FALSE
+        ))
+        
+        setDT(gps2)
+        gps2[, DATETIME_UTC := as.POSIXct(DATETIME_UTC, format="%Y-%m-%d %H:%M:%S", tz="UTC")]
+       
+        criteria$gps2 <- gps2
+      }
+    } else if (rawed == "No") {
+      if (criteria$yes_mysti){  #mysticetus processing 202512 bem
         mysti_export <- read.csv(mysti_path, stringsAsFactors = FALSE)
         mysti_df <- as.data.frame(mysti_export)
         
@@ -92,10 +105,14 @@ observeEvent(input$rawupload, {
         # convert to UTC
         mysti_df$datetime_utc <- with_tz(mysti_df$datetime_et, "UTC")
         
-        # select necessary columns, remove delete = yes sightings
+        # select necessary columns, remove delete = yes sightings, turn default dec = 0 for ap to n/a
         mysti_df2 <- mysti_df %>% 
-          filter(`delete` == "False" | !is.na(datetime_utc)) %>% 
-          mutate(sighting_number = as.numeric(gsub("S","", sighting_number)),
+          filter(
+            tolower(`delete`) == "false",
+            !is.na(datetime_utc)
+          ) %>%
+          mutate(sighting_number = as.numeric(gsub("s","", sighting_number)),
+                 angle = na_if(angle, 0),
                  photos = NA,
                  edit1 = NA,
                  edit2 = NA,
@@ -142,8 +159,16 @@ observeEvent(input$rawupload, {
             edit2,
             edit3
           )
+       #NEW bem jan 9, 2026
+         mysti_df2 <- mysti_df2 %>%
+          mutate(
+            latitude  = round(as.numeric(latitude), 5),
+            longitude = round(as.numeric(longitude), 5),
+            altitude  = round(as.numeric(altitude), 1),
+            heading   = round(as.numeric(heading), 1),
+            speed     = round(as.numeric(speed), 1)
+          )
         
-        # need to fix the efforts autofill on the mysti end
         eff_sig <- mysti_df2 %>%
           filter(if_any(7:24, ~ !is.na(.) & . != "")) %>% 
           rename_with(toupper)
@@ -152,12 +177,36 @@ observeEvent(input$rawupload, {
           sprintf("%.5f", round(eff_sig$LATITUDE, digits = 5))
         eff_sig$LONGITUDE <-
           sprintf("%.5f", round(eff_sig$LONGITUDE, digits = 5))
+        eff_sig$ALTITUDE <-
+          round(eff_sig$ALTITUDE, digits = 1)
+        eff_sig$HEADING <-
+          round(eff_sig$HEADING, digits = 1)
+        eff_sig$SPEED <-
+          round(eff_sig$SPEED, digits = 1)
         
         criteria$mysti_df2 <- mysti_df2 
         
         gps2 <- mysti_df2 %>% 
-          dplyr::select(datetime_utc, latitude, longitude, speed, heading) %>% 
+          dplyr::select(datetime_utc, latitude, longitude, speed, heading, altitude) %>% 
           rename_with(toupper)
+        
+        setDT(eff_sig)
+        setDT(gps2)
+        
+        eff_sig[
+          gps2,
+          `:=`(
+            LATITUDE  = i.LATITUDE,
+            LONGITUDE = i.LONGITUDE,
+            SPEED     = i.SPEED,
+            HEADING   = i.HEADING,
+            ALTITUDE  = i.ALTITUDE
+          ),
+          on = "DATETIME_UTC",
+          roll = -Inf
+        ]
+        
+        gps2$DATETIME_UTC <- as.character.Date(gps2$DATETIME_UTC)
         
         criteria$gps2 <- gps2
         
@@ -567,18 +616,63 @@ observeEvent(input$edittable, {
       criteria$loc <- "Local"
     }
     
-    write.csv(
-      eff_sig2,
-      paste0(path, survey_date, '/', 'effsig_', survey_date, '.csv'),
-      na = '',
-      row.names = FALSE
-    )
+    if (criteria$yes_mysti) {
+      
+      # get gps2 from stored criteria
+      gps2 <- criteria$gps2
+      setDT(gps2)
+      gps2[, DATETIME_UTC := as.POSIXct(DATETIME_UTC, tz="UTC")]
+     
+      
+      # convert DATETIME from rhandsontable back to POSIXct UTC
+      setDT(eff_sig2)
+      eff_sig2[, DATETIME_UTC := as.POSIXct(DATETIME_UTC, tz = "UTC")]
+      
+      # roll join nearest GPS data
+      eff_sig2[
+        gps2,
+        `:=`(
+          LATITUDE  = i.LATITUDE,
+          LONGITUDE = i.LONGITUDE,
+          SPEED     = i.SPEED,
+          HEADING   = i.HEADING,
+          ALTITUDE  = i.ALTITUDE
+        ),
+        on = "DATETIME_UTC",
+        roll = TRUE
+      ]
+      
+      # optional: format numeric columns for display
+      eff_sig2[, LATITUDE  := round(as.numeric(LATITUDE), 5)]
+      eff_sig2[, LONGITUDE := round(as.numeric(LONGITUDE), 5)]
+      eff_sig2[, ALTITUDE  := round(as.numeric(ALTITUDE), 1)]
+      eff_sig2[, HEADING   := round(as.numeric(HEADING), 1)]
+      eff_sig2[, SPEED     := round(as.numeric(SPEED), 1)]
+      
+      # Format LAT/LON as strings for display
+      eff_sig2[, LATITUDE  := sprintf("%.5f", LATITUDE)]
+      eff_sig2[, LONGITUDE := sprintf("%.5f", LONGITUDE)]
+      # replace NAs with empty strings for rhandsontable
+      eff_sig2[is.na(eff_sig2)] <- ""
+      
+      eff_sig2 <- eff_sig2 %>% 
+        arrange(DATETIME_UTC)
+    }
+    
+    
+      # save back to CSV
+      write.csv(
+        eff_sig2,
+        paste0(path, survey_date, '/', 'effsig_', survey_date, '.csv'),
+        na = '',
+        row.names = FALSE
+      )
     
     ##reformat out of hot
     eff_sig2$DATETIME_UTC <- ymd_hms(eff_sig2$DATETIME_UTC)
     eff_sig2$LATITUDE <- as.numeric(eff_sig2$LATITUDE)
     eff_sig2$LONGITUDE <- as.numeric(eff_sig2$LONGITUDE)
-    eff_sig2$ALTITUDE <- as.numeric(eff_sig2$ALTITUDE)
+    eff_sig2$ALTITUDE <- round(as.numeric(eff_sig2$ALTITUDE), 1) #mysti accommodation 12/17/25
     eff_sig2$VISIBILTY_NM <- as.numeric(eff_sig2$VISIBILTY_NM)
     eff_sig2$BEAUFORT <- as.numeric(eff_sig2$BEAUFORT)
     eff_sig2$CLOUD_CODE <- as.numeric(eff_sig2$CLOUD_CODE)
@@ -599,18 +693,61 @@ observeEvent(input$edittable, {
     
     eff_sig2$SPCODE[eff_sig2$SPCODE == ''] <- NA
     if (criteria$yes_mysti){
+      
+      
       gps2 <-  criteria$gps2
+      
+      #DATETIME link to position, speed, and heading data
+      #package data.table documentation
+      
+      setDT(eff_sig2)
+      setDT(gps2)
+      
+      eff_sig2[
+        gps2,
+        `:=`(
+          LATITUDE  = i.LATITUDE,
+          LONGITUDE = i.LONGITUDE,
+          SPEED     = i.SPEED,
+          HEADING   = i.HEADING,
+          ALTITUDE  = i.ALTITUDE
+        ),
+        on = "DATETIME_UTC",
+        roll = -Inf
+      ]
+      
+      # GPS filter ----
+      ##get bin list using seq for every 8 seconds
+      gpsbin <-
+        cut(gps2$DATETIME_UTC, breaks = c(
+          seq(
+            from = gps2$DATETIME_UTC[1],
+            to = gps2$DATETIME_UTC[nrow(gps2)],
+            by = 8
+          )
+        ))
+      ##bind bin list to gps
+      gpsplus <- cbind(gps2, gpsbin)
+      ##order by DateTime and rank
+      gpsrank <-
+        gpsplus %>% arrange(DATETIME_UTC, gpsbin) %>% group_by(gpsbin) %>% mutate(rank =
+                                                                                    rank(DATETIME_UTC, ties.method = "first"))
+      ##select for 1st in the bin
+      gpsfil <- gpsrank %>% filter(rank == 1)
+      
+      
       
       f <-
         merge(
           eff_sig2,
-          gps2,
+          gpsfil,#changed from gps2 and added above
           by = c(
             "DATETIME_UTC",
             "LATITUDE",
             "LONGITUDE",
             "SPEED",
-            "HEADING"
+            "HEADING",
+            "ALTITUDE"
           ),
           all = TRUE
         )
@@ -641,7 +778,7 @@ observeEvent(input$edittable, {
       gps2$T1 <- NULL
       gps2$ALTITUDE <- NULL
       
-      #DATETIME link to position, spead, and heading data
+      #DATETIME link to position, speed, and heading data
       #package data.table documentation
       
       setDT(eff_sig2)[,  LATITUDE := setDT(gps2)[eff_sig2, LATITUDE, on = "DATETIME_UTC", roll = "nearest"]]
@@ -902,9 +1039,23 @@ observeEvent(input$edittable, {
             (!grepl('off watch', f$EFFORT_COMMENTS) &
                is.na(f$SPCODE))),]
     
-    #add event number column ----
+    ##delete dupe time/coords (mysti bug)
+    f<- f %>%
+      # Create priority columns: filled = TRUE, NA = FALSE
+      mutate(
+        priority_sig = !is.na(SIGHTING_NUMBER),
+        priority_effort = !is.na(EFFORT_COMMENTS)
+      ) %>%
+      # Arrange so that TRUE comes first
+      arrange(desc(priority_sig), desc(priority_effort)) %>%
+      # Keep the first row per DATETIME_UTC
+      distinct(DATETIME_UTC, .keep_all = TRUE) %>%
+      # Optional: drop temporary priority columns
+      dplyr::select(-priority_sig, -priority_effort)
     
-    f[order(as.Date(f$DATETIME_UTC, format = dmy_hms)),]
+    #add event number column ----
+    f <- f[order(f$DATETIME_UTC),]
+    # f[order(as.Date(f$DATETIME_UTC, format = dmy_hms)),]
     EVENT_NUMBER <- 1:nrow(f)
     f <- cbind(EVENT_NUMBER, f)
     
@@ -1299,7 +1450,7 @@ observeEvent(input$edittable, {
       hot_col("PSB_LEGSTAGE", format = "0", readOnly = FALSE) %>%
       hot_col("HEADING", format = "000") %>%
       hot_col("SPEED", format = "000") %>%
-      hot_col("ALTITUDE", format = "0", readOnly = FALSE) %>%
+      hot_col("ALTITUDE", format = "0.0", readOnly = FALSE) %>% #added decimal since recorded alt now included 20260106 bem
       hot_col("VISIBILTY_NM", format = "0", readOnly = FALSE) %>%
       hot_col("BEAUFORT", format = "0.0", readOnly = FALSE) %>%
       hot_col("CLOUD_CODE", format = "0", readOnly = FALSE) %>%
@@ -1398,6 +1549,9 @@ observeEvent(input$edittable, {
     
     final$LATITUDE <- as.numeric(final$LATITUDE)
     final$LONGITUDE <- as.numeric(final$LONGITUDE)
+    final$ALTITUDE <- sprintf("%.1f", as.numeric(final$ALTITUDE))
+    final$HEADING <- sprintf("%.1f", as.numeric(final$HEADING))
+    final$SPEED <- sprintf("%.1f", as.numeric(final$SPEED))
     final$B1_FINAL_CODE <- as.character(final$B1_FINAL_CODE)
     final$B2_FINAL_CODE <- as.character(final$B2_FINAL_CODE)
     final$B3_FINAL_CODE <- as.character(final$B3_FINAL_CODE)
@@ -1919,7 +2073,7 @@ observeEvent(input$edittable, {
                     color = "yellow") %>%
         addPolygons(data = benignapz,
                     weight = 2,
-                    color = "yellow") %>%
+                    color = "yellow") %>% 
         addPolygons(data = extensionapz,
                     weight = 2,
                     color = "yellow")
@@ -1983,7 +2137,26 @@ observeEvent(input$edittable, {
     print("html1")
     
     #htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = FALSE) #works with phantomjs 1/1 (2 others in dl_cont and input_SZ)
-    htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = TRUE) #attempts with mapview::mapshot2
+    htmlwidgets::saveWidget(reportmap, "temp.html", selfcontained = TRUE) #attempts with mapview::mapshot2  
+    
+    #script above was commented out, and below active to troubleshoot directory/pathway issue, keeping just in case 1/3/26 bem
+    # Create a temp output directory that is guaranteed to work in containers
+    # outdir <- file.path(tempdir(), "reportmap_output")
+    # dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+    # 
+    # # Define output file path
+    # outfile <- file.path(outdir, "temp.html")
+    # 
+    # # Save the widget with dependencies inside the same directory
+    # htmlwidgets::saveWidget(
+    #   reportmap,
+    #   file = outfile,
+    #   selfcontained = FALSE,
+    #   libdir = outdir
+    # )
+    
+    #### end new 1/3/26 bem #####
+    
     print("html2")
     
     #PDF ----
