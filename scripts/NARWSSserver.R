@@ -85,7 +85,7 @@ observeEvent(input$rawupload, {
         
         setDT(gps2)
         gps2[, DATETIME_UTC := as.POSIXct(DATETIME_UTC, format="%Y-%m-%d %H:%M:%S", tz="UTC")]
-       
+        
         criteria$gps2 <- gps2
       }
     } else if (rawed == "No") {
@@ -159,8 +159,8 @@ observeEvent(input$rawupload, {
             edit2,
             edit3
           )
-       #NEW bem jan 9, 2026
-         mysti_df2 <- mysti_df2 %>%
+        #NEW bem jan 9, 2026
+        mysti_df2 <- mysti_df2 %>%
           mutate(
             latitude  = round(as.numeric(latitude), 5),
             longitude = round(as.numeric(longitude), 5),
@@ -622,7 +622,7 @@ observeEvent(input$edittable, {
       gps2 <- criteria$gps2
       setDT(gps2)
       gps2[, DATETIME_UTC := as.POSIXct(DATETIME_UTC, tz="UTC")]
-     
+      
       
       # convert DATETIME from rhandsontable back to POSIXct UTC
       setDT(eff_sig2)
@@ -660,13 +660,13 @@ observeEvent(input$edittable, {
     }
     
     
-      # save back to CSV
-      write.csv(
-        eff_sig2,
-        paste0(path, survey_date, '/', 'effsig_', survey_date, '.csv'),
-        na = '',
-        row.names = FALSE
-      )
+    # save back to CSV
+    write.csv(
+      eff_sig2,
+      paste0(path, survey_date, '/', 'effsig_', survey_date, '.csv'),
+      na = '',
+      row.names = FALSE
+    )
     
     ##reformat out of hot
     eff_sig2$DATETIME_UTC <- ymd_hms(eff_sig2$DATETIME_UTC)
@@ -1448,9 +1448,9 @@ observeEvent(input$edittable, {
       hot_col("LEGTYPE", format = "0", readOnly = FALSE) %>%
       hot_col("LEGSTAGE", format = "0", readOnly = FALSE) %>%
       hot_col("PSB_LEGSTAGE", format = "0", readOnly = FALSE) %>%
-      hot_col("HEADING", format = "000") %>%
-      hot_col("SPEED", format = "000") %>%
-      hot_col("ALTITUDE", format = "0.0", readOnly = FALSE) %>% #added decimal since recorded alt now included 20260106 bem
+      hot_col("ALTITUDE", type = "numeric",numericFormat = list(pattern = "0.0"),readOnly = FALSE) %>%
+      hot_col("HEADING", type = "numeric",numericFormat = list(pattern = "0.0"),readOnly = FALSE) %>%
+      hot_col("SPEED", type = "numeric",numericFormat = list(pattern = "0.0"),readOnly = FALSE) %>%
       hot_col("VISIBILTY_NM", format = "0", readOnly = FALSE) %>%
       hot_col("BEAUFORT", format = "0.0", readOnly = FALSE) %>%
       hot_col("CLOUD_CODE", format = "0", readOnly = FALSE) %>%
@@ -1549,7 +1549,7 @@ observeEvent(input$edittable, {
     
     final$LATITUDE <- as.numeric(final$LATITUDE)
     final$LONGITUDE <- as.numeric(final$LONGITUDE)
-    final$ALTITUDE <- sprintf("%.1f", as.numeric(final$ALTITUDE))
+    final$ALTITUDE <- sprintf("%.0f", as.numeric(final$ALTITUDE))
     final$HEADING <- sprintf("%.1f", as.numeric(final$HEADING))
     final$SPEED <- sprintf("%.1f", as.numeric(final$SPEED))
     final$B1_FINAL_CODE <- as.character(final$B1_FINAL_CODE)
