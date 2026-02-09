@@ -174,28 +174,28 @@
 #CHatGPT rewrite of function to cluster overlapping sightings using sf & vectorizing to speed up double for loop 
 #doesn't work correctly for 121225 - figure out clustering of nonoverlapping sightings
 clustdf_fun_sf <- function(x, y) {
-
+  
   # If only one polygon
   if (length(names(x)) == 1) {
     return(data.frame(upoly = 1, cluster = 1))
   }
-
+  
   # Generate all pairwise combinations of polygon names
   combos <- t(combn(names(x), 2)) %>% as.data.frame()
   names(combos) <- c("poly1", "poly2")
-
+  
   # Convert to numeric
   combos$poly1 <- as.numeric(combos$poly1)
   combos$poly2 <- as.numeric(combos$poly2)
-
+  
   # Vectorized intersection check using st_intersects
   intersects_matrix <- st_intersects(y[combos$poly1, ], y[combos$poly2, ], sparse = FALSE)
   combos$overlap <- ifelse(diag(intersects_matrix) | rowSums(intersects_matrix) > 0, "yes", "no")
   combos$overlap <- ifelse(is.na(combos$overlap), "no", combos$overlap)
-
+  
   # Filter only overlapping polygons
   polycluster_yes <- combos %>% filter(overlap == "yes")
-
+  
   # If any overlaps exist, build graph and assign clusters
   if (nrow(polycluster_yes) > 0) {
     polymat <- graph_from_edgelist(as.matrix(polycluster_yes[, 1:2]), directed = FALSE)
@@ -206,18 +206,18 @@ clustdf_fun_sf <- function(x, y) {
     polyassign <- data.frame(upoly = numeric(0),
                              cluster = numeric(0))
   }
-
+  
   # Find polygons that don’t overlap with any other
   poly12 <- data.frame(upoly = c(combos$poly1, combos$poly2))
   not <- poly12 %>%
     filter(!(upoly %in% polyassign$upoly)) %>%
     distinct() %>%
     mutate(cluster = -1)
-
+  
   # Combine overlapping and non-overlapping polygons
   totpolyassign <- rbind(polyassign, not)
   totpolyassign$cluster <- as.numeric(totpolyassign$cluster)
-
+  
   # Assign new cluster IDs for isolated polygons
   clustmin <- 0
   for (i in 1:nrow(totpolyassign)) {
@@ -256,7 +256,7 @@ sasdma <-
     weight = 1,
     color = "black",
     fill = F
-    )
+  )
 
 ## ACTION ----
 
@@ -266,20 +266,64 @@ eg <- egsas
 print("eg line 226 a&sz")
 print(eg)
 ##declare which columns are coordinates
-#coordinates(eg) <-  ~ LONGITUDE + LATITUDE #can be deleted
-##declare what kind of projection they are in
-#proj4string(eg) <- CRS.latlon
 #make an sf object 20251118 HJF
 eg.sp <- st_as_sf(eg, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs = 4326) #251120 update to sf/ditch rgdal
 ##change projection
 eg.tr <- sf::st_transform(eg.sp, CRS.new) #sf
 #eg.tr <- spTransform(eg, CRS.new) #old sp
-print(str(MODA))
+print("eg.tr")
+print(eg.tr)
+#print(str(MODA))
 
 ## in or out of active sma? TRUE = in ----
+#OG LMC/SP code here integrated with some sf fixes
 #inoutsma <- NULL
 
-# for (i in 1:nrow(egsas))
+#20260109 Claude rewrite
+# Check if each sighting in eg.tr is within the active SMA for that day
+# eg.tr = sf object with point geometries (transformed sightings)
+# eg/egsas = original dataframe with DateTime column
+
+# Create MODA column (MM-DD format) from DateTime
+# DateTime is already a character in format "YYYY-MM-DD HH:MM:SS"
+eg$MODA <- substr(eg$DateTime, 6, 10)
+
+# Initialize results vector
+inoutsma <- rep(NA, nrow(eg)) #changing this from FALSE, as I'd rather nothing than a FALSE being the default
+
+for (i in 1:nrow(eg)) {
+  date_str <- eg$MODA[i]
+  
+  # Handle NA or empty dates - also check for parsing failures
+  if (is.na(date_str) || date_str == "" || !grepl("^\\d{2}-\\d{2}$", date_str)) {
+    inoutsma[i] <- NA
+    next
+  }
+  
+
+  # Determine which SMA is active and check intersection
+  inoutsma[i] <- if (date_str >= "01-01" && date_str <= "02-29") {
+    lengths(sf::st_intersects(eg.tr[i, ], sma1)) > 0
+  } else if (date_str >= "03-01" && date_str <= "03-31") {
+    lengths(sf::st_intersects(eg.tr[i, ], sma2)) > 0
+  } else if (date_str >= "04-01" && date_str <= "04-15") {
+    lengths(sf::st_intersects(eg.tr[i, ], sma3.1)) > 0
+  } else if (date_str >= "04-16" && date_str <= "04-30") {
+    lengths(sf::st_intersects(eg.tr[i, ], sma3.2)) > 0
+  } else if (date_str >= "05-01" && date_str <= "05-15") {
+    lengths(sf::st_intersects(eg.tr[i, ], sma4)) > 0
+  } else if (date_str >= "05-16" && date_str <= "07-31") {
+    lengths(sf::st_intersects(eg.tr[i, ], sma5)) > 0
+  } else if (date_str >= "11-01" && date_str <= "11-14") {  #changed from 12-01 bem 2/9/26
+    lengths(sf::st_intersects(eg.tr[i, ], sma6)) > 0
+  } else if (date_str >= "11-15" && date_str <= "12-31") {  #added sma7 bem 2/9/26
+    lengths(sf::st_intersects(eg.tr[i, ], sma7)) > 0
+  } else {
+    FALSE  # Date outside any SMA period
+  }
+}
+
+#for (i in 1:nrow(egsas))
 #   if (between(MODA, "01-01", "02-29")) {
 #     #inoutsma <- !is.na(sp::over(eg.tr, as(sma1, "SpatialPolygons"))) #sp
 #     lengths(sf::st_intersects(eg.tr, sma1)) > 0
@@ -308,60 +352,17 @@ print(str(MODA))
 
 ##20251121 chatgpt rewrite to see if eg sights are in our out of active sma #IS THIS WORKING CORRECTLY? check all instances
 # Convert MODA ("MM-DD") to a date in dummy year 2000
-MODA_clean <- format(as.Date(MODA, "%m-%d"), "%m-%d")
-d <- as.Date(paste0("2000-", MODA_clean))
+#MODA_clean <- format(as.Date(MODA, "%m-%d"), "%m-%d")
+#d <- as.Date(paste0("2000-", MODA_clean))
 # Helper function to replace !is.na(sp::over())
 #inside <- function(points, polys) {
- # lengths(st_intersects(points, polys)) > 0
+# lengths(st_intersects(points, polys)) > 0
 #}
-inside <- function(points, polys) {
-  if (nrow(points) == 0) return(logical(0))  # handle empty subsets
-  lengths(st_intersects(points, polys)) > 0
-}
+
 # Initialize
 #inoutsma <- NULL #20260108 comment from previous code with this line includeed - delete if below works
 # Initialize result #20260108 new with 121225 errors
-inoutsma <- rep(FALSE, nrow(eg.tr))
-# helper to avoid empty idx issues
-safe_assign <- function(idx, polys) {
-  if (any(idx)) inoutsma[idx] <<- inside(eg.tr[idx, ], polys)
-}
-
-safe_assign(between(d, as.Date("2000-01-01"), as.Date("2000-02-29")), sma1)
-safe_assign(between(d, as.Date("2000-03-01"), as.Date("2000-03-31")), sma2)
-safe_assign(between(d, as.Date("2000-04-01"), as.Date("2000-04-15")), sma3.1)
-safe_assign(between(d, as.Date("2000-04-16"), as.Date("2000-04-30")), sma3.2)
-safe_assign(between(d, as.Date("2000-05-01"), as.Date("2000-05-15")), sma4)
-safe_assign(between(d, as.Date("2000-05-16"), as.Date("2000-07-31")), sma5)
-safe_assign(between(d, as.Date("2000-11-01"), as.Date("2000-12-31")), sma6)
-# # Jan 1 – Feb 29
-# idx <- between(d, as.Date("2000-01-01"), as.Date("2000-02-29"))
-# inoutsma[idx] <- inside(eg.tr[idx, ], sma1)
-# 
-# # Mar 1 – Mar 31
-# idx <- between(d, as.Date("2000-03-01"), as.Date("2000-03-31"))
-# inoutsma[idx] <- inside(eg.tr[idx, ], sma2)
-# 
-# # Apr 1 – Apr 15
-# idx <- between(d, as.Date("2000-04-01"), as.Date("2000-04-15"))
-# inoutsma[idx] <- inside(eg.tr[idx, ], sma3.1)
-# 
-# # Apr 16 – Apr 30
-# idx <- between(d, as.Date("2000-04-16"), as.Date("2000-04-30"))
-# inoutsma[idx] <- inside(eg.tr[idx, ], sma3.2)
-# 
-# # May 1 – May 15
-# idx <- between(d, as.Date("2000-05-01"), as.Date("2000-05-15"))
-# inoutsma[idx] <- inside(eg.tr[idx, ], sma4)
-# 
-# # May 16 – Jul 31
-# idx <- between(d, as.Date("2000-05-16"), as.Date("2000-07-31"))
-# inoutsma[idx] <- inside(eg.tr[idx, ], sma5)
-# 
-# # Nov 1 – Dec 31
-# idx <- between(d, as.Date("2000-11-01"), as.Date("2000-12-31"))
-# inoutsma[idx] <- inside(eg.tr[idx, ], sma6)
-
+#inoutsma <- rep(FALSE, nrow(egsas))
 #20260108 below commented out with 121225 errors delete if all instances work correctly
 # if (between(d, as.Date("2000-01-01"), as.Date("2000-02-29"))) {
 #   inoutsma <- inside(eg.tr, sma1)
@@ -383,6 +384,7 @@ safe_assign(between(d, as.Date("2000-11-01"), as.Date("2000-12-31")), sma6)
 # }
 print("inoutsma")
 print(inoutsma)
+
 #Canada <- !is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons"))) #sp
 Canada <- lengths(sf::st_intersects(eg.tr, ecanada)) > 0 #sf 251121 defined in sma script as sf obj
 #SPM <- !is.na(sp::over(eg.tr, as(spm.tr, "SpatialPolygons"))) #sp
@@ -419,7 +421,7 @@ for (i in 1:nrow(egsas))
         "Soc re bleu! One of these right whales was in France!"
       })
   } else if (isolate(criteria$loc) == 'Network') {
-  #231003 HJF example data errors on network } else if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
+    #231003 HJF example data errors on network } else if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
     if (egsas$eDMA[i] == TRUE &
         (isolate(criteria$DMAapp) == "vissig" |
          isolate(criteria$DMAapp) == "rwsurv")) {
@@ -842,10 +844,10 @@ if (55 %in% egsas$ACTION_NEW) {
     
     ##gbuffer/st_buffer both need utm to calculate radius in meters
     dmaextbuff <- st_buffer(dmaextdf.tr, dist = dmaextdf.tr$extcorer_m) #251218 was dmaextdf$extcorer_m
-      #gBuffer(dmaextdf.tr,byid = TRUE, width = dmaextdf$extcorer_m,capStyle = "ROUND") #old sp way
+    #gBuffer(dmaextdf.tr,byid = TRUE, width = dmaextdf$extcorer_m,capStyle = "ROUND") #old sp way
     print("dmaextbuff")
     print(dmaextbuff) #simple feature collection (polygons) X features and X fields
-      
+    
     ##buffer data back to latlon dataframe
     ##this will be used later when sightings are clustered by overlapping core radiis
     extclustdf <- sf::st_transform(dmaextdf.tr, 4326) 
@@ -858,11 +860,11 @@ if (55 %in% egsas$ACTION_NEW) {
     
     ##creates a dataframe from the density buffers put around sightings considered for DMA analysis
     #extpolycoord <- dmaextbuff %>% 
-       #fortify() %>% dplyr::select("long", "lat", "id")  #THIS NEEDS TO BE REWRITEN - FORTIFY IS FOR SP OBJECTS SEE BELOW FOR NEW DMA SECTION
-     #  sf::st_drop_geometry() %>%
-      #dplyr::select("LONGITUDE", "LATITUDE", "extPolyID") %>%
-      #mutate(id = row_number())
-
+    #fortify() %>% dplyr::select("long", "lat", "id")  #THIS NEEDS TO BE REWRITEN - FORTIFY IS FOR SP OBJECTS SEE BELOW FOR NEW DMA SECTION
+    #  sf::st_drop_geometry() %>%
+    #dplyr::select("LONGITUDE", "LATITUDE", "extPolyID") %>%
+    #mutate(id = row_number())
+    
     #print("extpolycoord")
     #print(extpolycoord)
     #print(str(extpolycoord))
@@ -932,8 +934,8 @@ if (55 %in% egsas$ACTION_NEW) {
     extclustdf$extPolyID <- as.numeric(extclustdf$extPolyID)
     
     extclustdf <- full_join(ext_clustdf_fun_out,
-                extclustdf,
-                by = c("upoly" = "extPolyID"))
+                            extclustdf,
+                            by = c("upoly" = "extPolyID"))
     print("extclustdf")
     print(extclustdf)
     
@@ -1112,7 +1114,7 @@ if (44 %in% egsas$ACTION_NEW) {
   
   ##st_buffer (formerly gbuffer) needs utm to calculate radius in meters goes from point to polygon sf collection
   dmabuff <- st_buffer(dmadf.tr, dist = dmadf.tr$corer_m)
-    #gBuffer(dmadf.tr, byid = TRUE, width = dmadf$corer_m, capStyle = "ROUND") #sp
+  #gBuffer(dmadf.tr, byid = TRUE, width = dmadf$corer_m, capStyle = "ROUND") #sp
   print("dmabuff")
   print(dmabuff)
   
@@ -1130,7 +1132,7 @@ if (44 %in% egsas$ACTION_NEW) {
   #   sf::st_drop_geometry() %>%
   #   dplyr::select("LONGITUDE", "LATITUDE", "PolyID") %>%
   #   mutate(id = row_number())
-    #fortify() %>% dplyr::select("long", "lat", "id") #fortify only works for sp objects needs sf rewrite
+  #fortify() %>% dplyr::select("long", "lat", "id") #fortify only works for sp objects needs sf rewrite
   
   #poly coordinates out of utm
   print("polycoord A&SZ line 1045") 
@@ -1168,7 +1170,7 @@ if (44 %in% egsas$ACTION_NEW) {
   print(polycoorddf_sp) #THIS IS WHAT GETS SENT TO LEAFLET
   print(str(polycoorddf_sp)) #CHECK TO MAKE SURE THIS IS THE CORRECT OUTPUT SF Collection with VALID CRS, POLY GEOMETRY, X features and Y field
   
-
+  
   ## the circular core areas are the polygons in the below section
   idpoly <- split(polycoorddf, polycoorddf$PolyID) #251219 changed from $id but should it be 'extPolyID'? Or just PolyID?
   idpoly <- lapply(idpoly, function(x) {
@@ -1181,7 +1183,7 @@ if (44 %in% egsas$ACTION_NEW) {
   
   #below seems unnecessary and can be deleted after confirming all above works
   #pcoord <- lapply(idpoly, Polygon) #making sp objects needs editing below #sp
-
+  
   #make them polygons with sf returning sf object output to match code below for idpoly
   # pcoord <- lapply(idpoly, function(df) {
   #   # convert data-frame columns to numeric matrix (LONG then LAT)
@@ -1196,8 +1198,8 @@ if (44 %in% egsas$ACTION_NEW) {
   # )
   
   #pcoord_ <- #OLD SP WAY
-   #lapply(seq_along(pcoord), function(i)
-    #Polygons(list(pcoord[[i]]), ID = names(idpoly)[i]))  #is this still needed -
+  #lapply(seq_along(pcoord), function(i)
+  #Polygons(list(pcoord[[i]]), ID = names(idpoly)[i]))  #is this still needed -
   #polycoorddf_sp <- SpatialPolygons(pcoord, proj4string = CRS.latlon) #251125 update to sf language
   # print("polycoorddf_sp")
   # print(polycoorddf_sp)
@@ -1272,7 +1274,7 @@ if (44 %in% egsas$ACTION_NEW) {
     #       LATITUDE = LATITUDE.x
     #       #LONGITUDE = LONGITUDE.y,
     #       #LATITUDE = LATITUDE.y
-     # )
+    # )
     #print("corepoly")
     #print(corepoly)
     
@@ -1374,20 +1376,20 @@ if (44 %in% egsas$ACTION_NEW) {
     
     dma15 <- dma15 %>%
       dplyr::select(cluster, lon, lat) #%>%
-      #st_as_sf(coords = c("lon", "lat"), crs = 4326) #sf additions 251218
+    #st_as_sf(coords = c("lon", "lat"), crs = 4326) #sf additions 251218
     
     IDclust <- split(dma15, dma15$cluster) #used below in name section
     
     IDclust <- lapply(IDclust, function(x) {
-     x["cluster"] <- NULL
-    x
+      x["cluster"] <- NULL
+      x
     })
     
     polyclust <- lapply(IDclust, Polygon)
     
     polyclust_ <- #is this still needed?
-     lapply(seq_along(polyclust), function(i)
-      Polygons(list(polyclust[[i]]), ID = names(IDclust)[i]))
+      lapply(seq_along(polyclust), function(i)
+        Polygons(list(polyclust[[i]]), ID = names(IDclust)[i]))
     
     #print("polyclust_")
     #print(polyclust_)
@@ -1433,13 +1435,13 @@ if (44 %in% egsas$ACTION_NEW) {
     
     #Former SP version - keep until above works and displays correctly
     #polyclust_sp <-   ##NEEDS SF REWRITE ASAP
-     # SpatialPolygons(polyclust_, proj4string = CRS.latlon)
+    # SpatialPolygons(polyclust_, proj4string = CRS.latlon)
     
     #polyclust_sp_df <- ##NEEDS SF REWRITE ASAP
-     # SpatialPolygonsDataFrame(polyclust_sp, data.frame(
-      #  id = unique(dma15$cluster),
-       # row.names = unique(dma15$cluster)
-      #))
+    # SpatialPolygonsDataFrame(polyclust_sp, data.frame(
+    #  id = unique(dma15$cluster),
+    # row.names = unique(dma15$cluster)
+    #))
     
     # print("new dma bounds")
     # dmabounds <- polyclust_sp %>% ##NEEDS SF REWRITE ASAP
@@ -1785,17 +1787,17 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
       )
     }
   }
-          #kmlPolygons(
-            #obj = polyclust_sp_df,
-            #kmlfile = file,
-            #name = "KML DMA",
-            #description = "",
-            #col = NULL,
-            #visibility = 1,
-            #lwd = 2,
-            #border = "yellow",
-            #kmlname = "",
-            #kmldescription = ""
+  #kmlPolygons(
+  #obj = polyclust_sp_df,
+  #kmlfile = file,
+  #name = "KML DMA",
+  #description = "",
+  #col = NULL,
+  #visibility = 1,
+  #lwd = 2,
+  #border = "yellow",
+  #kmlname = "",
+  #kmldescription = ""
   #         )
   #       }
   #     )
@@ -1913,7 +1915,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   }
   
   if (isolate(criteria$loc) == 'Network') {
-  #231003 HJF example data errors if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
+    #231003 HJF example data errors if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
     #The shapes that get plotted are independent of the names
     #print("label testing")
     
@@ -1928,23 +1930,23 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
                   weight = 2,
                   color = "yellow",
                   dashArray = "4 8"
-                  ) %>%
+      ) %>%
       addPolygons(data = extensionapz,
                   weight = 2,
                   color = "orange",
                   dashArray = "4 8"
-                  ) %>%
+      ) %>%
       addLegend(
-                  title = "Dynamic Management: solid border = DMA, dashed border = Acoustic",
-                  colors = c("yellow", "orange", "blue"),
-                  labels = c(
-                  "Active zone",
-                  "Active zone eligible for extension",
-                  "Potential zone"
-                  ),
-                  opacity = 0.4,
-                  position = "topleft"
-                  )
+        title = "Dynamic Management: solid border = DMA, dashed border = Acoustic",
+        colors = c("yellow", "orange", "blue"),
+        labels = c(
+          "Active zone",
+          "Active zone eligible for extension",
+          "Potential zone"
+        ),
+        opacity = 0.4,
+        position = "topleft"
+      )
   }
   
   ##display core areas for visual sightings
@@ -1960,16 +1962,16 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
       addPolygons(data = extpolycoorddf_sp,
                   weight = 2,
                   color = "black")
-      #sf attempt with reprojected back to latlong after buffering sf object 
-      # addPolygons(data = polyclust_sp,
-      #             weight = 2,
-      #             color = "blue") %>%
-      # addPolygons(data = clustdf_sf,
-      #             weight = 2,
-      #             color = "black") %>%
-      # addPolygons(data = extclustdf_sf,
-      #             weight = 2,
-      #             color = "black")
+    #sf attempt with reprojected back to latlong after buffering sf object 
+    # addPolygons(data = polyclust_sp,
+    #             weight = 2,
+    #             color = "blue") %>%
+    # addPolygons(data = clustdf_sf,
+    #             weight = 2,
+    #             color = "black") %>%
+    # addPolygons(data = extclustdf_sf,
+    #             weight = 2,
+    #             color = "black")
     
   } else {
     sasdma <- sasdma %>%
@@ -1977,7 +1979,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
                   weight = 2,
                   color = "blue",
                   dashArray = "4 8"
-                  )
+      )
   }
   
 } else {
@@ -2049,7 +2051,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   }
   
   if (isolate(criteria$loc) == 'Network') {
-  #231003 HJF example data errors on network if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
+    #231003 HJF example data errors on network if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
     sasdma <- sasdma %>%
       addPolygons(data = benigndma,
                   weight = 2,
@@ -2073,7 +2075,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
 if (isolate(criteria$DMAapp) == 'vissig' |
     isolate(criteria$DMAapp) == 'rwsurv') {
   sasdma <- sasdma %>%
-      addCircleMarkers(
+    addCircleMarkers(
       lng = ~ egsas$LONGITUDE,
       lat = ~ egsas$LATITUDE,
       radius = 5,
@@ -2150,8 +2152,8 @@ if (isolate(criteria$DMAapp) == 'acoudet') {
 sas_react$egsastab <- egsastab
 
 ## On network ----
-  if (isolate(criteria$loc) == 'Network') {
-#231003 HJF example data errors on network if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
+if (isolate(criteria$loc) == 'Network') {
+  #231003 HJF example data errors on network if (isolate(criteria$loc) == 'Network' | criteria$path == './example_data/') {
   
   ###sas on network
   egsastabout <- sas_react$egsastab %>%
