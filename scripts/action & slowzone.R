@@ -263,7 +263,7 @@ sasdma <-
 egsas$GROUP_SIZE <- as.numeric(egsas$GROUP_SIZE)
 ##copy for spatializing
 eg <- egsas
-print("eg line 226 a&sz")
+print("eg line 266 a&sz")
 print(eg)
 ##declare which columns are coordinates
 #make an sf object 20251118 HJF
@@ -271,8 +271,8 @@ eg.sp <- st_as_sf(eg, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs =
 ##change projection
 eg.tr <- sf::st_transform(eg.sp, CRS.new) #sf
 #eg.tr <- spTransform(eg, CRS.new) #old sp
-print("eg.tr")
-print(eg.tr)
+#print("eg.tr")
+#print(eg.tr)
 #print(str(MODA))
 
 ## in or out of active sma? TRUE = in ----
@@ -281,7 +281,7 @@ print(eg.tr)
 
 #20260109 Claude rewrite
 # Check if each sighting in eg.tr is within the active SMA for that day
-# eg.tr = sf object with point geometries (transformed sightings)
+# eg.tr is an sf object with point geometries (transformed sightings)
 # eg/egsas = original dataframe with DateTime column
 
 # Create MODA column (MM-DD format) from DateTime
@@ -289,7 +289,7 @@ print(eg.tr)
 eg$MODA <- substr(eg$DateTime, 6, 10)
 
 # Initialize results vector
-inoutsma <- rep(NA, nrow(eg)) #changing this from FALSE, as I'd rather nothing than a FALSE being the default
+inoutsma <- rep(NA, nrow(eg)) #HJF changing this from FALSE, as I'd rather nothing than a FALSE being the default
 
 for (i in 1:nrow(eg)) {
   date_str <- eg$MODA[i]
@@ -300,7 +300,6 @@ for (i in 1:nrow(eg)) {
     next
   }
   
-
   # Determine which SMA is active and check intersection
   inoutsma[i] <- if (date_str >= "01-01" && date_str <= "02-29") {
     lengths(sf::st_intersects(eg.tr[i, ], sma1)) > 0
@@ -314,76 +313,39 @@ for (i in 1:nrow(eg)) {
     lengths(sf::st_intersects(eg.tr[i, ], sma4)) > 0
   } else if (date_str >= "05-16" && date_str <= "07-31") {
     lengths(sf::st_intersects(eg.tr[i, ], sma5)) > 0
-  } else if (date_str >= "11-01" && date_str <= "11-14") {  #changed from 12-01 bem 2/9/26
+  } else if (date_str >= "11-01" && date_str <= "11-14") {  #changed from 12-01 bem 20260209
     lengths(sf::st_intersects(eg.tr[i, ], sma6)) > 0
-  } else if (date_str >= "11-15" && date_str <= "12-31") {  #added sma7 bem 2/9/26
+  } else if (date_str >= "11-15" && date_str <= "12-31") {  #added sma7 bem 20260209
     lengths(sf::st_intersects(eg.tr[i, ], sma7)) > 0
   } else {
     FALSE  # Date outside any SMA period
   }
 }
-
+#simplest version - likely still works(?) and above could be deleted, Or delete below if above works well 
 #for (i in 1:nrow(egsas))
 #   if (between(MODA, "01-01", "02-29")) {
-#     #inoutsma <- !is.na(sp::over(eg.tr, as(sma1, "SpatialPolygons"))) #sp
 #     lengths(sf::st_intersects(eg.tr, sma1)) > 0
 #   } else if (between(MODA, "03-01", "03-31")) {
-#     #inoutsma <- !is.na(sp::over(eg.tr, as(sma2, "SpatialPolygons")))
 #     lengths(sf::st_intersects(eg.tr, sma2)) > 0
 #   } else if (between(MODA, "04-01", "04-15")) {
-#     #inoutsma <- !is.na(sp::over(eg.tr, as(sma3.1, "SpatialPolygons"))) #HJF added w/ SMA code edits
 #     lengths(sf::st_intersects(eg.tr, sma3.1)) > 0
 #   } else if (between(MODA, "04-16", "04-30")) {
-#     #inoutsma <- !is.na(sp::over(eg.tr, as(sma3.2, "SpatialPolygons"))) #HJF added w/ SMA code edits
 #     lengths(sf::st_intersects(eg.tr, sma3.2)) > 0
 #   } else if (between(MODA, "05-01", "05-15")) {
-#     #inoutsma <- !is.na(sp::over(eg.tr, as(sma4, "SpatialPolygons")))
 #     lengths(sf::st_intersects(eg.tr, sma4)) > 0
 #   } else if (between(MODA, "05-16", "07-31")) {
-#     #inoutsma <- !is.na(sp::over(eg.tr, as(sma5, "SpatialPolygons")))
 #     lengths(sf::st_intersects(eg.tr, sma5)) > 0
-#   } else if (between(MODA, "11-01", "12-31")) {
-#     #inoutsma <- !is.na(sp::over(eg.tr, as(sma6, "SpatialPolygons")))
+#   } else if (between(MODA, "11-01", "11-14")) {
 #     lengths(sf::st_intersects(eg.tr, sma6)) > 0
+#   } else if (between(MODA, "11-14", "12-31")) {
+#     lengths(sf::st_intersects(eg.tr, sma7)) > 0
 #   } else {
 #     nrow(inoutsma) == nrow(egsas)
 #     inoutsma <- FALSE
 #   }
-
-##20251121 chatgpt rewrite to see if eg sights are in our out of active sma #IS THIS WORKING CORRECTLY? check all instances
-# Convert MODA ("MM-DD") to a date in dummy year 2000
-#MODA_clean <- format(as.Date(MODA, "%m-%d"), "%m-%d")
-#d <- as.Date(paste0("2000-", MODA_clean))
-# Helper function to replace !is.na(sp::over())
-#inside <- function(points, polys) {
-# lengths(st_intersects(points, polys)) > 0
-#}
-
-# Initialize
-#inoutsma <- NULL #20260108 comment from previous code with this line includeed - delete if below works
-# Initialize result #20260108 new with 121225 errors
-#inoutsma <- rep(FALSE, nrow(egsas))
-#20260108 below commented out with 121225 errors delete if all instances work correctly
-# if (between(d, as.Date("2000-01-01"), as.Date("2000-02-29"))) {
-#   inoutsma <- inside(eg.tr, sma1)
-# } else if (between(d, as.Date("2000-03-01"), as.Date("2000-03-31"))) {
-#   inoutsma <- inside(eg.tr, sma2)
-# } else if (between(d, as.Date("2000-04-01"), as.Date("2000-04-15"))) {
-#   inoutsma <- inside(eg.tr, sma3.1)
-# } else if (between(d, as.Date("2000-04-16"), as.Date("2000-04-30"))) {
-#   inoutsma <- inside(eg.tr, sma3.2)
-# } else if (between(d, as.Date("2000-05-01"), as.Date("2000-05-15"))) {
-#   inoutsma <- inside(eg.tr, sma4)
-# } else if (between(d, as.Date("2000-05-16"), as.Date("2000-07-31"))) {
-#   inoutsma <- inside(eg.tr, sma5)
-# } else if (between(d, as.Date("2000-11-01"), as.Date("2000-12-31"))) {
-#   inoutsma <- inside(eg.tr, sma6)
-# } else {
-#   # If date does not fall in any SMA period, return all FALSE
-#   inoutsma <- rep(FALSE, nrow(eg.tr))
-# }
 print("inoutsma")
 print(inoutsma)
+#######
 
 #Canada <- !is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons"))) #sp
 Canada <- lengths(sf::st_intersects(eg.tr, ecanada)) > 0 #sf 251121 defined in sma script as sf obj
