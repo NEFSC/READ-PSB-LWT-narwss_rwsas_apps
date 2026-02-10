@@ -91,7 +91,7 @@ smapresent <- NULL
 smaname <- NULL
 
 print(str(MODA))
-#MODA <- as.character(MODA) #20251208 added  - poss from function in other script
+MODA <- as.character(MODA) #20251208 added  - poss from function in other script
 
 if (between(MODA, "01-01", "02-29")) {
   smapresent <- sma1
@@ -125,17 +125,19 @@ print("smapresent") #sf collection with X features and 2 fields (based on date)
 print(smapresent)
 print("smaname") #name only
 print(smaname)
+#print("sma7")
+#print(sma7) #to check if this is also sf object to work in A&SZ inoutsma calcs
 
-##MIXING SP AND SF HERE AND LIKELY CAUSING 121225 errors and not showing as in an SMA
-if (is.null(smapresent)) {
+##MIXING SP AND SF HERE AND SHOULD BE REMEDIED AT SOME POINT
+if (is.null(smapresent)) { #AUG SEPT AND OCT DATES 
   fakesma <- SpatialPolygons(list(fakeslowzone)) #sp
   smapresent.sp <- fakesma
   #smapresent.sp <- st_sf(geometry = st_sfc(fakeslowzone, crs = CRS.latlon)) #20260108 sf addition
 } else {
   smapresent.sp <- sf::st_transform(smapresent, CRS.latlon)
 }
-print("smapresent.sp") #sf collection with X features and x fields (IF a date with smas present)
-print(smapresent.sp)
+#print("smapresent.sp") #sf collection with X features and x fields (IF a date with smas present)
+#print(smapresent.sp)
 #print(str(smapresent.sp))
 
 # smafort <- fortify(smapresent.sp)  #smafort is never used again in the app. Commenting for now - delete it no continued errors
