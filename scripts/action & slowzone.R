@@ -266,7 +266,6 @@ for (i in 1:nrow(eg)) {
 #   }
 print("inoutsma")
 print(inoutsma)
-#######
 
 Canada <- lengths(sf::st_intersects(eg.tr, ecanada)) > 0 #sf 251121 defined in sma script as sf obj
 SPM <- lengths(sf::st_intersects(eg.tr, spm.tr)) > 0 #sf 251121 defined in sma script as sf obj
