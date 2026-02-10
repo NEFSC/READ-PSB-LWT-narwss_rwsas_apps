@@ -1,11 +1,10 @@
 ## Action & Slow Zone analysis
 
 ## Sighting dataframe cluster FUNCTION ----
-##Original from LMC commented out until below works correctly with sf objects when called below
-### clustering overlapping sightings in sp
 
+##Original from LMC commented out until below works correctly with sf objects when called below
+### clustering overlapping sightings (in sp)
 # clustdf_fun <- function(x, y) {
-# 
 #   if (length(names(x)) > 1) {
 #     ##Overlap of whale density core area analysis
 #     polycomb <- data.frame(poly1 = NA,
@@ -92,87 +91,10 @@
 #   print(totpolyassign)
 #   totpolyassign
 # }
+#end LMC OG sp function
 
-##ChatGPT rewrite - doesn't show core areas - possible to revamp it up
-# clustdf_fun_sf <- function(x, y) {
-#   
-#   n <- length(x)
-#   
-#   # --- 1. If only one polygon, assign cluster 1 ---
-#   if (n == 1) {
-#     return(data.frame(upoly = 1, cluster = 1))
-#   }
-#   
-#   # Ensure polygon names are numeric row indices
-#   if (!is.numeric(names(x))) names(x) <- seq_len(n)
-#   
-#   # --- 2. Generate all pairwise combinations ---
-#   combos <- t(combn(names(x), 2)) %>% as.data.frame()
-#   names(combos) <- c("poly1", "poly2")
-#   combos$poly1 <- as.numeric(combos$poly1)
-#   combos$poly2 <- as.numeric(combos$poly2)
-#   
-#   # --- 3. Compute pairwise overlaps safely ---
-#   overlap_vec <- logical(nrow(combos))
-#   
-#   for (i in seq_len(nrow(combos))) {
-#     p1 <- y[combos$poly1[i], ]
-#     p2 <- y[combos$poly2[i], ]
-#     
-#     valid1 <- st_is_valid(p1)
-#     valid2 <- st_is_valid(p2)
-#     valid1 <- ifelse(is.na(valid1), FALSE, valid1)
-#     valid2 <- ifelse(is.na(valid2), FALSE, valid2)
-#     
-#     if (valid1 & valid2) {
-#       tmp <- lengths(st_intersects(p1, p2))
-#       overlap_vec[i] <- ifelse(is.na(tmp) | tmp == 0, FALSE, TRUE)
-#     } else {
-#       overlap_vec[i] <- FALSE
-#     }
-#   }
-#   combos$overlap <- ifelse(overlap_vec, "yes", "no")
-#   
-#   # --- 4. Keep only overlapping pairs ---
-#   polycluster_yes <- combos %>% filter(overlap == "yes")
-#   
-#   # --- 5. Assign clusters via graph ---
-#   if (nrow(polycluster_yes) > 0) {
-#     polymat <- graph_from_edgelist(as.matrix(polycluster_yes[, 1:2]), directed = FALSE)
-#     upoly <- sort(unique(c(polycluster_yes$poly1, polycluster_yes$poly2)))
-#     cluster <- components(polymat)$membership[as.character(upoly)]
-#     polyassign <- data.frame(upoly, cluster, row.names = NULL)
-#   } else {
-#     polyassign <- data.frame(upoly = numeric(0), cluster = numeric(0))
-#   }
-#   
-#   # --- 6. Add isolated polygons (not in any overlap) ---
-#   poly12 <- data.frame(upoly = seq_len(n))
-#   not <- poly12 %>%
-#     filter(!(upoly %in% polyassign$upoly)) %>%
-#     mutate(cluster = -1)
-#   
-#   # --- 7. Combine overlapping and isolated polygons ---
-#   totpolyassign <- rbind(polyassign, not)
-#   
-#   # --- 8. NA-safe: replace any remaining NAs with -1 ---
-#   totpolyassign$cluster <- as.numeric(totpolyassign$cluster)
-#   totpolyassign$cluster[is.na(totpolyassign$cluster)] <- -1
-#   
-#   # --- 9. Assign new cluster IDs for isolated polygons ---
-#   isolated_idx <- which(totpolyassign$cluster == -1)
-#   for (i in isolated_idx) {
-#     totpolyassign$cluster[i] <- max(totpolyassign$cluster, na.rm = TRUE) + 1
-#   }
-#   
-#   # --- 10. Sort by polygon index ---
-#   totpolyassign <- totpolyassign %>% arrange(upoly)
-#   
-#   return(totpolyassign)
-# }
-
-#CHatGPT rewrite of function to cluster overlapping sightings using sf & vectorizing to speed up double for loop 
-#doesn't work correctly for 121225 - figure out clustering of nonoverlapping sightings
+#202512 rewrite of function to cluster overlapping sightings using sf & vectorizing to speed up double for loop 
+#DOES SHOW CORE AREAS, but may still need to figure out clustering of nonoverlapping sightings
 clustdf_fun_sf <- function(x, y) {
   
   # If only one polygon
@@ -263,14 +185,13 @@ sasdma <-
 egsas$GROUP_SIZE <- as.numeric(egsas$GROUP_SIZE)
 ##copy for spatializing
 eg <- egsas
-print("eg line 266 a&sz")
+print("eg line 188 a&sz")
 print(eg)
 ##declare which columns are coordinates
 #make an sf object 20251118 HJF
 eg.sp <- st_as_sf(eg, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs = 4326) #251120 update to sf/ditch rgdal
 ##change projection
 eg.tr <- sf::st_transform(eg.sp, CRS.new) #sf
-#eg.tr <- spTransform(eg, CRS.new) #old sp
 #print("eg.tr")
 #print(eg.tr)
 #print(str(MODA))
@@ -347,22 +268,16 @@ print("inoutsma")
 print(inoutsma)
 #######
 
-#Canada <- !is.na(sp::over(eg.tr, as(ecanada, "SpatialPolygons"))) #sp
 Canada <- lengths(sf::st_intersects(eg.tr, ecanada)) > 0 #sf 251121 defined in sma script as sf obj
-#SPM <- !is.na(sp::over(eg.tr, as(spm.tr, "SpatialPolygons"))) #sp
 SPM <- lengths(sf::st_intersects(eg.tr, spm.tr)) > 0 #sf 251121 defined in sma script as sf obj
 sightID <- 1:nrow(egsas)
 egsas <- cbind(egsas, inoutsma, Canada, SPM, sightID)
 egsas <- egsas %>% mutate(ACTION_NEW = NA)
 #print(egsas)
 
-#bDMA <- !is.na(sp::over(eg.tr, as(benigndma.tr, "SpatialPolygons")))
 bDMA <- lengths(sf::st_intersects(eg.tr, benigndma.tr)) > 0 #sf 251121
-#eDMA <- !is.na(sp::over(eg.tr, as(extensiondma.tr, "SpatialPolygons")))
 eDMA <- lengths(sf::st_intersects(eg.tr, extensiondma.tr)) > 0   #sf 251121
-#bAPZ <- !is.na(sp::over(eg.tr, as(benignapz.tr, "SpatialPolygons")))
 bAPZ <- lengths(sf::st_intersects(eg.tr, benignapz.tr)) > 0  #sf 251121
-#eAPZ <- !is.na(sp::over(eg.tr, as(extensionapz.tr, "SpatialPolygons")))
 eAPZ <- lengths(sf::st_intersects(eg.tr, extensionapz.tr)) > 0  #sf 251121
 
 egsas <- cbind(egsas, bDMA, eDMA, bAPZ, eAPZ)
@@ -406,7 +321,7 @@ for (i in 1:nrow(egsas))
   } else if (egsas$inoutsma[i] == FALSE) {
     egsas$ACTION_NEW[i] = NA
   }
-print("egsas A&SZ line 356") 
+print("egsas A&SZ line 324") 
 print(egsas)
 
 ## slow zone evaluation ----
@@ -425,7 +340,7 @@ dmanameout <- NULL
 ## animals potential for DMA extension ----
 
 if (55 %in% egsas$ACTION_NEW) {
-  print("beg 55 line 375 A&SZ")
+  print("beg 55 line 343 A&SZ")
   
   if (isolate(criteria$DMAapp) == "acoudet") {
     prot.tr <- extapz.tr
@@ -656,7 +571,7 @@ if (55 %in% egsas$ACTION_NEW) {
     ##DMAid will pass into the next for loop
     ##the below doesn't mean anything going forward for egsas
     ##this is all part of the lapply to make the extdf_list
-    print("dmaextsightID #1 line 606 A&SZ")
+    print("dmaextsightID #1 line 574 A&SZ")
     print(dmaextsightID)
     
     for (i in 1:nrow(egsas))
@@ -671,7 +586,7 @@ if (55 %in% egsas$ACTION_NEW) {
           TRIGGERDATE = exttot$TRIGGERDATE,
           TRIGGERORG = exttot$OBSERVER_ORG
         )
-        print("A&SZ line 621")
+        print("A&SZ line 589")
         #print(df)
         extdf_list <- rbind(extdf_list, df)
         
@@ -794,7 +709,7 @@ if (55 %in% egsas$ACTION_NEW) {
     
     ## df to spatial object ----
     ##declare which values are coordinates
-    print("A&SZ line 743") 
+    print("A&SZ line 712") 
     #coordinates(dmaextdf) <-  ~ LONGITUDE + LATITUDE
     ##declare what projection they are in
     #proj4string(dmaextdf) <- CRS.latlon #delete - unnecessary now
@@ -832,7 +747,7 @@ if (55 %in% egsas$ACTION_NEW) {
     #print(str(extpolycoord))
     
     ##poly coordinates out of utm spatial stuff here seems unneeeded - just take the lat long sf object above and make polys therefrom
-    print("A&SZ line 782") 
+    print("A&SZ line 750") 
     #coordinates(extpolycoord) <-  ~ long + lat #named correctly?
     #proj4string(extpolycoord) <- CRS.utm
     #extpolycoord.sp <- st_as_sf(extpolycoord, coords = c("LONGITDUE", "LATITUDE"), remove = FALSE, crs = 32619) 
@@ -1035,7 +950,7 @@ if (NA %in% egsas$ACTION_NEW) {
 
 ## Create DMA ----
 #only sightings with an action of 4 will be evaluated here for DMA
-print("egsas line 984 A&SZ")
+print("egsas line 953 A&SZ")
 print(egsas)
 if (44 %in% egsas$ACTION_NEW) {
   ## CREATING A DMA
@@ -1067,7 +982,7 @@ if (44 %in% egsas$ACTION_NEW) {
   
   ## df to spatial object ----
   ##declare which values are coordinates
-  print("A&SZ line 1015") 
+  print("A&SZ line 985") 
   dmadf.sp <- st_as_sf(dmadf, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs = 4326) #251120 update to sf/ditch rgdal
   ##transform projection
   dmadf.tr <- sf::st_transform(dmadf.sp, 32619) 
@@ -1097,7 +1012,7 @@ if (44 %in% egsas$ACTION_NEW) {
   #fortify() %>% dplyr::select("long", "lat", "id") #fortify only works for sp objects needs sf rewrite
   
   #poly coordinates out of utm
-  print("polycoord A&SZ line 1045") 
+  print("polycoord A&SZ line 1015") 
   #print(str(polycoord))
   #print(polycoord)
   #polycoorddf <- polycoord 
@@ -1488,7 +1403,7 @@ if (44 %in% egsas$ACTION_NEW) {
       )
     #needs sf rewrite asap   
     dmadist <- dmaname
-    print("A&SZ 1423")
+    print("A&SZ 1406")
     coordinates(dmadist) <-  ~ lon + lat
     proj4string(dmadist) <- CRS.latlon
     
