@@ -25,7 +25,7 @@ fluidPage(
   tableOutput("dmacoord"),
   actionButton("dmaup", "Upload to database"),
   downloadButton("dmareport", "Download Report"),
-  downloadButton("kml", "Download KML"),
+  downloadButton("kml", "Don't DL KML - no longer functional/needed"),
   textInput(
     "triggrp",
     "Who reported/observed these sightings?",
