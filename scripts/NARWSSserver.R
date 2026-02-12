@@ -14,7 +14,7 @@ criteria$DMAapp <- "rwsurv"
 
 observeEvent(input$rawupload, {
   survey_date = input$sd
-  #survey_date <- 260110
+  #survey_date <- 260210
   yr <- substr(survey_date, 1, 2)
   
   if (input$filepathway == 'Network') {
@@ -824,12 +824,16 @@ observeEvent(input$edittable, {
     f <- f[order(f$DATETIME_UTC),]
     
     #ALTITUDE ----
-    if (is.na(f$ALTITUDE[1])) {
-      f$ALTITUDE[1] <- 1000
-    }
+    # if (is.na(f$ALTITUDE[1])) {
+    #   f$ALTITUDE[1] <- 1000
+    # }
+    # 
+    # f$ALTITUDE = na.locf(f$ALTITUDE, na.rm = FALSE)
+    # f$ALTITUDE[which(is.na(f$ALTITUDE))] <- 1000
     
-    f$ALTITUDE = na.locf(f$ALTITUDE, na.rm = FALSE)
-    f$ALTITUDE[which(is.na(f$ALTITUDE))] <- 1000
+    
+    ##auto-filling altitude with 1000 until nmea sentence preference sorted bem 2/12/16
+    f$ALTITUDE <- 1000
     
     #Id reliability ----
     
