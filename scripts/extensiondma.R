@@ -1,8 +1,6 @@
-
 ## Extensions
 
 ## dmas/slow_zones up for extension ----
-
 dma_ext <-
   paste0(
     "select mammals.dmainfo.name, to_char(mammals.dmainfo.expdate, 'YYYY-MM-DD') as expdate, ID,  to_char((mammals.dmainfo.expdate - 8), 'YYYY-MM-DD') as ext
@@ -15,11 +13,10 @@ dma_ext <-
     "', 'YYYY-MM-DD') >= to_date(to_char((mammals.dmainfo.expdate - 8), 'YYYY-MM-DD'), 'YYYY-MM-DD')", sep = ""
   )
 
-#dma_extquery <- sqlQuery(cnxn, dma_ext)
 dma_extquery_q <-dbSendQuery(cnxn, dma_ext)
-dma_extquery <- fetch(dma_extquery_q) #HJF sqlQuery 6/14 replace 20230626
+dma_extquery <- fetch(dma_extquery_q) #HJF sqlQuery replace 6/14 20230626
 
-print(dma_extquery)
+#print(dma_extquery)
 
 dma_extdistinct <- dma_extquery %>%
   group_by(NAME) %>%
@@ -27,7 +24,7 @@ dma_extdistinct <- dma_extquery %>%
   top_n(n = 1, EXPDATE) %>% #selects for later dma if there are two technically active because of an extension
   ungroup()
 
-print(dma_extdistinct)
+#print(dma_extdistinct)
 
 ## are there active DMAs/Slow Zones that could be extended? ----
 if (nrow(dma_extdistinct) == 0) {
@@ -48,17 +45,15 @@ if (nrow(dma_extdistinct) == 0) {
       "', 'YYYY-MM-DD') >= to_date(to_char((mammals.dmainfo.expdate - 8), 'YYYY-MM-DD'), 'YYYY-MM-DD')
                     and mammals.dmacoords.ID = MAMMALS.DMAINFO.ID", sep = ""
     )
-  #dma_extsql <- sqlQuery(cnxn, dma_extsql)
   dma_extsql_q <- dbSendQuery(cnxn, dma_extsql)
   dma_extsql <- fetch(dma_extsql_q) #HJF 20230626 7/14 sqlQuery replace
   
-  print(dma_extsql)
+  #print(dma_extsql)
   
   extdf <- inner_join(dma_extdistinct, dma_extsql, by = "ID")
   
   IDlist <- as.list(unique(extdf$ID))
   names(IDlist) <- unique(extdf$ID)
-  
   
   for (i in names(IDlist)) {
     a <- extdf %>%

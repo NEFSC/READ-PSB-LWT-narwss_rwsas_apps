@@ -57,7 +57,6 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
                 order by ID" , sep =""
         )
 #test to remove this to help get NEFSC sightings back in query 'and WM_PLATFORM <> 'buoy' and WM_PLATFORM <> 'slocum''
-      #dailyeg <- sqlQuery(cnxn, datesql)
       dailyeg_q <- dbSendQuery(cnxn, datesql)
       dailyeg<-fetch(dailyeg_q) #HJF sqlQuery replace 13/14 20230626
       
@@ -74,7 +73,6 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
         "','YYYY-MM-DD')
                 order by DATETIME_ET", sep="" #HJF added 20230626 and might be why trigger server gets further than rest
       )
-      #dailyeg <- sqlQuery(cnxn, datesql)
       dailyeg_q <- dbSendQuery(cnxn, datesql)
       dailyeg <- fetch(dailyeg_q) #HJF sqlQuery replace 14/14 20230626
       
@@ -171,7 +169,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     dmaevaldate <- input$sasdate
     print(dmaevaldate)
     egtable = hot_to_r(input$dailyeghot)
-    print(egtable)
+    #print(egtable)
     egtable <- egtable %>%
       filter(Select == TRUE) %>%
       dplyr::select(-Select)
@@ -255,9 +253,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     
     # Convert data frame to matrix for polygon construction
     #fszcoords <- as.matrix(fakeslowzone[, c("long", "lat")])
-    
     #fakeslowzone <- sf::st_polygon(list(fszcoords))
-    
     
     # Build sf polygon (must be nested: list(list(coords)))
     #fakeslowzone <- st_sf(

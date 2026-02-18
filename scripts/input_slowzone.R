@@ -28,17 +28,14 @@ observeEvent(input$dmaup, {
   #)
   
   ## dma info upload ----
-  
   maxidsql <- "SELECT max(ID) FROM DMAINFO"
-  
-  #maxid <- sqlQuery(cnxn, maxidsql)
   maxid_q <- dbSendQuery(cnxn, maxidsql)
-  maxid <- fetch(maxid_q) #HJF sqlQuery replace 9/14/ 20230626
+  maxid <- fetch(maxid_q) #HJF sqlQuery replace 9/14 20230626
   maxid <- as.integer(maxid)
-  print(maxid)
+  #print(maxid)
   
   trig <- unique(date(dma_react$alldmas$TRIGGERDATE))
-  print(trig)
+  #print(trig)
   trig <- force_tz(trig, tzone = "America/New_York")
   triggerdateletter <- format(trig, "%B %d, %Y")
   
@@ -55,7 +52,7 @@ observeEvent(input$dmaup, {
   ###
   alldmas <- dma_react$alldmas
   alldmas$ID <- as.numeric(alldmas$ID) #a number to add to
-  print(alldmas)
+  #print(alldmas)
   #### this is where new dmas and extensions need to be together in alldmas
   dmainfo <- alldmas %>%
     dplyr::mutate(
@@ -111,7 +108,6 @@ observeEvent(input$dmaup, {
   }
   
   ##
-  
   dmainfoinsert <- dmainfo %>%
     dplyr::select(-OLDID)
   print(dmainfoinsert)
@@ -138,7 +134,7 @@ observeEvent(input$dmaup, {
         ")",sep = ""
       )
     )
-    dbCommit(cnxn) #sqlQuery replace 11/14 HJF 20230626 -potential SQL errors and needs sep = ""
+    dbCommit(cnxn) #sqlQuery replace 11/14 HJF 20230626
   }
   
   ##dma coord upload ----

@@ -39,7 +39,6 @@ if (isolate(criteria$loc) == 'Network') {
 
   ##action code dataframe to join with results of trigger analysis later
   actioncode <- "select * from action"
-  #actioncodedf <- sqlQuery(cnxn, actioncode)
   actioncodedf_q <- dbSendQuery(cnxn, actioncode)
   actioncodedf<-fetch(actioncodedf_q) #HJF 3/14 sqlQuery replace 20230626
   actioncodedf$ID <- as.numeric(actioncodedf$ID)
@@ -59,9 +58,8 @@ if (isolate(criteria$loc) == 'Network') {
                      and (cancelled not like 'cancel%' or cancelled is null)", sep=""
     )
 
-  #actdma <- sqlQuery(cnxn, activedmasql)
   actdma_q <- dbSendQuery(cnxn, activedmasql)
-  actdma<-fetch(actdma_q) #HJF replace 4/14 sqlQuery 20230626
+  actdma<-fetch(actdma_q) #HJF  4/14 sqlQuery replace 20230626
   #print("actdma")
   #print(actdma)
 
@@ -146,7 +144,6 @@ if (nrow(actdma) == 0) {
                      and (cancelled not like 'cancel%' or cancelled is null)", sep =""
     )
 
-    #actdma_bounds <- sqlQuery(cnxn, actdma_boundssql)
     actdma_bounds_q <- dbSendQuery(cnxn, actdma_boundssql)
     actdma_bounds<-fetch(actdma_bounds_q) #HJF 5/14 sqlQuery replace 20230626
     #print("actdma_bounds")

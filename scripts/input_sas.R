@@ -59,7 +59,7 @@ observeEvent(input$sas, {
           ")", sep =""
         )
       )
-      dbCommit(cnxn)  ####THIS COULD VERY WELL BE ISSUE, ADD SEP OR TAKE IT AWAY AND MOVE AROUND EXECUTE AND COMMIT AS NEEDED! HJF SqlQuery replace 8/14 20230626
+      dbCommit(cnxn)  ####ADD SEP OR TAKE IT AWAY AND MOVE AROUND EXECUTE AND COMMIT AS NEEDED! HJF SqlQuery replace 8/14 20230626
     }
   }
   
