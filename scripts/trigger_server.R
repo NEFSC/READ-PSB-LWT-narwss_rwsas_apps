@@ -42,7 +42,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     if (input$sig_acou == 'Visual Sightings') {
       source('./scripts/Whalemap_datapull.R', local = TRUE)$value 
       #20260219 add back in with new pathways and no for loops - keep on demand WM pull if not too slow
-      # plan to keep cronjob(?) and add back in if we can figure it out in a R Env
+      # keeping cronjob (which should do the same thing)
       
       datesql <-
         paste0(
