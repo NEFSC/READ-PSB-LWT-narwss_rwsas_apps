@@ -1,4 +1,3 @@
-
 ## R Shiny Application for gathering whale positions
 ##    for photo processing of NARWSS aerial data
 
