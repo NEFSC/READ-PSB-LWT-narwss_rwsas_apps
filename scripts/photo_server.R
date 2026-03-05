@@ -228,14 +228,25 @@ observeEvent(input$photogo,{
       subed$Image.Type = 'DS'
       
       print(pernum)
-      for (i in 1:nrow(subed))
-        if (nchar(pernum) == 0){
-          subed$Notes[i] = subed$Notes[i]
-        } else if (nchar(subed$Notes[i]) == 0){
-          subed$Notes[i] = paste("Permit Number:",pernum)
-        } else {
-          subed$Notes[i] = paste0(subed$Notes[i],". Permit Number: ",pernum)
+      # for (i in 1:nrow(subed))
+      #   if (nchar(pernum) == 0){
+      #     subed$Notes[i] = subed$Notes[i]
+      #   } else if (nchar(subed$Notes[i]) == 0){
+      #     subed$Notes[i] = paste("Permit Number:",pernum)
+      #   } else {
+      #     subed$Notes[i] = paste0(subed$Notes[i],". Permit Number: ",pernum)
+      #   }
+      
+      #rewrite with errors above
+      if (!is.null(pernum) && !is.na(pernum) && nchar(trimws(pernum)) > 0){
+        for (i in 1:nrow(subed)){
+          if (is.na(subed$Notes[i]) || nchar(trimws(subed$Notes[i])) == 0){
+            subed$Notes[i] = paste("Permit Number:", pernum)
+          } else {
+            subed$Notes[i] = paste0(subed$Notes[i], ". Permit Number: ", pernum)
+          }
         }
+      }
       
       subed$Latitude<-as.numeric(subed$Latitude)
       subed$Longitude<-as.numeric(subed$Longitude)
