@@ -66,9 +66,9 @@ observeEvent(input$photogo,{
             gps$DateTime<-dmy_hms(gps$DateTime, tz = "GMT")
             
             if (input$tzone == 'Atlantic Time'){
-              gps$date_tz<-with_tz(gps$DateTime, tzone = "America/New_York")
+              gps$date_tz <- with_tz(gps$DateTime, tzone = "America/Halifax")
             } else if (input$tzone == 'Eastern Time'){
-              gps$date_tz<-with_tz(gps$DateTime, tzone = "Canada/Atlantic")
+              gps$date_tz <- with_tz(gps$DateTime, tzone = "America/New_York")
             }
             
             gps$date_tz<-as.POSIXct(gps$date_tz, format = "%Y-%m-%d %H:%M:%OS")
@@ -77,9 +77,9 @@ observeEvent(input$photogo,{
             date_time <- (paste(newdate, subraw$Local.Time[i]))
             
             if (input$tzone == 'Atlantic Time'){
-              date_tz<- as.POSIXlt(date_time, tz = "Canada/Atlantic", format = "%Y-%m-%d %H:%M:%OS")
+              date_tz <- as.POSIXlt(date_time, tz = "America/Halifax", format = "%Y-%m-%d %H:%M:%OS")
             } else if (input$tzone == 'Eastern Time'){
-              date_tz<- as.POSIXlt(date_time, tz = "America/New_York", format = "%Y-%m-%d %H:%M:%OS")
+              date_tz <- as.POSIXlt(date_time, tz = "America/New_York", format = "%Y-%m-%d %H:%M:%OS")
             }
             
             print(date_tz)
