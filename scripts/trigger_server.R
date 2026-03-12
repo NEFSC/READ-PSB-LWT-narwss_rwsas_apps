@@ -103,7 +103,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       dailyeg[] <- lapply(dailyeg, as.character)
       
       dailyeg <- dailyeg %>%
-        arrange(desc(DATETIME_ET))%>% #20260306 to more easily recognize dupes by time
+        arrange(DATETIME_ET)%>% #20260306 to more easily recognize dupes by time
         mutate(Select = TRUE) %>%
         dplyr::select(Select, everything())
       
@@ -132,7 +132,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       dailyeg[] <- lapply(dailyeg, as.character)
       
       dailyeg <- dailyeg %>%
-        arrange(asc(DATETIME_ET)) %>% #20260306 to more easily recognize dupes by time
+        arrange(DATETIME_ET) %>% #20260306 to more easily recognize dupes by time
         mutate(Select = TRUE) %>%
         dplyr::select(Select, everything())
       
