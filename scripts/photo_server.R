@@ -59,8 +59,22 @@ observeEvent(input$photogo,{
               pathgps<-paste0(pathway,'/',datestr,'/',datestr,'.gps')}
             
             gps_list<-list.files(paste0(pathway, 'Flights/edit_data/',datestr,'/'), "*\\.gps")
+            
+            #Check for .gps file and move to next row in loop if doesn't exist 20260312 HJF add (Mysticetus dates Dec 2025 and on don't have it)
+            if (length(gps_list) == 0) {
+              message(paste("No GPS files found for date:", datestr))
+              incProgress(amount = 1)
+              next  # skip to next iteration of the for loop
+            }
+            
             gps_files<-lapply(gps_list, function (x) read.csv(paste0(pathway,'Flights/edit_data/',datestr,'/',x), header=FALSE, stringsAsFactors = FALSE))
             gps_all<-do.call(rbind, gps_files)
+            #guard against rbind returning nothing 20260312 HJF add
+            if (is.null(gps_all) || nrow(gps_all) == 0) {
+              incProgress(amount = 1)
+              next
+            }
+            
             gps <-as.data.frame(gps_all)
             names(gps)<-c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE','T1')
             gps$DateTime<-dmy_hms(gps$DateTime, tz = "GMT")

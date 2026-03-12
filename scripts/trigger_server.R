@@ -46,7 +46,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       
       datesql <-
         paste0(
-          "select mammals.saswmjoin.ID, WM_NAME, WM_PLATFORM, SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,OBSERVER_COMMENTS,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,mammals.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT
+          "select mammals.saswmjoin.ID, DATETIME_ET,LAT,LON,GROUPSIZE, WM_NAME,WM_PLATFORM, SPECIES_CERT,OBSERVER_COMMENTS,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,mammals.action.action,OBSERVER_PEOPLE,OBSERVER_PLATFORM,OBSERVER_ORG,REPORTER_PEOPLE,REPORTER_PLATFORM,REPORTER_ORG,WHALEALERT,SIGHTDATE
                 from mammals.saswmjoin,mammals.action
                 where trunc(sightdate) = to_date('",
           dmaevaldate,
@@ -103,13 +103,14 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       dailyeg[] <- lapply(dailyeg, as.character)
       
       dailyeg <- dailyeg %>%
+        arrange(desc(DATETIME_ET))%>% #20260306 to more easily recognize dupes by time
         mutate(Select = TRUE) %>%
         dplyr::select(Select, everything())
       
       dailyeghot <- rhandsontable(dailyeg, readOnly = TRUE) %>%
         hot_table(highlightCol = TRUE, highlightRow = TRUE) %>%
         hot_cols(columnSorting = TRUE) %>%
-        hot_col("SIGHTDATE", width = 150) %>%
+        hot_col("SIGHTDATE", width = 150, hidden = TRUE) %>% #20260306 Hiding SIGHTDATE (utc if from WM) to not confuse with DATETIME_ET (same for NEFSC sights)
         hot_col("Select", readOnly = FALSE)
       
       output$dailyeghot = renderRHandsontable({
@@ -131,14 +132,16 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       dailyeg[] <- lapply(dailyeg, as.character)
       
       dailyeg <- dailyeg %>%
+        arrange(asc(DATETIME_ET)) %>% #20260306 to more easily recognize dupes by time
         mutate(Select = TRUE) %>%
         dplyr::select(Select, everything())
+      
       dailyeghot <- rhandsontable(dailyeg, readOnly = TRUE) %>%
         hot_table(highlightCol = TRUE, highlightRow = TRUE) %>%
         hot_cols(columnSorting = TRUE) %>%
         hot_col("DATETIME_ET", width = 150) %>%
         hot_col("Select", readOnly = FALSE)
-      
+       
       output$dailyeghot = renderRHandsontable({
         dailyeghot
       })
