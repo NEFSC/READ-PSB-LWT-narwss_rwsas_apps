@@ -3,6 +3,8 @@
 
 # Global ----
 
+Sys.setenv(ORA_SDTZ = "America/New_York")
+Sys.setenv(TZ = "America/New_York") #20260323 - Claude thinks R is set to UTC-5 year round rather than accounting for DST appropriately - trying here to prevent 1 hr conversions
 #Sys.setenv(OPENSSL_CONF="/dev/null") #added 20230925 on new container for server use of webshot/phantomjs
 Sys.setenv(CHROMOTE_CHROME = "/usr/bin/chromium") #251217 with chromium install via ITD
 #Sys.setenv(ORACLE_HOME="/ora1/app/oracle/product/11.2.0/dbhome_1") #220707 HJF change with continued ODBC connection issues

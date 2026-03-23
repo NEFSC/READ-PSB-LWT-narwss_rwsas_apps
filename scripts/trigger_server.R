@@ -8,6 +8,8 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
   source('./scripts/reactive.R', local = TRUE)$value
   source('./scripts/oracleaccess.R', local = TRUE)$value
   #need criteria$loc for 'action & slowzone' even though you can only do trigger analysis on the server. It separates it from the NARWSS app.
+  
+  #dbExecute(cnxn, "ALTER SESSION SET TIME_ZONE = 'America/New_York'") #20260323 trying to prevent time conversions
   criteria$loc <- 'Network'
   
   observeEvent(input$query, {
@@ -52,13 +54,18 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
           dmaevaldate,
           "','YYYY-MM-DD')
                 and mammals.saswmjoin.action = mammals.action.ID
-                and (WM_PLATFORM not like 'buoy' and WM_PLATFORM not like 'slocum' or WM_PLATFORM is null)
+                and (WM_PLATFORM not like 'buoy' and WM_PLATFORM not like 'slocum' and WM_NAME not like 'twin_otter_noaa_57' or WM_PLATFORM is null)
                 and SPECIES_CERT = 3
                 order by ID" , sep =""
         )
 #test to remove this to help get NEFSC sightings back in query 'and WM_PLATFORM <> 'buoy' and WM_PLATFORM <> 'slocum''
       dailyeg_q <- dbSendQuery(cnxn, datesql)
       dailyeg<-fetch(dailyeg_q) #HJF sqlQuery replace 13/14 20230626
+      
+      # Add these debug lines temporarily
+      print(head(dailyeg$DATETIME_ET))
+      print(class(dailyeg$DATETIME_ET))
+      print(attr(dailyeg$DATETIME_ET, "tzone"))
       
       ## ACOUSTIC DETECTIONS ----
       
@@ -95,8 +102,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
         ""
       })
       
-      dailyeg$SIGHTDATE <-
-        ymd_hms(dailyeg$SIGHTDATE, tz = "America/New_York")
+      #dailyeg$SIGHTDATE <-ymd_hms(dailyeg$SIGHTDATE, tz = "America/New_York") #erroneously converting by 1 hour - trying without 20260323
       dailyeg$LAT <- sprintf("%.5f", round(dailyeg$LAT, digits = 5))
       dailyeg$LON <- sprintf("%.5f", round(dailyeg$LON, digits = 5))
       
@@ -124,8 +130,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
         ""
       })
       
-      dailyeg$DATETIME_ET <-
-        ymd_hms(dailyeg$DATETIME_ET, tz = "America/New_York")
+      #dailyeg$DATETIME_ET <- ymd_hms(dailyeg$DATETIME_ET, tz = "America/New_York")
       
       dailyeg$LAT <- sprintf("%.5f", round(dailyeg$LAT, digits = 5))
       dailyeg$LON <- sprintf("%.5f", round(dailyeg$LON, digits = 5))
