@@ -62,11 +62,6 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       dailyeg_q <- dbSendQuery(cnxn, datesql)
       dailyeg<-fetch(dailyeg_q) #HJF sqlQuery replace 13/14 20230626
       
-      # Add these debug lines temporarily
-      print(head(dailyeg$DATETIME_ET))
-      print(class(dailyeg$DATETIME_ET))
-      print(attr(dailyeg$DATETIME_ET, "tzone"))
-      
       ## ACOUSTIC DETECTIONS ----
       
     } else if (input$sig_acou == 'Acoustic Detections') {
@@ -131,7 +126,6 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
       })
       
       #dailyeg$DATETIME_ET <- ymd_hms(dailyeg$DATETIME_ET, tz = "America/New_York")
-      
       dailyeg$LAT <- sprintf("%.5f", round(dailyeg$LAT, digits = 5))
       dailyeg$LON <- sprintf("%.5f", round(dailyeg$LON, digits = 5))
       dailyeg[] <- lapply(dailyeg, as.character)
