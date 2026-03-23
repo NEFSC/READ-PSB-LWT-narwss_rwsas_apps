@@ -45,17 +45,26 @@ observeEvent(input$sas, {
         paste0("'to_timestamp('",
                egvalues$DateTime,
                "', 'YYYY-MM-DD HH24:MI:SS')")
+      datetime_et_val <- paste0(
+        "FROM_TZ(CAST(TO_TIMESTAMP('",
+        egsastab$DateTime[i],
+        "', 'YYYY-MM-DD HH24:MI:SS') AS TIMESTAMP(0)), 'America/New_York')"
+      )
+      
       egvalues <-
         paste0(sapply(egvalues[i,], function(x)
           paste0("", paste0(x, collapse = "', '"), "'")), collapse = ", '")
       egvalues <- gsub("'to_", "to_", egvalues)
       egvalues <- gsub("')'", "')", egvalues)
+      
       dbExecute(
         cnxn,
         paste0(
-          "INSERT INTO SAS(SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD)
+          "INSERT INTO SAS(SIGHTDATE,GROUPSIZE,LAT,LON,SPECIES_CERT,MOMCALF,FEEDING,DEAD,SAG,ENTANGLED,CATEGORY,ACTION,OBSERVER_PEOPLE,OBSERVER_PLATFORM,ID,OBSERVER_ORG,OOD, DATETIME_ET)
                             VALUES(",
           egvalues,
+          ",",
+          datetime_et_val,
           ")", sep =""
         )
       )
