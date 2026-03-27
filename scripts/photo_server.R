@@ -1,7 +1,8 @@
 #20260304 Claude/HJF rewrite to not use sp functions - get everything to sf
+#20260326 bem incorporate gps_yymmdd (mysti)
 observeEvent(input$photogo,{
   
-  output$finalmess<-renderText({""})
+  output$finalmess<-renderUI({NULL})
   
   phserv<-input$filepathway
   phyear<-input$photoyear
@@ -20,6 +21,8 @@ observeEvent(input$photogo,{
   } else {
     override <- 'Local'
   }
+  
+  
   
   if (override == phserv){
     
@@ -54,30 +57,68 @@ observeEvent(input$photogo,{
             print(datestr)
             
             if(input$filepathway == 'Network'){
-              pathgps<-paste0(pathway,'Flights/edit_data/',datestr,'/',datestr,"*\\.gps")
-            } else if (input$filepathway == 'Local'){  
-              pathgps<-paste0(pathway,'/',datestr,'/',datestr,'.gps')}
-            
-            gps_list<-list.files(paste0(pathway, 'Flights/edit_data/',datestr,'/'), "*\\.gps")
-            
-            #Check for .gps file and move to next row in loop if doesn't exist 20260312 HJF add (Mysticetus dates Dec 2025 and on don't have it)
-            if (length(gps_list) == 0) {
-              message(paste("No GPS files found for date:", datestr))
-              incProgress(amount = 1)
-              next  # skip to next iteration of the for loop
+              base_path <- file.path(pathway, 'Flights/edit_data', datestr)
+            } else if (input$filepathway == 'Local') {
+              base_path <- file.path(pathway, datestr)
             }
             
-            gps_files<-lapply(gps_list, function (x) read.csv(paste0(pathway,'Flights/edit_data/',datestr,'/',x), header=FALSE, stringsAsFactors = FALSE))
-            gps_all<-do.call(rbind, gps_files)
-            #guard against rbind returning nothing 20260312 HJF add
-            if (is.null(gps_all) || nrow(gps_all) == 0) {
-              incProgress(amount = 1)
-              next
-            }
-            
+        #look for vor gps first (keep for now)
+            gps_list <- list.files(
+                path = base_path,
+                pattern = paste0("^", datestr, ".*\\.gps$"),
+                full.names = TRUE
+              )
+           file_type <-  "gps"
+           
+        #if no vor, find mysti gps
+          if (length(gps_list) == 0) {
+            gps_list <- list.files(
+              path = base_path,
+              pattern = paste0("^gps_", datestr, "\\.csv$"),
+              full.names = TRUE
+            )
+            file_type <- "csv"
+          }
+           
+           #Check for .gps file and move to next row in loop if doesn't exist 20260312 HJF add (Mysticetus dates Dec 2025 and on don't have it)
+           if (length(gps_list) == 0) {
+             message(paste("No GPS files found for date:", datestr))
+             incProgress(amount = 1)
+             next  # skip to next iteration of the for loop
+           }
+          
+           gps_files <- lapply(gps_list, function(x) {
+             if (file_type == "gps") {
+               read.csv(x, header = FALSE, stringsAsFactors = FALSE)
+             } else {
+               read.csv(x, header = TRUE, stringsAsFactors = FALSE)
+             }
+           })    
+
+              
+         # pathgps<-paste0(pathway,'Flights/edit_data/',datestr,'/',datestr,"*\\.gps")
+           gps_all<-do.call(rbind, gps_files)
+           #guard against rbind returning nothing 20260312 HJF add
+           if (is.null(gps_all) || nrow(gps_all) == 0) {
+             incProgress(amount = 1)
+             next
+           }
+            #gps_files<-lapply(gps_list, function (x) read.csv(paste0(pathway,'Flights/edit_data/',datestr,'/',x), header=FALSE, stringsAsFactors = FALSE))
+           
             gps <-as.data.frame(gps_all)
-            names(gps)<-c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE','T1')
-            gps$DateTime<-dmy_hms(gps$DateTime, tz = "GMT")
+            
+            if (file_type == "gps") {
+              names(gps) <- c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE','T1')
+            } else {
+              names(gps) <- c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE')
+              gps$T1 <- NA
+            }  
+            
+            if (file_type == "gps") {
+              gps$DateTime <- dmy_hms(gps$DateTime, tz = "GMT")
+            } else {
+              gps$DateTime <- ymd_hms(gps$DateTime, tz = "GMT")
+            }
             
             if (input$tzone == 'Atlantic Time'){
               gps$date_tz <- with_tz(gps$DateTime, tzone = "America/Halifax")
@@ -286,17 +327,33 @@ observeEvent(input$photogo,{
           attribution = NULL)  
       output$finalleaf = renderLeaflet({print(finalleaf)})
       
-      output$finalmess<-renderText({"The photo submission spreadsheet can be found on the network in the 'Image Submission' folder and is named 'NEFSC Sighting Data Table_Twin Otter_[datetime created].csv'"})
-      
-    } else {
-      output$finalmess<-renderText({"File does not exist"})
+      output$finalmess <- renderUI({
+        
+        msg <- if (input$filepathway == "Network") {
+          
+          paste0(
+            "Saved to network 'Image Submission' folder as: NEFSC Sighting Data Table_Twin Otter_",
+            Sys.Date(), ".csv"
+          )
+          
+        } else if (input$filepathway == "Local") {
+          
+          "Saved locally"
+          
+        } else {
+          
+          "File does not exist"
+          
+        }
+        
+        tags$div(
+          style = "font-weight: bold; color: #155724; background-color: #d4edda; padding: 10px; border-radius: 5px;",
+          msg
+        )
+      })
     }
-    
-  } else {
-    output$finalmess<-renderText({"Are you sure you chose the correct 'File Pathway?'"})  
   }
-  
-})
+    })
 
 #2025 and before version using sp - delete once we know it above works correctly for all users
 # observeEvent(input$photogo,{

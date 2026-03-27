@@ -13,15 +13,13 @@ fluidPage(
       ),
       textInput("filepathinput", (HTML(
         paste(
-          "Insert Local pathway (*only if needed*) for edit_data folders and photo submission csv",
+          "Insert Local pathway for edit_data folders and photo submission csv",
           '<br/>',
           "Example: C:/Users/allison.henry/Desktop/Flights/",
           '<br/>',
           "NETWORK NOTE: .csv needs to be in Image Submission Folder directly, not a subfolder",
           '<br/>',
-          "Network path (if your file is in this folder, no need to fill out next field):",
-          '<br/>',
-          "nefscdata/PSD-Whale_Surveys/Fieldwrk/Aerials/Year/Year_Digital_Photos/Image Submission/"
+          "Network path: nefscdata/PSD-Whale_Surveys/Fieldwrk/Aerials/Year/Year_Digital_Photos/Image Submission/"
         )
       ))),
       radioButtons(
@@ -58,7 +56,7 @@ fluidPage(
         )
       )),
       br(),
-      textOutput("finalmess"),
+      uiOutput("finalmess"),
       br(),
       leafletOutput("finalleaf")
     )
