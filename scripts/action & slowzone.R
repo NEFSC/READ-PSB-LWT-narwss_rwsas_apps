@@ -95,6 +95,8 @@
 
 #202512 rewrite of function to cluster overlapping sightings using sf & vectorizing to speed up double for loop 
 #DOES SHOW CORE AREAS, but may still need to figure out clustering of nonoverlapping sightings
+#20260413 update to look at diagonal only pairwise combos of matrix of core area potential overlap 
+
 clustdf_fun_sf <- function(x, y) {
   
   # If only one polygon
@@ -110,9 +112,15 @@ clustdf_fun_sf <- function(x, y) {
   combos$poly1 <- as.numeric(combos$poly1)
   combos$poly2 <- as.numeric(combos$poly2)
   
-  # Vectorized intersection check using st_intersects
+  # Check validity before intersecting #20260413 add
+  valid1 <- st_is_valid(y[combos$poly1, ])
+  valid2 <- st_is_valid(y[combos$poly2, ])
+  
+  # Vectorized intersection check using st_intersects diagonal only gives the true pairwise result
   intersects_matrix <- st_intersects(y[combos$poly1, ], y[combos$poly2, ], sparse = FALSE)
-  combos$overlap <- ifelse(diag(intersects_matrix) | rowSums(intersects_matrix) > 0, "yes", "no")
+  #incorrect combos$overlap <- ifelse(diag(intersects_matrix) | rowSums(intersects_matrix) > 0, "yes", "no")
+  #combos$overlap <- ifelse(diag(intersects_matrix), "yes", "no") #20260413 add for w/o validity lines above
+  combos$overlap <- ifelse(valid1 & valid2 & diag(intersects_matrix), "yes", "no") #20260413 add to correct errors (20260408 visual as example of false pos for DMA)
   combos$overlap <- ifelse(is.na(combos$overlap), "no", combos$overlap)
   
   # Filter only overlapping polygons
@@ -746,7 +754,7 @@ if (55 %in% egsas$ACTION_NEW) {
     #print(str(extpolycoord))
     
     ##poly coordinates out of utm spatial stuff here seems unneeeded - just take the lat long sf object above and make polys therefrom
-    print("A&SZ line 750") 
+    print("A&SZ line 757") 
     #coordinates(extpolycoord) <-  ~ long + lat #named correctly?
     #proj4string(extpolycoord) <- CRS.utm
     #extpolycoord.sp <- st_as_sf(extpolycoord, coords = c("LONGITDUE", "LATITUDE"), remove = FALSE, crs = 32619) 
@@ -757,10 +765,12 @@ if (55 %in% egsas$ACTION_NEW) {
     #extpolycoorddf$extPolyID <- as.numeric(extpolycoorddf$extPolyID)
     
     #trying easier version
-    extpolycoorddf <- st_transform(dmaextbuff, 4326) #THIS COULD BE VERY WRONG but isn't a dataframer version despite name
+    extpolycoorddf <- st_transform(dmaextbuff, 4326) #THIS COULD BE VERY WRONG but isn't a dataframe version despite name
+    
     # Preserve ID and extPolyID for downstream joins
     extpolycoorddf$id <- as.numeric(extpolycoorddf$extPolyID) #making it have an id column despite changing the extidpoly < - split() line below
     extpolycoorddf$extPolyID <- dmaextdf.tr$extPolyID
+    
     print("extpolycoorddf")
     print(extpolycoorddf) #check columns for id!
     
@@ -768,7 +778,8 @@ if (55 %in% egsas$ACTION_NEW) {
     extpolycoorddf_sp <- st_transform(dmaextbuff, 4326)
     
     # Preserve ID and extPolyID for downstream joins
-    extpolycoorddf_sp$id <- dmaextdf.tr$id #.tr doesn't have id so this shouldn't work
+    #extpolycoorddf_sp$id <- dmaextdf.tr$id #.tr doesn't have id so this shouldn't work #delete if working correctly to show core areas after 20260413
+    extpolycoorddf_sp$id <- as.numeric(dmaextdf.tr$extPolyID) #20260413 addition to make id column - show core areas in Leaflet
     extpolycoorddf_sp$extPolyID <- dmaextdf.tr$extPolyID
     
     print("extpolycoorddf_sp")
@@ -949,7 +960,7 @@ if (NA %in% egsas$ACTION_NEW) {
 
 ## Create DMA ----
 #only sightings with an action of 4 will be evaluated here for DMA
-print("egsas line 953 A&SZ")
+print("egsas line 960 A&SZ")
 print(egsas)
 if (44 %in% egsas$ACTION_NEW) {
   ## CREATING A DMA
@@ -981,7 +992,7 @@ if (44 %in% egsas$ACTION_NEW) {
   
   ## df to spatial object ----
   ##declare which values are coordinates
-  print("A&SZ line 985") 
+  print("A&SZ line 992") 
   dmadf.sp <- st_as_sf(dmadf, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs = 4326) #251120 update to sf/ditch rgdal
   ##transform projection
   dmadf.tr <- sf::st_transform(dmadf.sp, 32619) 
@@ -1011,7 +1022,7 @@ if (44 %in% egsas$ACTION_NEW) {
   #fortify() %>% dplyr::select("long", "lat", "id") #fortify only works for sp objects needs sf rewrite
   
   #poly coordinates out of utm
-  print("polycoord A&SZ line 1015") 
+  print("polycoord A&SZ line 1025") 
   #print(str(polycoord))
   #print(polycoord)
   #polycoorddf <- polycoord 
@@ -1039,8 +1050,10 @@ if (44 %in% egsas$ACTION_NEW) {
   polycoorddf_sp <- st_transform(dmabuff, 4326)
   
   # Preserve ID and PolyID for downstream joins
-  polycoorddf_sp$id <- dmadf.tr$id  #.tr doesn't have id so this won't work can make from PolyID, if necessary
-  polycoorddf_sp$PolyID <- dmadf.tr$PolyID
+  #polycoorddf_sp$id <- dmadf.tr$id  #.tr doesn't have id so this won't work - can make from PolyID, if necessary #comment out 20260413 not displaying core areas in leaflet
+  #polycoorddf_sp$PolyID <- dmadf.tr$PolyID
+  polycoorddf_sp$id <- as.numeric(dmadf.tr$PolyID) #20260413 add
+  polycoorddf_sp$PolyID <- dmadf.tr$PolyID #unchanged
   
   print("polycoorddf_sp")
   print(polycoorddf_sp) #THIS IS WHAT GETS SENT TO LEAFLET
