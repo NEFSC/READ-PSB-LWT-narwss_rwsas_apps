@@ -1259,7 +1259,8 @@ if (44 %in% egsas$ACTION_NEW) {
     nedf <- as.data.frame(cbind(corebounds_ne, ne_p))
     sedf <- as.data.frame(cbind(corebounds_se, se_p))
     
-    dma15 <- rbind(nwdf, swdf, sedf, nedf, nwdf)
+    dma15 <- rbind(nwdf, swdf, sedf, nedf, nwdf) %>%
+      arrange(cluster) #20260421 add with vertice list issues w/ mult new dmas and exisiting ones altogether
     print("dma15")
     print(dma15)
     
@@ -1297,6 +1298,12 @@ if (44 %in% egsas$ACTION_NEW) {
       ) %>%
       st_as_sf(crs = 4326)  # cluster is preserved as a column
     
+    # print("polyclust_sp:")
+    # print(polyclust_sp)
+    # print(nrow(polyclust_sp))
+    # print(polyclust_sp$cluster)
+    # print(st_geometry_type(polyclust_sp))
+    
     polyclust_sp <- polyclust_sp %>%
       mutate(id = as.character(cluster))
     
@@ -1306,23 +1313,44 @@ if (44 %in% egsas$ACTION_NEW) {
     print("new dma bounds")
     #replace fortify and extract polygon vertices
     polyclust_sp_coords <- st_coordinates(polyclust_sp) %>% as.data.frame()
+    # print("polyclust_sp_coords:")
+    # print(polyclust_sp_coords)
+    # print(paste("unique L1:", paste(unique(polyclust_sp_coords$L1), collapse=", ")))
     
-    dmabounds <- polyclust_sp_coords %>%
+    ####old version prior to errors on 20260421 - delete when 20260421 edits below work correctly
+    #dmabounds <- polyclust_sp_coords %>%
       #st_coordinates() %>%
       #as.data.frame() %>%
+      # mutate(
+      #   ID = polyclust_sp$cluster[L1]
+      # ) %>%
+      # group_by(ID) %>%                     # per polygon
+      # mutate(
+      #   VERTEX = row_number(),             #tried vertex = L1 and it just repeated 1 for each vertex
+      #   LAT = round(Y, 2),
+      #   LON = round(X, 2)
+      # ) %>%
+      # ungroup() %>%
+      # dplyr::select(ID, VERTEX, LAT, LON)
+    
+    #20260421 rewrite when 2 new polys gave 10 vertexs very incorrectly
+    dmabounds <- polyclust_sp_coords %>%
+      as.data.frame() %>%
+      group_by(L2) %>%
       mutate(
-        ID = polyclust_sp$cluster[L1]
-      ) %>%
-      group_by(ID) %>%                     # per polygon
-      mutate(
-        VERTEX = row_number(),             #tried vertex = L1 and it just repeated 1 for each vertex
+        VERTEX = row_number(),
         LAT = round(Y, 2),
         LON = round(X, 2)
       ) %>%
       ungroup() %>%
+      mutate(ID = as.character(polyclust_sp$cluster[L2])) %>%  # as.char so type matches alldmas_trig
       dplyr::select(ID, VERTEX, LAT, LON)
     
-    #Former SP version - keep until above works and displays correctly
+    #print("dmabounds after fix:")
+    print(dmabounds)
+   # print(paste("unique IDs:", paste(unique(dmabounds$ID), collapse=", ")))
+    
+    #Former 2025 SP version - keep until above works and displays correctly
     #polyclust_sp <-   ##NEEDS SF REWRITE ASAP
     # SpatialPolygons(polyclust_, proj4string = CRS.latlon)
     
@@ -1606,11 +1634,18 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   alldmas_trig <- alldmas_trig %>% mutate(ID = as.character(ID))
   
   alldmabounds <- alldmabounds %>%
-    dplyr::right_join(alldmas_trig, by = "ID") %>% #ID NEED TO BE BOTH DOUBLE OR BOTH CHAR FIX FROM BOTH ALLDMABOUNDS AND ALLDMAS
+    dplyr::right_join(alldmas_trig, by = "ID") %>%
     mutate(ID = dense_rank(ID)) %>%
     dplyr::select(ID, VERTEX, LAT, LON)
-  print("alldmabounds2")
-  print(alldmabounds)
+  
+  
+  #commented out 20260421 - could delete if above works
+  # alldmabounds <- alldmabounds %>%
+  #   dplyr::right_join(alldmas_trig, by = "ID") %>% #ID NEED TO BE BOTH DOUBLE OR BOTH CHAR FIX FROM BOTH ALLDMABOUNDS AND ALLDMAS
+  #   mutate(ID = dense_rank(ID)) %>%
+  #   dplyr::select(ID, VERTEX, LAT, LON)
+  # print("alldmabounds2")
+  # print(alldmabounds)
   
   ##for database (excludes the 5th point to close the polygon)
   dmacoord <- alldmabounds %>%
