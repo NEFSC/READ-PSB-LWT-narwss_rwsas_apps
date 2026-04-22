@@ -51,7 +51,7 @@ knitr::kable(params$dmacoord, caption = cap2)
 
 if("GROUP_SIZE" %in% colnames(egtab)){
   egtab<-egtab%>%
-    dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)  
+    dplyr::select(DateTime,GROUP_SIZE,LATITUDE,LONGITUDE,MOMCALF,ACTION_NEW)  #20260422 taking off ID_REL to fit MOMCALF
 } else {
   egtab<-egtab%>%
     dplyr::select(DateTime,LATITUDE,LONGITUDE,ID_RELIABILITY,ACTION_NEW)
