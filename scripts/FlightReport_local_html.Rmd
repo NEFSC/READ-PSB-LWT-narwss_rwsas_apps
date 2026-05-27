@@ -1,6 +1,5 @@
 
 ---
-title: NOAA Northeast Region <br>Right Whale Aerial Survey Report
 params:
   date1: NA
   rptnotes: NA
@@ -13,17 +12,34 @@ params:
 output:
   html_document
 
+
 ---
 
 <style type="text/css">
 
-h1.title {
-  font-size: 38px;
-  color: Black;
-  text-align: center;
+body, p, div, span, table, th, td {
+  font-family: "Times New Roman", Times, serif !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Times New Roman", Times, serif !important;
+}
+
+caption {
+  font-family: "Times New Roman", Times, serif !important;
+  text-align: center !important;
+  caption-side: top;
+}
+
+table {
+  margin-bottom: 25px;
 }
 
 </style>
+<h1 style="text-align:center; font-family:'Times New Roman', Times, serif; font-size:38px;">
+NOAA Northeast Region<br>
+Right Whale Aerial Survey Report
+</h1>
 
 <center><h1>`r params$date1`</h1></center>
 
@@ -41,9 +57,11 @@ knitr::include_graphics(params$webshotpath)
 <center>`r params$ftypesent`</center>
 \vspace*{-4mm}
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
-knitr::kable(params$netable, caption = "Species Sighted")%>%kableExtra::kable_classic(full_width = F, html_font = "Cambria")
+knitr::kable(params$netable, caption = "Table 1:  Species Sighted") %>%
+  kableExtra::kable_classic(full_width = FALSE)
 ```
 
 ```{r echo = FALSE, warning = FALSE, results = 'asis'}
-knitr::kable(params$egreport, caption = "Right Whale Sighting(s) Details")%>%kableExtra::kable_classic(full_width = F, html_font = "Cambria")
+knitr::kable(params$egreport, caption = "Table 2:  Right Whale Sighting(s) Details") %>%
+ kableExtra::kable_classic(full_width = FALSE)
 ```
