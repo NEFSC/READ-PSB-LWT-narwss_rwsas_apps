@@ -93,13 +93,16 @@ observeEvent(input$rawupload, {
         mysti_export <- read.csv(mysti_path, stringsAsFactors = FALSE)
         mysti_df <- as.data.frame(mysti_export)
         
-        # format and rename columns
+        # format and rename columns, differentiate between AT and ET 20260614 bem
+        timez <- grepl("\\E.T", colnames(mysti_df)[1])
+        tz_used <- if (timez) "America/New_York" else "America/Halifax"
+        
         colnames(mysti_df)[1] <- "datetime"
         mysti_df$datetime <- sub("T"," ",mysti_df$datetime)
         mysti_df$datetime_et <- as.POSIXct(
           mysti_df$datetime,
           format = "%Y-%m-%d %H:%M:%S",
-          tz = "America/New_York"
+          tz = tz_used
         )
         
         # convert to UTC
