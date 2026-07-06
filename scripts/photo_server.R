@@ -111,6 +111,11 @@ observeEvent(input$photogo,{
             } else {
               names(gps) <- c('DateTime','Latitude','Longitude','SPEED','HEADING','ALTITUDE')
               gps$T1 <- NA
+              
+              #06Jul2026 bem to avoid errors from dupe times retained in gps file
+              gps <- gps %>%
+                arrange(DateTime) %>%
+                distinct(DateTime, .keep_all = TRUE)
             }  
             
             if (file_type == "gps") {
