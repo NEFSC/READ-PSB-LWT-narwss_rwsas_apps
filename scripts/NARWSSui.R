@@ -3,9 +3,9 @@ fluidPage(
   useBusyIndicators(spinners = FALSE, pulse = TRUE, fade = TRUE),
   titlePanel("NEFSC Right Whale Aerial Survey Data Processing"),
   splitLayout(radioButtons("filepathway", "File Pathway", choices = c("Network", "Local"), selected = "Network", inline = FALSE),
-              textInput("filepathinput", (HTML(paste("Local pathway where YYMMDD folder is stored", '<br/>', "Example: C:/2022/Flights/edit_data/")))),
+              textInput("filepathinput", (HTML(paste("Local pathway where YYMMDD folder is stored", '<br/>', "Example: C:/2026/Flights/edit_data/")))),
               width = 3),
-  tabsetPanel(type = "tabs",
+  tabsetPanel(id = "main_tabs", type = "tabs",
               tabPanel("Aerial Survey",
                        (HTML(paste('<br/>',
                                    "<strong>Suggested naming convention</strong>",'<br/>',
@@ -51,13 +51,7 @@ fluidPage(
                        downloadButton("report", "Generate Report (pdf - SERVER)"),
                        downloadButton("report_html", "Generate Report (html - LOCAL)"),
                        br(),
-                       HTML(paste(
-                         '<br/>',
-                         '<div style="background-color:#fff3cd; color:#2166fa; padding:10px; border-radius:5px;">',
-                         '<strong>REMEMBER TO SCROLL BACK UP AND OVER TO THE SAS/DMA EVALUATION TAB – YOU MUST STILL UPLOAD ALL RIGHT WHALE SIGHTINGS TO THE DATABASE!</strong>',
-                         '</div>',
-                         '<br/>'
-                       ))), 
+                       actionButton("go_sas_dma", "REMEMBER TO UPLOAD ALL RIGHT WHALE SIGHTINGS TO DATABASE! Click here to go to the SAS & DMA Evaluation tab", class = "btn-warning")),
               
               tabPanel("SAS & DMA Evaluation",
                        splitLayout(uiOutput("obspeeps_options"),
