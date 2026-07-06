@@ -12,9 +12,13 @@ source('./scripts/reactive.R', local = TRUE)$value
 criteria$triggrptrue <- FALSE
 criteria$DMAapp <- "rwsurv"
 
+observeEvent(input$go_sas_dma, {
+  updateTabsetPanel(session, "main_tabs", selected = "SAS & DMA Evaluation")
+})
+
 observeEvent(input$rawupload, {
   survey_date = input$sd
-  #survey_date <- 260210
+  #survey_date <- 260617
   yr <- substr(survey_date, 1, 2)
   
   if (input$filepathway == 'Network') {
@@ -32,7 +36,12 @@ observeEvent(input$rawupload, {
     criteria$path = path
   }
   
-  mysti_path <- paste0(path, survey_date, "/Integrated Export.csv")
+  #mysti_path <- paste0(path, survey_date, "/Integrated Export.csv")
+  mysti_path <- list.files(
+    path = file.path(path, survey_date),
+    pattern = "Integrated Export",
+    full.names = TRUE
+  )
   criteria$yes_mysti = file.exists(mysti_path)
   
   rawed <- input$rawedits
@@ -1605,9 +1614,8 @@ observeEvent(input$edittable, {
           !grepl('-', final$SPCODE) & !is.na(final$SPCODE)
       )
     #print(confsig)
-    resight <-
-      grepl("\\<s\\d", confsig$SIGHTING_COMMENTS) &
-      confsig$LEGTYPE == 4
+    resight <-(grepl("\\<s\\d", confsig$SIGHTING_COMMENTS) & confsig$LEGTYPE == 4) |
+      grepl("\\bresight\\b", confsig$SIGHTING_COMMENTS) #20260330 bem added
     print(resight)
     confsig <- confsig %>%
       filter(!resight)
@@ -1704,7 +1712,8 @@ observeEvent(input$edittable, {
     egrep <- egrep %>%
       filter(
         !grepl('new\\?', egrep$SIGHTING_COMMENTS) &
-          !grepl('dup', egrep$SIGHTING_COMMENTS)
+          !grepl('dup', egrep$SIGHTING_COMMENTS) &
+          !grepl('\\bresight\\b', egrep$SIGHTING_COMMENTS)#20260330 bem added
       )
     print(egrep)
     ##eg table for report
