@@ -1,3 +1,11 @@
+observe({
+  if (is.null(sas_react$egsastab) || nrow(sas_react$egsastab) == 0) {
+    shinyjs::disable("sas")
+  } else {
+    shinyjs::enable("sas")
+  }
+})
+
 observeEvent(input$sas, {
   disable("sas")
   
@@ -19,6 +27,12 @@ observeEvent(input$sas, {
     output$error5 <- renderText({
       ""
     })
+    
+    shinyjs::disable("sas")
+    updateActionButton(session, "sas", label = "Uploaded")
+    
+    shinyjs::removeClass("sas", "btn-danger")
+    shinyjs::addClass("sas", "btn-warning")
     
     if ("ID" %in% colnames(sas_react$egsastab)) {
       egsastab <- sas_react$egsastab %>%
