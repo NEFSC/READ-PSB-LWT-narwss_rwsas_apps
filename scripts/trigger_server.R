@@ -38,7 +38,7 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     
     dmaevaldate <- input$sasdate
     print(dmaevaldate)
-    #for testing  dmaevaldate <- '2024-03-13'
+    #for testing  dmaevaldate <- '2026-05-02'
     
     ## VISUAL SIGHTINGS ----
     if (input$sig_acou == 'Visual Sightings') {
@@ -61,7 +61,8 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
 #test to remove this to help get NEFSC sightings back in query 'and WM_PLATFORM <> 'buoy' and WM_PLATFORM <> 'slocum''
       dailyeg_q <- dbSendQuery(cnxn, datesql)
       dailyeg<-fetch(dailyeg_q) #HJF sqlQuery replace 13/14 20230626
-      
+      print("dailyeg")
+      print(dailyeg)
       ## ACOUSTIC DETECTIONS ----
       
     } else if (input$sig_acou == 'Acoustic Detections') {
