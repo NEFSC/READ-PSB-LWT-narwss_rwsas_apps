@@ -1690,7 +1690,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
       ##KML for new dmas only
       CRS.gearth <-
         CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") # gearth = google earth
-      print("A&SZ 1474") 
+      print("A&SZ 1693") 
       coordinates(kmlcoord) <-  ~ LON + LAT #named correctly?
       #may need to add code here but don't do .kmls anyway 251121
       proj4string(kmlcoord) <- CRS.latlon
@@ -1782,7 +1782,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
     dmacoord
   })
   
-  print("a&sz 1641")
+  print("a&sz 1785")
   #print(egsas)
   
   if ("ID" %in% colnames(egsas)) {
