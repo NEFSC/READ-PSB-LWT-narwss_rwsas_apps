@@ -56,11 +56,11 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
                 and mammals.saswmjoin.action = mammals.action.ID
                 and (WM_PLATFORM not like 'buoy' and WM_PLATFORM not like 'slocum' and WM_NAME not like 'twin_otter_noaa_57' or WM_PLATFORM is null)
                 and SPECIES_CERT = 3
-                order by ID" , sep =""
+                order by ID" , sep = ""
         )
 #test to remove this to help get NEFSC sightings back in query 'and WM_PLATFORM <> 'buoy' and WM_PLATFORM <> 'slocum''
       dailyeg_q <- dbSendQuery(cnxn, datesql)
-      dailyeg<-fetch(dailyeg_q) #HJF sqlQuery replace 13/14 20230626
+      dailyeg <- fetch(dailyeg_q) #HJF sqlQuery replace 13/14 20230626
       print("dailyeg")
       print(dailyeg)
       ## ACOUSTIC DETECTIONS ----
