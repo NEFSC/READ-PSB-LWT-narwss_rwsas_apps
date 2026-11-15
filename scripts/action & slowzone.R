@@ -1195,7 +1195,7 @@ if (44 %in% egsas$ACTION_NEW) {
       as.data.frame()
     print("polymaxmin")
     print(polymaxmin)
-    print("A&SZ line 1218")
+    print("A&SZ line 1198")
     
     if (isolate(criteria$DMAapp) == "acoudet") {
       #20 is the nm radius that we want for the acoustic buffer, but the acoustic positions are filled as group_size of 3 by default, which already gives a 4.79 buffer
@@ -1260,7 +1260,8 @@ if (44 %in% egsas$ACTION_NEW) {
     nedf <- as.data.frame(cbind(corebounds_ne, ne_p))
     sedf <- as.data.frame(cbind(corebounds_se, se_p))
     
-    dma15 <- rbind(nwdf, swdf, sedf, nedf, nwdf) #%>% HJF edit via Claude 261115 with coastal NJ glider errors
+    dma15 <- rbind(nwdf, swdf, sedf, nedf, nwdf) %>%   
+      arrange(cluster) #20260421 add with vertice list issues w/ mult new dmas and existing ones altogether
       
     print("dma15")
     print(dma15)
