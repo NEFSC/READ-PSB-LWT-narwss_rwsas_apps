@@ -674,7 +674,7 @@ if (55 %in% egsas$ACTION_NEW) {
   
   print("end 55")
   
-  #######this section I copied from above because I am not clever enough right now
+  ##this section I copied from above because I am not clever enough right now
   dmaextsightID <- lapply(comboext, function(x) {
     dmacandext <- x %>%
       dplyr::filter((x$dist_nm != 0 &
@@ -717,7 +717,9 @@ if (55 %in% egsas$ACTION_NEW) {
     ## df to spatial object ----
     ##declare which values are coordinates
     print("A&SZ line 712") 
+    #coordinates(dmaextdf) <-  ~ LONGITUDE + LATITUDE
     ##declare what projection they are in
+    #proj4string(dmaextdf) <- CRS.latlon #delete - unnecessary now
     dmaextdf.sp <- st_as_sf(dmaextdf, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs = 4326)
     ##transform projection
     dmaextdf.tr <- sf::st_transform(dmaextdf.sp, 32619) #or set UTM zone with crs = xxxx was CRS.utm
@@ -726,6 +728,7 @@ if (55 %in% egsas$ACTION_NEW) {
     
     ##gbuffer/st_buffer both need utm to calculate radius in meters
     dmaextbuff <- st_buffer(dmaextdf.tr, dist = dmaextdf.tr$extcorer_m) #251218 was dmaextdf$extcorer_m
+    #gBuffer(dmaextdf.tr,byid = TRUE, width = dmaextdf$extcorer_m,capStyle = "ROUND") #old sp way
     print("dmaextbuff")
     print(dmaextbuff) #simple feature collection (polygons) X features and X fields
     
@@ -792,7 +795,28 @@ if (55 %in% egsas$ACTION_NEW) {
     print("extidpoly")
     print(extidpoly)
     
-    ##CALLS FUNCTION AT TOP OF SCRIPT - hopefully sf re-write works correctly here as well
+    #think this is unnecessary now     
+    # extpcoord <- lapply(extidpoly, function(df) {
+    #   # convert data-frame columns to numeric matrix (LONG then LAT)
+    #   coords <- as.matrix(df[, c("LONGITUDE", "LATITUDE")])
+    #   storage.mode(coords) <- "double"
+    #   st_polygon(list(coords))
+    # })
+    # poly_sfc <- try(st_sfc(extpcoord, crs = 4326), silent = FALSE)
+    # extpolycoorddf_sp <- st_sf(
+    #   ID = names(extidpoly),
+    #   geometry = poly_sfc
+    # )
+    
+    # extpcoord <- lapply(extidpoly, Polygon)
+    # extpcoord_ <-
+    #   lapply(seq_along(extpcoord), function(i)
+    #     Polygons(list(extpcoord[[i]]), ID = names(extidpoly)[i]))
+    # extpolycoorddf_sp <-
+    #   SpatialPolygons(extpcoord_, proj4string = CRS.latlon) #sp
+    # #sf rewrite converting
+    
+    ##CALLS FUNCTION AT TOP OF SCRIPT (lines 7-95) hopefully sf re-write works correctly here as well
     ext_clustdf_fun_out <- clustdf_fun_sf(extidpoly, extpolycoorddf_sp) #y must be sf
     extclustdf$extPolyID <- as.numeric(extclustdf$extPolyID)
     
@@ -936,7 +960,7 @@ if (NA %in% egsas$ACTION_NEW) {
 
 ## Create DMA ----
 #only sightings with an action of 4 will be evaluated here for DMA
-print("egsas line 939 A&SZ")
+print("egsas line 960 A&SZ")
 print(egsas)
 if (44 %in% egsas$ACTION_NEW) {
   ## CREATING A DMA
@@ -968,7 +992,7 @@ if (44 %in% egsas$ACTION_NEW) {
   
   ## df to spatial object ----
   ##declare which values are coordinates
-  print("A&SZ line 971") 
+  print("A&SZ line 992") 
   dmadf.sp <- st_as_sf(dmadf, coords = c("LONGITUDE", "LATITUDE"), remove = FALSE, crs = 4326) #251120 update to sf/ditch rgdal
   ##transform projection
   dmadf.tr <- sf::st_transform(dmadf.sp, 32619) 
@@ -977,6 +1001,7 @@ if (44 %in% egsas$ACTION_NEW) {
   
   ##st_buffer (formerly gbuffer) needs utm to calculate radius in meters goes from point to polygon sf collection
   dmabuff <- st_buffer(dmadf.tr, dist = dmadf.tr$corer_m)
+  #gBuffer(dmadf.tr, byid = TRUE, width = dmadf$corer_m, capStyle = "ROUND") #sp
   print("dmabuff")
   print(dmabuff)
   
@@ -997,7 +1022,7 @@ if (44 %in% egsas$ACTION_NEW) {
   #fortify() %>% dplyr::select("long", "lat", "id") #fortify only works for sp objects needs sf rewrite
   
   #poly coordinates out of utm
-  print("polycoord A&SZ line 1000") 
+  print("polycoord A&SZ line 1025") 
   #print(str(polycoord))
   #print(polycoord)
   #polycoorddf <- polycoord 
@@ -1170,7 +1195,7 @@ if (44 %in% egsas$ACTION_NEW) {
       as.data.frame()
     print("polymaxmin")
     print(polymaxmin)
-    print("A&SZ line 1173")
+    print("A&SZ line 1218")
     
     if (isolate(criteria$DMAapp) == "acoudet") {
       #20 is the nm radius that we want for the acoustic buffer, but the acoustic positions are filled as group_size of 3 by default, which already gives a 4.79 buffer
@@ -1180,6 +1205,7 @@ if (44 %in% egsas$ACTION_NEW) {
       buffnm <- 15
       
     }
+    
     ##spatialize the corners #REDO WITH SF?
     corebounds_nw <- polymaxmin
     coordinates(corebounds_nw) <-  ~ minlon + maxlat
@@ -1234,8 +1260,8 @@ if (44 %in% egsas$ACTION_NEW) {
     nedf <- as.data.frame(cbind(corebounds_ne, ne_p))
     sedf <- as.data.frame(cbind(corebounds_se, se_p))
     
-    dma15 <- rbind(nwdf, swdf, sedf, nedf, nwdf) %>%
-      arrange(cluster) #20260421 add with vertice list issues w/ mult new dmas and exisiting ones altogether
+    dma15 <- rbind(nwdf, swdf, sedf, nedf, nwdf) #%>% HJF edit via Claude 261115 with coastal NJ glider errors
+      
     print("dma15")
     print(dma15)
     
@@ -1273,12 +1299,6 @@ if (44 %in% egsas$ACTION_NEW) {
       ) %>%
       st_as_sf(crs = 4326)  # cluster is preserved as a column
     
-    # print("polyclust_sp:")
-    # print(polyclust_sp)
-    # print(nrow(polyclust_sp))
-    # print(polyclust_sp$cluster)
-    # print(st_geometry_type(polyclust_sp))
-    
     polyclust_sp <- polyclust_sp %>%
       mutate(id = as.character(cluster))
     
@@ -1288,11 +1308,8 @@ if (44 %in% egsas$ACTION_NEW) {
     print("new dma bounds")
     #replace fortify and extract polygon vertices
     polyclust_sp_coords <- st_coordinates(polyclust_sp) %>% as.data.frame()
-    # print("polyclust_sp_coords:")
-    # print(polyclust_sp_coords)
-    # print(paste("unique L1:", paste(unique(polyclust_sp_coords$L1), collapse=", ")))
     
-    ####old version prior to errors on 20260421 - delete when 20260421 edits below work correctly
+    #old version prior to errors on 20260421 - delete when 20260421 edits below work correctly
     #dmabounds <- polyclust_sp_coords %>%
       #st_coordinates() %>%
       #as.data.frame() %>%
@@ -1311,19 +1328,19 @@ if (44 %in% egsas$ACTION_NEW) {
     #20260421 rewrite when 2 new polys gave 10 vertexs very incorrectly
     dmabounds <- polyclust_sp_coords %>%
       as.data.frame() %>%
-      group_by(L2) %>%
+      group_by(L1) %>%
       mutate(
         VERTEX = row_number(),
         LAT = round(Y, 2),
         LON = round(X, 2)
       ) %>%
       ungroup() %>%
-      mutate(ID = as.character(polyclust_sp$cluster[L2])) %>%  # as.char so type matches alldmas_trig
+      mutate(ID = as.character(polyclust_sp$cluster[L1])) %>%  # as.char so type matches alldmas_trig
       dplyr::select(ID, VERTEX, LAT, LON)
     
-    #print("dmabounds after fix:")
-    #print(dmabounds)
-   # print(paste("unique IDs:", paste(unique(dmabounds$ID), collapse=", ")))
+    print("dmabounds after fix:")
+    print(dmabounds)
+    print(paste("unique IDs:", paste(unique(dmabounds$ID), collapse=", ")))
     
     #Former 2025 SP version - keep until above works and displays correctly
     #polyclust_sp <-   ##NEEDS SF REWRITE ASAP
@@ -1418,7 +1435,7 @@ if (44 %in% egsas$ACTION_NEW) {
       )
     #needs sf rewrite asap   
     dmadist <- dmaname
-    print("A&SZ 1421")
+    print("A&SZ 1406")
     coordinates(dmadist) <-  ~ lon + lat
     proj4string(dmadist) <- CRS.latlon
     
@@ -1432,6 +1449,9 @@ if (44 %in% egsas$ACTION_NEW) {
       #sf replacement for gCentroid
       center_sf <- st_centroid(x_sf)
       center <- as(center_sf, "Spatial") #convert it back to spatial points for geosphere::distVincentyEllipsoid below
+      #old sp calls - keep until above 2 lines work and displays correctly 
+      # x_sp <- SpatialPolygons(x, proj4string = CRS.latlon)
+      # center <- rgeos::gCentroid(x_sp) #sf:st_centroid()
       
       dmaname <- dmaname %>%
         mutate(
@@ -1605,11 +1625,36 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
   alldmabounds <- alldmabounds %>% mutate(ID = as.character(ID))
   alldmas_trig <- alldmas_trig %>% mutate(ID = as.character(ID))
   
-  alldmabounds <- alldmabounds %>%
-    dplyr::right_join(alldmas_trig, by = "ID") %>%
+  
+  #20260421 add to try to get two clean sets of polygons
+  print("=== DIAGNOSTIC ===")
+  print("alldmabounds BEFORE join:")
+  print(alldmabounds)
+  print(paste("alldmabounds unique IDs:", paste(unique(alldmabounds$ID), collapse=", ")))
+  print(paste("alldmabounds ID class:", class(alldmabounds$ID)))
+  print("alldmas_trig:")
+  print(alldmas_trig)
+  print(paste("alldmas_trig unique IDs:", paste(unique(alldmas_trig$ID), collapse=", ")))
+  print(paste("alldmas_trig ID class:", class(alldmas_trig$ID)))
+  
+  alldmabounds_test <- alldmabounds %>%
+    dplyr::right_join(alldmas_trig, by = "ID")
+  print("alldmabounds AFTER join (before dense_rank):")
+  print(alldmabounds_test)
+  
+  alldmabounds <- alldmabounds_test %>%
     mutate(ID = dense_rank(ID)) %>%
     dplyr::select(ID, VERTEX, LAT, LON)
+  print("alldmabounds FINAL:")
+  print(alldmabounds)
   
+  
+  
+  #commented out 20260421 - could delete if above works
+  # alldmabounds <- alldmabounds %>%
+  #   dplyr::right_join(alldmas_trig, by = "ID") %>% #ID NEED TO BE BOTH DOUBLE OR BOTH CHAR FIX FROM BOTH ALLDMABOUNDS AND ALLDMAS
+  #   mutate(ID = dense_rank(ID)) %>%
+  #   dplyr::select(ID, VERTEX, LAT, LON)
   # print("alldmabounds2")
   # print(alldmabounds)
   
@@ -1644,7 +1689,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
       ##KML for new dmas only
       CRS.gearth <-
         CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") # gearth = google earth
-      print("A&SZ 1647") 
+      print("A&SZ 1474") 
       coordinates(kmlcoord) <-  ~ LON + LAT #named correctly?
       #may need to add code here but don't do .kmls anyway 251121
       proj4string(kmlcoord) <- CRS.latlon
@@ -1736,7 +1781,7 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
     dmacoord
   })
   
-  print("a&sz 1739")
+  print("a&sz 1641")
   #print(egsas)
   
   if ("ID" %in% colnames(egsas)) {
@@ -1852,6 +1897,16 @@ if (4 %in% egsas$ACTION_NEW | (5 %in% egsas$ACTION_NEW)) {
       addPolygons(data = extpolycoorddf_sp,
                   weight = 2,
                   color = "black")
+    #sf attempt with reprojected back to latlong after buffering sf object 
+    # addPolygons(data = polyclust_sp,
+    #             weight = 2,
+    #             color = "blue") %>%
+    # addPolygons(data = clustdf_sf,
+    #             weight = 2,
+    #             color = "black") %>%
+    # addPolygons(data = extclustdf_sf,
+    #             weight = 2,
+    #             color = "black")
     
   } else {
     sasdma <- sasdma %>%
