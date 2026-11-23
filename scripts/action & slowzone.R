@@ -1370,6 +1370,7 @@ if (44 %in% egsas$ACTION_NEW) {
       data.frame(
         port = c(
           "Bay of Fundy Canada",
+          "Bar Harbor ME",
           "Portland ME",
           "Portsmouth NH",
           "Boston MA",
@@ -1392,6 +1393,7 @@ if (44 %in% egsas$ACTION_NEW) {
         ),
         lon = c(
           -66.9317,
+          -68.203654,
           -70.2500,
           -70.7333,
           -71.0833,-71.4000,
@@ -1412,6 +1414,7 @@ if (44 %in% egsas$ACTION_NEW) {
         ),
         lat = c(
           44.7533,
+          44.392645,
           43.6667,
           43.0833,
           42.3500,
@@ -1436,7 +1439,7 @@ if (44 %in% egsas$ACTION_NEW) {
       )
     #needs sf rewrite asap   
     dmadist <- dmaname
-    print("A&SZ 1406")
+    print("A&SZ 1442")
     coordinates(dmadist) <-  ~ lon + lat
     proj4string(dmadist) <- CRS.latlon
     
