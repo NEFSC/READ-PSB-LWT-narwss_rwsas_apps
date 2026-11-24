@@ -165,7 +165,7 @@ clustdf_fun_sf <- function(x, y) {
 
 sasdma <-
   leaflet(data = egsas, options = leafletOptions(zoomControl = FALSE)) %>%
-# unsupported package   addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+# unsupported package   addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>% #20261124 auto changes when opening app in cloud launcher
   addProviderTiles("Esri.OceanBasemap") %>%
   addPolygons(data = smapresent.sp, 
               weight = 2,
