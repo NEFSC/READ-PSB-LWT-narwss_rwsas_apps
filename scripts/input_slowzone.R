@@ -336,6 +336,7 @@ observeEvent(input$dmaup, {
       mutate(
         landmark = dplyr::case_when(
           grepl('Bay of Fundy Canada', NAME) ~ 'Bay of Fundy Canada',
+          grepl('Bar Harbor ME', NAME) ~ 'Bar Harbor ME', #HJF 20261123
           grepl('Portland ME', NAME) ~ 'Portland ME',
           grepl('Portsmouth NH', NAME) ~ 'Portsmouth NH',
           grepl('Boston MA', NAME) ~ 'Boston MA',
