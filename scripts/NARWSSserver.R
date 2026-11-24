@@ -1507,7 +1507,8 @@ observeEvent(input$edittable, {
     factpal <-
       colorFactor(palette = "Set1", domain = sightings$SPCODE)
     egmap <- leaflet(data = rf) %>%
-      addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+# unsupported package       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+      addProviderTiles("Esri.OceanBasemap") %>%
       addPolylines(
         lng =  ~ maplon,
         lat = ~ maplat,
@@ -2024,7 +2025,8 @@ observeEvent(input$edittable, {
       reportleaf <-
         leaflet(data = spectab,
                 options = leafletOptions(zoomControl = FALSE)) %>%
-        addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+# unsupported package         addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+        addProviderTiles("Esri.OceanBasemap") %>%
         addPolygons(data = smapresent.sp,
                     weight = 2,
                     color = "red") %>%
@@ -2055,7 +2057,8 @@ observeEvent(input$edittable, {
       reportleaf <-
         leaflet(data = spectab,
                 options = leafletOptions(zoomControl = FALSE)) %>%
-        addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+# unsupported package         addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+        addProviderTiles("Esri.OceanBasemap") %>%
         addPolygons(
           data = dyna_ship.sp,
           weight = 2,

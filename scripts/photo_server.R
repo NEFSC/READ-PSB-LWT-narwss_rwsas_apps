@@ -321,7 +321,8 @@ observeEvent(input$photogo,{
       }
       
       finalleaf<-leaflet(data = subed, options = leafletOptions(zoomControl = TRUE)) %>% 
-        addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
+# unsupported package         addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels=TRUE) %>%
+        addProviderTiles("Esri.OceanBasemap") %>%
         addPolygons(data = allpoly, weight = 2, color = "blue") %>%
         addCircleMarkers(lng = ~subed$Longitude, lat = ~subed$Latitude, color = "black", stroke = FALSE, fillOpacity = 2, radius = 5, popup = paste0(subed$Year,"-",subed$Month,"-",subed$Day,"-",subed$`EG Letter`)) %>%
         addWMSTiles(

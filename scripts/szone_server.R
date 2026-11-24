@@ -45,7 +45,8 @@ if (file.exists('./scripts/oracleaccess.R') == TRUE) {
     
     sasdma <-
       leaflet(data = smapresent.sp, options = leafletOptions(zoomControl = FALSE)) %>%
-      addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+# unsupported package       addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+      addProviderTiles("Esri.OceanBasemap") %>%
       addPolygons(data = smapresent.sp,
                   weight = 2,
                   color = "red") %>%
