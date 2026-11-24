@@ -165,7 +165,8 @@ clustdf_fun_sf <- function(x, y) {
 
 sasdma <-
   leaflet(data = egsas, options = leafletOptions(zoomControl = FALSE)) %>%
-  addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+# unsupported package   addEsriBasemapLayer(esriBasemapLayers$Oceans, autoLabels = TRUE) %>%
+  addProviderTiles("Esri.OceanBasemap") %>%
   addPolygons(data = smapresent.sp, 
               weight = 2,
               color = "red") %>%
